@@ -47,10 +47,15 @@
         </div>
 
         <ng-template pTemplate="footer">
-            <div class="flex justify-content-end gap-2">
-                <p-button label="Cancel" icon="pi pi-times" (onClick)="cancel()" severity="secondary" />
-                <p-button label="Send Email" icon="pi pi-send" (onClick)="send()"
-                    [disabled]="!recipientEmail || !subject || !body" />
+            <div [class]="result ? 'flex justify-content-between' : 'flex justify-content-end'">
+                @if (result) {
+                <p-button label="Back to Result" icon="pi pi-arrow-left" (onClick)="cancel()" severity="secondary"
+                    [text]="true" />
+                }
+                <div class="flex gap-2">
+                    <p-button label="Send Email" icon="pi pi-send" (onClick)="send()"
+                        [disabled]="!recipientEmail || !subject || !body" />
+                </div>
             </div>
         </ng-template>
     </p-card>

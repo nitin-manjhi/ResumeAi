@@ -43,6 +43,11 @@ export class AppComponent {
         label: 'Send Mail',
         icon: 'pi pi-envelope',
         routerLink: '/send-mail',
+      },
+      {
+        label: 'Review Cover Letter',
+        icon: 'pi pi-file-o',
+        routerLink: '/review-cover-letter',
       }
     ];
   });

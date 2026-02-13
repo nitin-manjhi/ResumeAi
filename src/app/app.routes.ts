@@ -2,10 +2,10 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './home/home-component';
 import { AnalyseResumeComponent } from './analyse-resume/analyse-resume-component';
 import { SendMailComponent } from './send-mail/send-mail-component';
-import { LogOutComponent } from './shared/log-out-component/log-out-component';
+import { LogOutComponent } from './shared/log-out/log-out-component';
 import { GenerateResumeComponent } from './generate-resume/generate-resume-component';
-import { LoginComponent } from './login/login-component';
-import { SignupComponent } from './signup/signup-component';
+import { LoginComponent } from './shared/login/login-component';
+import { SignupComponent } from './shared/signup/signup-component';
 import { authGuard } from './service/auth.guard';
 
 export const routes: Routes = [
@@ -16,5 +16,6 @@ export const routes: Routes = [
   { path: 'send-mail', component: SendMailComponent, canActivate: [authGuard] },
   { path: 'logout', component: LogOutComponent },
   { path: 'generate-resume', component: GenerateResumeComponent, canActivate: [authGuard] },
+  { path: 'review-cover-letter', loadComponent: () => import('./review-cover-letter/review-cover-letter-component').then(m => m.ReviewCoverLetterComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

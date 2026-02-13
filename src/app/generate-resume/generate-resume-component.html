@@ -424,158 +424,158 @@
 
     <!-- Preview Section -->
     @if (showPreview) {
-    <div class="col-12 lg:col-6 fadein" style="position: sticky; top: 1rem; align-self: flex-start;">
+    <div class="col-12 lg:col-6 fadein"
+        style="position: sticky; top: 1rem; align-self: flex-start; max-height: calc(100vh - 2rem); overflow-y: auto;">
         <div class="flex justify-content-end mb-2">
             <p-button label="Download PDF" icon="pi pi-file-pdf" severity="danger" (onClick)="downloadPDF()"
                 styleClass="p-button-sm"></p-button>
         </div>
-        <div id="resumePreview" class="card p-5 shadow-8 border-round-none bg-white resume-preview-container"
-            [class.density-compact]="density === 'compact'" [class.density-spacious]="density === 'spacious'"
-            style="min-height: 297mm; width: 210mm; margin: 0 auto; box-sizing: border-box;">
+        <div class="preview-wrapper">
+            <div id="resumePreview" class="shadow-8 border-round-none bg-white resume-preview-container"
+                [class.density-compact]="density === 'compact'" [class.density-spacious]="density === 'spacious'"
+                style="min-height: 297mm; width: 210mm; box-sizing: border-box; padding: 15mm 20mm;">
 
-            <!-- Centered Header -->
-            <div class="text-center mb-4">
-                <h1 class="bold uppercase m-0">{{ generalInfo.get('fullName')?.value || 'FULL NAME' }}</h1>
-                <div class="flex justify-content-center flex-wrap gap-2 text-sm-resume mt-1">
-                    @if (generalInfo.get('email')?.value) {
-                    <span>{{ generalInfo.get('email')?.value }}</span>
-                    }
-                    @if (generalInfo.get('email')?.value && generalInfo.get('mobileNumber')?.value) {
-                    <span>|</span>
-                    }
-                    @if (generalInfo.get('mobileNumber')?.value) {
-                    <span>{{ generalInfo.get('mobileNumber')?.value }}</span>
-                    }
-                    @if (generalInfo.get('mobileNumber')?.value && generalInfo.get('linkedinUrl')?.value) {
-                    <span>|</span>
-                    }
-                    @if (generalInfo.get('linkedinUrl')?.value) {
-                    <span>LinkedIn Profile</span>
-                    }
-                </div>
-                <div class="flex justify-content-center flex-wrap gap-2 text-xs-resume mt-1">
-                    @if (generalInfo.get('githubUrl')?.value) {
-                    <span>{{ generalInfo.get('githubUrl')?.value }}</span>
-                    }
-                    @if (generalInfo.get('githubUrl')?.value && generalInfo.get('portfolioUrl')?.value) {
-                    <span>|</span>
-                    }
-                    @if (generalInfo.get('portfolioUrl')?.value) {
-                    <span>Portfolio</span>
-                    }
-                </div>
-            </div>
-
-            <!-- Dynamic Section Order Rendering -->
-            @for (section of sectionOrder; track section.id) {
-
-            <!-- Education -->
-            @if (section.id === 'education' && education.length > 0 && education.controls[0].get('institute')?.value) {
-            <div class="resume-section">
-                <h2>Education</h2>
-                @for (edu of education.controls; track edu) {
-                <div class="resume-item">
-                    <div class="flex-row">
-                        <span class="bold">{{ edu.get('institute')?.value }}</span>
-                        <span class="bold">{{ edu.get('location')?.value }}</span>
-                    </div>
-                    <div class="flex-row">
-                        <span class="italic">{{ edu.get('degree')?.value }} @if (edu.get('fieldOfStudy')?.value) {
-                            <span>in {{ edu.get('fieldOfStudy')?.value }}</span> }</span>
-                        <span>{{ edu.get('startDate')?.value | date: 'MMM yyyy' }} — {{ edu.get('current')?.value ?
-                            'Present' : (edu.get('endDate')?.value | date: 'MMM yyyy') }}</span>
-                    </div>
-                    @if (edu.get('grade')?.value) {
-                    <div class="text-sm-resume mt-1">GPA: {{ edu.get('grade')?.value }}</div>
-                    }
-                </div>
-                }
-            </div>
-            }
-
-            <!-- Skills -->
-            @if (section.id === 'skills' && skills.length > 0 && skills.controls[0].get('skills')?.value) {
-            <div class="resume-section">
-                <h2>Skills</h2>
-                @for (skill of skills.controls; track skill) {
-                <div class="text-sm-resume mb-1">
-                    @if (skill.get('category')?.value) {
-                    <span class="bold">{{ skill.get('category')?.value }}: </span>
-                    }
-                    <span>{{ skill.get('skills')?.value }}</span>
-                </div>
-                }
-            </div>
-            }
-
-            <!-- Experience -->
-            @if (section.id === 'workExperience' && workExperience.length > 0 &&
-            workExperience.controls[0].get('jobTitle')?.value) {
-            <div class="resume-section">
-                <h2>Experience</h2>
-                @for (work of workExperience.controls; track work) {
-                <div class="resume-item">
-                    <div class="flex-row">
-                        <span class="bold">{{ work.get('jobTitle')?.value }}</span>
-                        <span class="bold">{{ work.get('startDate')?.value | date: 'MMM yyyy' }} — {{
-                            work.get('current')?.value ? 'Present' : (work.get('endDate')?.value | date: 'MMM yyyy')
-                            }}</span>
-                    </div>
-                    <div class="flex-row mb-1">
-                        <span class="bold italic">{{ work.get('company')?.value }}</span>
-                        <span class="italic">{{ work.get('location')?.value }}</span>
-                    </div>
-                    @if (work.get('description')?.value) {
-                    <ul>
-                        @for (point of work.get('description')?.value.split('\n'); track point) {
-                        <li>{{ point }}</li>
+                <!-- Header -->
+                <div class="text-center mb-3">
+                    <h1 class="bold uppercase m-0">{{ generalInfo.get('fullName')?.value || 'FULL NAME' }}</h1>
+                    <div class="flex justify-content-center flex-wrap gap-2 text-sm-resume mt-1">
+                        @if (generalInfo.get('email')?.value) {
+                        <span>{{ generalInfo.get('email')?.value }}</span>
                         }
-                    </ul>
-                    }
-                </div>
-                }
-            </div>
-            }
-
-            <!-- Projects -->
-            @if (section.id === 'projects' && projects.length > 0 && projects.controls[0].get('title')?.value) {
-            <div class="resume-section">
-                <h2>Projects</h2>
-                @for (proj of projects.controls; track proj) {
-                <div class="resume-item">
-                    <div class="flex-row">
-                        <span class="bold">{{ proj.get('title')?.value }}</span>
-                        @if (proj.get('technologies')?.value) {
-                        <span class="italic text-sm-resume">{{ proj.get('technologies')?.value }}</span>
+                        @if (generalInfo.get('mobileNumber')?.value) {
+                        @if (generalInfo.get('email')?.value) { <span>|</span> }
+                        <span>{{ generalInfo.get('mobileNumber')?.value }}</span>
+                        }
+                        @if (generalInfo.get('linkedinUrl')?.value) {
+                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value) { <span>|</span>
+                        }
+                        <span>LinkedIn</span>
+                        }
+                        @if (generalInfo.get('githubUrl')?.value) {
+                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value ||
+                        generalInfo.get('linkedinUrl')?.value) { <span>|</span> }
+                        <span>GitHub</span>
+                        }
+                        @if (generalInfo.get('portfolioUrl')?.value) {
+                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value ||
+                        generalInfo.get('linkedinUrl')?.value || generalInfo.get('githubUrl')?.value) { <span>|</span> }
+                        <span>Portfolio</span>
                         }
                     </div>
-                    @if (proj.get('description')?.value) {
-                    <ul>
-                        @for (point of proj.get('description')?.value.split('\n'); track point) {
-                        <li>{{ point }}</li>
-                        }
-                    </ul>
-                    }
                 </div>
-                }
-            </div>
-            }
 
-            <!-- Awards/Other -->
-            @if (section.id === 'other' && other.length > 0 && other.controls[0].get('title')?.value) {
-            <div class="resume-section">
-                <h2>Activities & Leadership</h2>
-                @for (item of other.controls; track item) {
-                <div class="resume-item">
-                    <div class="bold">{{ item.get('title')?.value }}</div>
-                    @if (item.get('description')?.value) {
-                    <div class="text-sm-resume italic">{{ item.get('description')?.value }}</div>
+                <!-- Dynamic Section Order Rendering -->
+                @for (section of sectionOrder; track section.id) {
+
+                <!-- Education -->
+                @if (section.id === 'education' && education.length > 0 &&
+                education.controls[0].get('institute')?.value) {
+                <div class="resume-section">
+                    <h2>Education</h2>
+                    @for (edu of education.controls; track edu) {
+                    <div class="resume-item">
+                        <div class="flex-row">
+                            <span class="bold">{{ edu.get('institute')?.value }}</span>
+                            <span class="bold">{{ edu.get('location')?.value }}</span>
+                        </div>
+                        <div class="flex-row">
+                            <span class="italic">{{ edu.get('degree')?.value }} @if (edu.get('fieldOfStudy')?.value) {
+                                <span>in {{ edu.get('fieldOfStudy')?.value }}</span> }</span>
+                            <span>{{ edu.get('startDate')?.value | date: 'MMM yyyy' }} — {{ edu.get('current')?.value ?
+                                'Present' : (edu.get('endDate')?.value | date: 'MMM yyyy') }}</span>
+                        </div>
+                        @if (edu.get('grade')?.value) {
+                        <div class="text-sm-resume mt-1">GPA: {{ edu.get('grade')?.value }}</div>
+                        }
+                    </div>
                     }
                 </div>
                 }
+
+                <!-- Skills -->
+                @if (section.id === 'skills' && skills.length > 0 && skills.controls[0].get('skills')?.value) {
+                <div class="resume-section">
+                    <h2>Skills</h2>
+                    @for (skill of skills.controls; track skill) {
+                    <div class="text-sm-resume mb-1">
+                        @if (skill.get('category')?.value) {
+                        <span class="bold">{{ skill.get('category')?.value }}: </span>
+                        }
+                        <span>{{ skill.get('skills')?.value }}</span>
+                    </div>
+                    }
+                </div>
+                }
+
+                <!-- Experience -->
+                @if (section.id === 'workExperience' && workExperience.length > 0 &&
+                workExperience.controls[0].get('jobTitle')?.value) {
+                <div class="resume-section">
+                    <h2>Experience</h2>
+                    @for (work of workExperience.controls; track work) {
+                    <div class="resume-item">
+                        <div class="flex-row">
+                            <span class="bold">{{ work.get('jobTitle')?.value }}</span>
+                            <span class="bold">{{ work.get('startDate')?.value | date: 'MMM yyyy' }} — {{
+                                work.get('current')?.value ? 'Present' : (work.get('endDate')?.value | date: 'MMM yyyy')
+                                }}</span>
+                        </div>
+                        <div class="flex-row mb-1">
+                            <span class="bold italic">{{ work.get('company')?.value }}</span>
+                            <span class="italic">{{ work.get('location')?.value }}</span>
+                        </div>
+                        @if (work.get('description')?.value) {
+                        <ul>
+                            @for (point of work.get('description')?.value.split('\n'); track point) {
+                            <li>{{ point }}</li>
+                            }
+                        </ul>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+
+                <!-- Projects -->
+                @if (section.id === 'projects' && projects.length > 0 && projects.controls[0].get('title')?.value) {
+                <div class="resume-section">
+                    <h2>Projects</h2>
+                    @for (proj of projects.controls; track proj) {
+                    <div class="resume-item">
+                        <div class="flex-row">
+                            <span class="bold">{{ proj.get('title')?.value }}</span>
+                            @if (proj.get('technologies')?.value) {
+                            <span class="italic text-sm-resume">{{ proj.get('technologies')?.value }}</span>
+                            }
+                        </div>
+                        @if (proj.get('description')?.value) {
+                        <ul>
+                            @for (point of proj.get('description')?.value.split('\n'); track point) {
+                            <li>{{ point }}</li>
+                            }
+                        </ul>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+
+                <!-- Awards/Other -->
+                @if (section.id === 'other' && other.length > 0 && other.controls[0].get('title')?.value) {
+                <div class="resume-section">
+                    <h2>Activities & Leadership</h2>
+                    @for (item of other.controls; track item) {
+                    <div class="resume-item">
+                        <div class="bold">{{ item.get('title')?.value }}</div>
+                        @if (item.get('description')?.value) {
+                        <div class="text-sm-resume italic">{{ item.get('description')?.value }}</div>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+                }
             </div>
-            }
-            }
         </div>
     </div>
     }

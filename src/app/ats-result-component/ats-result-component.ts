@@ -31,10 +31,8 @@ export class AtsResultComponent {
     this.router.navigate(['/send-mail'], { state: { data: this.result } });
   }
 
-  downloadCoverLetter() {
-    this.resumeService.downloadCoverLetter(this.result.uuid).subscribe((blob) => {
-      this.downloadFile(blob, 'cover_letter.pdf');
-    });
+  reviewCoverLetter() {
+    this.router.navigate(['/review-cover-letter']);
   }
 
   private downloadFile(blob: Blob, fileName: string) {

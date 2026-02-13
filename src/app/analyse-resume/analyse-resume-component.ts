@@ -25,7 +25,8 @@ export class AnalyseResumeComponent {
   private messageService = inject(MessageService);
   protected jobDescription = signal('');
   protected isLoading = signal(false);
-  protected analysisResult = signal<AtsAnalysisResult | null>(null);
+  protected analysisResult = this.resumeService.currentResult;
+
   async onUpload(fileUpload: any) {
     if (fileUpload.files && fileUpload.files.length > 0) {
       const file = fileUpload.files[0];
@@ -42,7 +43,7 @@ export class AnalyseResumeComponent {
           summary: 'Success',
           detail: 'Resume analysis completed successfully',
         });
-        this.analysisResult.set(response);
+        this.resumeService.setResult(response);
         fileUpload.clear();
       } catch (error) {
         console.error(error);
@@ -64,7 +65,7 @@ export class AnalyseResumeComponent {
   }
 
   onReset() {
-    this.analysisResult.set(null);
+    this.resumeService.clearResult();
     this.jobDescription.set('');
   }
 }

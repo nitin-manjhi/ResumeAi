@@ -53,10 +53,14 @@ export class SendMailComponent implements OnInit {
     const stateData = history.state.data;
     if (stateData) {
       this.result = stateData as AtsAnalysisResult;
-      if (this.result.email) {
-        this.subject = this.result.email.subject || '';
-        this.body = this.result.email.body || '';
-      }
+    } else {
+      // If no state, try to get from service (e.g. if user came directly or refreshed)
+      this.result = this.resumeService.currentResult() as AtsAnalysisResult;
+    }
+
+    if (this.result?.email) {
+      this.subject = this.result.email.subject || '';
+      this.body = this.result.email.body || '';
     }
   }
 
@@ -117,6 +121,6 @@ export class SendMailComponent implements OnInit {
   }
 
   cancel() {
-    this.location.back();
+    this.router.navigate(['/analyse-resume']);
   }
 }

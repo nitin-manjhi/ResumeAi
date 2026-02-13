@@ -1,0 +1,38 @@
+<div class="container py-4">
+    <p-toast />
+
+    <div class="flex justify-content-between align-items-center mb-4">
+        <p-button label="Back to Analysis" icon="pi pi-arrow-left" (onClick)="goBack()" [text]="true"
+            severity="secondary" />
+        <h2 class="m-0 font-bold text-2xl">Review Cover Letter</h2>
+        <p-button label="Generate PDF" icon="pi pi-file-pdf" (onClick)="generatePDF()" severity="success"
+            raised="true" />
+    </div>
+
+    <div class="grid">
+        <!-- Editor Section -->
+        <div class="col-12 lg:col-6">
+            <p-card header="Edit Content" subheader="Personalize your cover letter below"
+                styleClass="shadow-2 border-round-xl h-full">
+                <textarea pInputTextarea [(ngModel)]="coverLetter" class="w-full mt-2" rows="25"
+                    placeholder="Your cover letter content..."
+                    style="font-family: 'Inter', sans-serif; line-height: 1.6; font-size: 1.1rem; border: none; background: transparent; outline: none; resize: none;">
+                </textarea>
+            </p-card>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="col-12 lg:col-6">
+            <p-card header="Live Preview" subheader="A4 Document Preview"
+                styleClass="shadow-8 border-round-none bg-white h-full">
+                <div class="preview-wrapper">
+                    <div class="cover-letter-preview shadow-1 p-5 bg-white mx-auto" id="coverLetterPreview">
+                        <div class="preview-content whitespace-pre-wrap">
+                            {{ coverLetter() }}
+                        </div>
+                    </div>
+                </div>
+            </p-card>
+        </div>
+    </div>
+</div>

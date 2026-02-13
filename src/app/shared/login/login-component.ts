@@ -9,7 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AuthService } from '../service/auth.service';
+import { AuthService } from '../../service/auth.service';
 
 @Component({
     selector: 'app-login',

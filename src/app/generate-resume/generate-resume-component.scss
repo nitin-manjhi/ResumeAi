@@ -45,6 +45,11 @@ textarea {
     line-height: 1.4;
     font-size: 10pt;
     transition: all 0.3s ease;
+    transform-origin: top center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    position: relative;
 
     * {
         color: black !important;
@@ -52,18 +57,24 @@ textarea {
     }
 
     h1 {
-        font-size: 18pt;
-        margin-bottom: 2pt;
+        font-size: 24pt;
+        margin-bottom: 4pt;
         margin-top: 0;
+        letter-spacing: 1px;
     }
 
     h2 {
-        font-size: 12pt;
-        border-bottom: 1.5px solid black;
-        margin-top: 12pt;
-        margin-bottom: 6pt;
+        font-size: 11pt;
+        border-bottom: 1px solid black;
+        margin-top: 10pt;
+        margin-bottom: 3pt;
+        padding-bottom: 1pt;
         font-weight: bold;
         text-transform: uppercase;
+    }
+
+    .resume-section:first-of-type h2 {
+        margin-top: 0;
     }
 
     h3 {
@@ -77,17 +88,18 @@ textarea {
     }
 
     .resume-section {
-        margin-bottom: 10pt;
+        margin-bottom: 4pt;
     }
 
     .resume-item {
-        margin-bottom: 8pt;
+        margin-bottom: 3pt;
     }
 
     .flex-row {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
+        width: 100%;
     }
 
     .bold {
@@ -102,52 +114,56 @@ textarea {
         text-transform: uppercase;
     }
 
+    // List refinement
     ul {
-        margin: 0;
+        margin: 4pt 0 0 0;
         padding-left: 1.2rem;
 
         li {
+            list-style-type: disc;
             margin-bottom: 2pt;
         }
     }
 
     // Density modifiers
     &.density-compact {
-        font-size: 9pt;
+        font-size: 8.5pt;
         line-height: 1.2;
+        padding: 10mm 15mm !important;
 
         h1 {
-            font-size: 16pt;
+            font-size: 18pt;
         }
 
         h2 {
-            margin-top: 8pt;
-            margin-bottom: 4pt;
-            font-size: 11pt;
+            font-size: 10pt;
+            margin-top: 6pt;
+            margin-bottom: 2pt;
         }
 
         .resume-section {
-            margin-bottom: 6pt;
+            margin-bottom: 4pt;
         }
 
         .resume-item {
-            margin-bottom: 4pt;
+            margin-bottom: 2pt;
         }
     }
 
     &.density-spacious {
         font-size: 11pt;
         line-height: 1.6;
+        padding: 20mm 25mm !important;
 
         h1 {
-            font-size: 22pt;
-            margin-bottom: 6pt;
+            font-size: 28pt;
+            margin-bottom: 8pt;
         }
 
         h2 {
+            font-size: 14pt;
             margin-top: 18pt;
             margin-bottom: 10pt;
-            font-size: 14pt;
         }
 
         .resume-section {
@@ -155,11 +171,7 @@ textarea {
         }
 
         .resume-item {
-            margin-bottom: 12pt;
-        }
-
-        ul li {
-            margin-bottom: 6pt;
+            margin-bottom: 10pt;
         }
     }
 }
@@ -218,4 +230,46 @@ textarea {
 
 .text-xs-resume {
     font-size: 8pt;
+}
+
+// Preview responsiveness logic
+.preview-wrapper {
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+@media screen and (max-width: 1400px) {
+    #resumePreview {
+        transform: scale(0.9);
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    #resumePreview {
+        transform: scale(0.75);
+    }
+}
+
+@media screen and (max-width: 991px) {
+    #resumePreview {
+        transform: scale(0.9);
+        margin-top: 2rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    #resumePreview {
+        transform: scale(0.65);
+    }
+}
+
+@media screen and (max-width: 576px) {
+    #resumePreview {
+        transform: scale(0.45);
+        margin-left: -50%;
+        margin-right: -50%;
+    }
 }
