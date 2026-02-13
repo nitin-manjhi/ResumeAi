@@ -13,7 +13,14 @@ export class LogOutComponent implements OnInit {
   private router = inject(Router);
 
   ngOnInit() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        // Even if the backend call fails, we should still logout locally
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }
