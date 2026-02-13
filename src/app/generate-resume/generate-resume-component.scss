@@ -1,0 +1,221 @@
+:host {
+    display: block;
+}
+
+.form-container {
+    transition: all 0.3s ease-in-out;
+}
+
+.surface-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--surface-border);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+}
+
+.field label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.field-required::after {
+    content: " *";
+    color: var(--red-500);
+}
+
+.p-steps .p-steps-item.p-highlight .p-steps-number {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+}
+
+textarea {
+    width: 100%;
+}
+
+.resume-preview-container {
+    background-color: white;
+    color: black !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.4;
+    font-size: 10pt;
+    transition: all 0.3s ease;
+
+    * {
+        color: black !important;
+        border-color: black !important;
+    }
+
+    h1 {
+        font-size: 18pt;
+        margin-bottom: 2pt;
+        margin-top: 0;
+    }
+
+    h2 {
+        font-size: 12pt;
+        border-bottom: 1.5px solid black;
+        margin-top: 12pt;
+        margin-bottom: 6pt;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    h3 {
+        font-size: 11pt;
+        margin-bottom: 2pt;
+    }
+
+    h4 {
+        font-size: 10pt;
+        margin-bottom: 1pt;
+    }
+
+    .resume-section {
+        margin-bottom: 10pt;
+    }
+
+    .resume-item {
+        margin-bottom: 8pt;
+    }
+
+    .flex-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+    }
+
+    .bold {
+        font-weight: bold;
+    }
+
+    .italic {
+        font-style: italic;
+    }
+
+    .uppercase {
+        text-transform: uppercase;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 1.2rem;
+
+        li {
+            margin-bottom: 2pt;
+        }
+    }
+
+    // Density modifiers
+    &.density-compact {
+        font-size: 9pt;
+        line-height: 1.2;
+
+        h1 {
+            font-size: 16pt;
+        }
+
+        h2 {
+            margin-top: 8pt;
+            margin-bottom: 4pt;
+            font-size: 11pt;
+        }
+
+        .resume-section {
+            margin-bottom: 6pt;
+        }
+
+        .resume-item {
+            margin-bottom: 4pt;
+        }
+    }
+
+    &.density-spacious {
+        font-size: 11pt;
+        line-height: 1.6;
+
+        h1 {
+            font-size: 22pt;
+            margin-bottom: 6pt;
+        }
+
+        h2 {
+            margin-top: 18pt;
+            margin-bottom: 10pt;
+            font-size: 14pt;
+        }
+
+        .resume-section {
+            margin-bottom: 16pt;
+        }
+
+        .resume-item {
+            margin-bottom: 12pt;
+        }
+
+        ul li {
+            margin-bottom: 6pt;
+        }
+    }
+}
+
+// Layout Step Styles
+.drag-list {
+    display: block;
+}
+
+.drag-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    cursor: move;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    &.cdk-drag-placeholder {
+        opacity: 0;
+    }
+
+    .drag-handle {
+        color: #94a3b8;
+        margin-left: auto;
+    }
+}
+
+.density-card {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+
+    &:hover {
+        border-color: var(--primary-color);
+        background-color: var(--primary-50);
+    }
+
+    &.active {
+        border-color: var(--primary-color);
+        background-color: var(--primary-50);
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+    }
+}
+
+.text-sm-resume {
+    font-size: 9pt;
+}
+
+.text-xs-resume {
+    font-size: 8pt;
+}

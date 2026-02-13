@@ -1,0 +1,66 @@
+<p-toast />
+
+<div class="login-container flex align-items-center justify-content-center min-h-screen p-4">
+    <div class="login-box w-full max-w-26rem">
+        <div class="text-center mb-5">
+            <div class="flex align-items-center justify-content-center mb-4">
+                <div
+                    class="logo-box bg-primary border-round-xl w-4rem h-4rem flex align-items-center justify-content-center shadow-4">
+                    <i class="pi pi-sparkles text-white text-3xl"></i>
+                </div>
+            </div>
+            <h1 class="text-white text-3xl font-bold mb-2">Welcome Back</h1>
+            <p class="text-blue-100 font-medium">Please sign in to continue your journey</p>
+        </div>
+
+        <p-card styleClass="p-0 overflow-hidden shadow-8 border-round-2xl surface-card">
+            <div class="p-5">
+                <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+                    <div class="flex flex-column gap-4">
+                        <div class="field m-0 p-fluid">
+                            <label for="username" class="block font-bold mb-2 text-900">Username or Email</label>
+                            <input id="username" type="text" pInputText formControlName="username"
+                                placeholder="Enter your email"
+                                [class.p-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" />
+                            @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
+                            <small class="text-red-500 mt-1 block">Username is required</small>
+                            }
+                        </div>
+
+                        <div class="field m-0 p-fluid">
+                            <label for="password" class="block font-bold mb-2 text-900">Password</label>
+                            <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="false"
+                                placeholder="Enter your password" styleClass="w-full"
+                                [inputStyleClass]="(loginForm.get('password')?.invalid && loginForm.get('password')?.touched) ? 'p-invalid w-full' : 'w-full'"></p-password>
+                            @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                            <small class="text-red-500 mt-1 block">Password is required</small>
+                            }
+                        </div>
+
+                        <div class="flex align-items-center justify-content-between mb-2">
+                            <div class="flex align-items-center">
+                                <p-checkbox label="Remember me" [binary]="true" inputId="rememberMe"
+                                    styleClass="mr-2"></p-checkbox>
+                            </div>
+                            <a class="text-primary font-medium no-underline hover:underline cursor-pointer">Forgot
+                                password?</a>
+                        </div>
+
+                        <p-button label="Sign In" icon="pi pi-sign-in" iconPos="right" [loading]="loading()"
+                            type="submit" styleClass="w-full p-3 font-bold"></p-button>
+                    </div>
+                </form>
+
+                <div class="mt-5 text-center">
+                    <span class="text-600">Don't have an account? </span>
+                    <a routerLink="/signup"
+                        class="text-primary font-bold no-underline hover:underline cursor-pointer">Sign up</a>
+                </div>
+            </div>
+        </p-card>
+
+        <p class="text-blue-200 text-center mt-6 text-sm">
+            Powered by ResumeAi Premium ✨
+        </p>
+    </div>
+</div>

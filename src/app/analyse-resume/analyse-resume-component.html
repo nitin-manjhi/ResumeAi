@@ -1,0 +1,31 @@
+<div>
+  <p-toast />
+  @if (isLoading()) {
+  <div class="fixed top-0 left-0 w-full h-full flex align-items-center justify-content-center bg-black-alpha-50"
+    style="z-index: 9999;">
+    <p-progressSpinner ariaLabel="loading" />
+  </div>
+  }
+
+  @if (!analysisResult()) {
+  <div class="card flex flex-column align-items-center justify-content-center mt-4 gap-2">
+    <label class="font-semibold" for="jobDescription">Job Description</label>
+    <textarea rows="5" cols="30" pInputTextarea [ngModel]="jobDescription()"
+      (ngModelChange)="jobDescription.set($event)" [autoResize]="true" maxlength="1000" class="w-full md:w-30rem"
+      placeholder="Paste job description here (Max 1000 chars)"></textarea>
+  </div>
+
+  <div class="card flex flex-column align-items-center justify-content-center mt-4 gap-2">
+    <label class="font-semibold">Upload Resume</label>
+    <div class="flex gap-6 align-items-center">
+      <p-fileupload #fu mode="basic" chooseLabel="Choose" chooseIcon="pi pi-upload" name="demo[]"
+        accept=".pdf,.doc,.docx" maxFileSize="1000000" />
+      <p-button label="Upload" (onClick)="onUpload(fu)" severity="secondary"
+        [disabled]="!jobDescription() || !jobDescription().trim()" />
+    </div>
+  </div>
+  } @else {
+  <app-ats-result-component [result]="analysisResult()!" (onReset)="onReset()" />
+  }
+
+</div>

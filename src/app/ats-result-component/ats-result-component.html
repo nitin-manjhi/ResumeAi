@@ -1,0 +1,58 @@
+<div class="flex flex-column gap-4 p-4">
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-3">
+        <h2 class="m-0 text-primary">ATS Analysis Result</h2>
+        <div class="flex flex-wrap gap-2">
+            <p-button label="Download Cover Letter" icon="pi pi-file-pdf" (onClick)="downloadCoverLetter()"
+                severity="info" />
+            <p-button label="Send Mail" icon="pi pi-envelope" (onClick)="sendMail()" severity="success" />
+            <p-button label="Analyze New" icon="pi pi-refresh" (onClick)="reset()" severity="secondary" />
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="col-12 md:col-4 flex flex-column align-items-center justify-content-center">
+            <h3 class="mb-3">ATS Score</h3>
+            <p-knob [(ngModel)]="result.score" [readonly]="true" [size]="150" [strokeWidth]="10"
+                valueTemplate="{value}%" [valueColor]="result.score >= 70 ? 'var(--green-500)' : 'var(--orange-500)'" />
+        </div>
+
+        <div class="col-12 md:col-8">
+            <div class="card">
+                <h3>Matched Skills</h3>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    @for (skill of result.matchedSkills; track skill) {
+                    <p-tag [value]="skill" severity="success" icon="pi pi-check" />
+                    }
+                    @if (result.matchedSkills.length === 0) {
+                    <span class="text-gray-500">No matched skills found.</span>
+                    }
+                </div>
+
+                <h3>Missing Skills</h3>
+                <div class="flex flex-wrap gap-2">
+                    @for (skill of result.missingSkills; track skill) {
+                    <p-tag [value]="skill" severity="warn" icon="pi pi-exclamation-triangle" />
+                    }
+                    @if (result.missingSkills.length === 0) {
+                    <span class="text-gray-500">No missing skills found. Great job!</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Recommended Improvements</h3>
+        <ul class="list-none p-0 m-0">
+            @for (improvement of result.improvements; track improvement) {
+            <li class="flex align-items-start p-2 border-bottom-1 surface-border">
+                <i class="pi pi-arrow-right text-primary mr-2 mt-1"></i>
+                <span>{{ improvement }}</span>
+            </li>
+            }
+            @if (result.improvements.length === 0) {
+            <li class="p-2">No specific improvements suggested.</li>
+            }
+        </ul>
+    </div>
+</div>

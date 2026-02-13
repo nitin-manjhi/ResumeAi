@@ -1,0 +1,582 @@
+<p-toast />
+
+<div class="card shadow-1 p-3 mb-4 surface-card">
+    <p-steps [model]="steps" [(activeIndex)]="activeStep" [readonly]="false" styleClass="p-2"></p-steps>
+</div>
+
+<div class="flex justify-content-end mb-4 px-3 sticky top-0 bg-white z-2 py-2 border-bottom-1 surface-border">
+    <div class="flex align-items-center gap-3">
+        @if (showPreview) {
+        <span class="text-sm font-medium text-secondary">Live Preview Active</span>
+        }
+        <p-button (onClick)="togglePreview()" [label]="showPreview ? 'Hide Preview' : 'Show Preview'"
+            [icon]="showPreview ? 'pi pi-eye-slash' : 'pi pi-eye'" [severity]="showPreview ? 'secondary' : 'primary'"
+            styleClass="p-button-outlined p-button-sm"></p-button>
+    </div>
+</div>
+
+<div class="grid mt-2">
+    <!-- Form Section -->
+    <div [class]="showPreview ? 'col-12 lg:col-6' : 'col-12 md:col-10 lg:col-8 md:col-offset-1 lg:col-offset-2'"
+        class="form-container">
+        <div class="card p-4 h-full border-none surface-ground">
+            <form [formGroup]="resumeForm">
+
+                <!-- Step 0: General Info -->
+                @if (activeStep === 0) {
+                <div formGroupName="generalInfo" class="fadein">
+                    <h2 class="mb-2 font-bold text-3xl">Professional Profile</h2>
+                    <p class="text-gray-600 mb-4 text-lg">Set the foundation with your contact information.</p>
+
+                    <div class="surface-card p-4 border-round-xl shadow-2 mb-4">
+                        <div class="grid p-fluid">
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label for="fullName" class="field-required">Full Name</label>
+                                <input pInputText id="fullName" formControlName="fullName"
+                                    placeholder="e.g. Example Name" />
+                                @if (generalInfo.get('fullName')?.invalid && generalInfo.get('fullName')?.touched) {
+                                <small class="text-red-500">Required</small>
+                                }
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label for="email" class="field-required">Email Address</label>
+                                <input pInputText id="email" formControlName="email"
+                                    placeholder="e.g. example@example.com" />
+                                @if (generalInfo.get('email')?.invalid && generalInfo.get('email')?.touched) {
+                                <small class="text-red-500">Valid email required</small>
+                                }
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label for="mobileNumber" class="field-required">Mobile Number</label>
+                                <input pInputText id="mobileNumber" formControlName="mobileNumber"
+                                    placeholder="e.g. +91 1234567890" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label for="linkedinUrl" class="field-required">LinkedIn Profile</label>
+                                <input pInputText id="linkedinUrl" formControlName="linkedinUrl"
+                                    placeholder="https://www.linkedin.com/..." />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label for="githubUrl">GitHub Profile (Optional)</label>
+                                <input pInputText id="githubUrl" formControlName="githubUrl"
+                                    placeholder="https://github.com/..." />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label for="portfolioUrl">Portfolio Website (Optional)</label>
+                                <input pInputText id="portfolioUrl" formControlName="portfolioUrl"
+                                    placeholder="https://portfolio.com/..." />
+                            </div>
+
+                            <div class="col-12 mt-3">
+                                <div class="flex align-items-center gap-2 p-3 surface-100 border-round">
+                                    <p-checkbox formControlName="addSummary" [binary]="true"
+                                        inputId="addSummary"></p-checkbox>
+                                    <label for="addSummary" class="m-0 cursor-pointer">Include a Professional
+                                        Summary</label>
+                                </div>
+                            </div>
+
+                            @if (generalInfo.get('addSummary')?.value) {
+                            <div class="col-12 field flex flex-column gap-2 mt-2">
+                                <label for="summary">Write a brief overview of your career goals and expertise</label>
+                                <textarea pInputTextarea id="summary" formControlName="summary" rows="5"
+                                    autoResize="true"
+                                    placeholder="e.g. Experienced Software Engineer with 5+ years of expertise in..."></textarea>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                }
+
+                <!-- Step 1: Education -->
+                @if (activeStep === 1) {
+                <div formArrayName="education" class="fadein">
+                    <h2 class="mb-2 font-bold text-3xl">Education</h2>
+                    <p class="text-gray-600 mb-4 text-lg">Add your academic background, starting with your highest
+                        degree.</p>
+
+                    @for (edu of education.controls; track edu; let i = $index) {
+                    <div [formGroupName]="i"
+                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-primary">
+                        <div class="grid p-fluid">
+                            <div class="col-12 flex justify-content-between align-items-center mb-3">
+                                <span class="font-bold text-xl text-primary">Academic Entry #{{i+1}}</span>
+                                @if (education.controls.length > 1) {
+                                <p-button icon="pi pi-trash" severity="danger" [text]="true"
+                                    (onClick)="removeEducation(i)"></p-button>
+                                }
+                            </div>
+                            <div class="col-12 field flex flex-column gap-2">
+                                <label class="field-required">Institute Name</label>
+                                <input pInputText formControlName="institute"
+                                    placeholder="e.g. University of Technology" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>Location</label>
+                                <input pInputText formControlName="location" placeholder="e.g. Delhi, India" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label class="field-required">Degree</label>
+                                <input pInputText formControlName="degree" placeholder="e.g. Bachelor of Technology" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>Field of Study</label>
+                                <input pInputText formControlName="fieldOfStudy" placeholder="e.g. Computer Science" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>Grade/CGPA</label>
+                                <input pInputText formControlName="grade" placeholder="e.g. 9.1 / 10" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>Start Date</label>
+                                <p-datepicker formControlName="startDate" view="month" dateFormat="mm/yy"
+                                    [showIcon]="true" placeholder="MM/YY" styleClass="w-full"></p-datepicker>
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>End Date</label>
+                                <p-datepicker formControlName="endDate" view="month" dateFormat="mm/yy"
+                                    [showIcon]="true" placeholder="MM/YY" [disabled]="edu.get('current')?.value"
+                                    styleClass="w-full"></p-datepicker>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="flex align-items-center gap-2">
+                                    <p-checkbox formControlName="current" [binary]="true"
+                                        inputId="current{{i}}"></p-checkbox>
+                                    <label for="current{{i}}" class="m-0">I am currently enrolled here</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    <p-button label="Add Educational Qualification" icon="pi pi-plus" (onClick)="addEducation()"
+                        styleClass="p-button-outlined w-full p-3 font-bold"></p-button>
+                </div>
+                }
+
+                <!-- Step 2: Skills -->
+                @if (activeStep === 2) {
+                <div formArrayName="skills" class="fadein">
+                    <h2 class="mb-2 font-bold text-3xl">Key Skills</h2>
+                    <p class="text-gray-600 mb-4 text-lg">Group your skills by category (e.g., Languages, Tools).</p>
+
+                    @for (skill of skills.controls; track skill; let i = $index) {
+                    <div [formGroupName]="i"
+                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-cyan-500">
+                        <div class="grid p-fluid">
+                            <div class="col-12 flex justify-content-between align-items-center mb-3">
+                                <span class="font-bold text-xl text-cyan-600">Skill Category #{{i+1}}</span>
+                                @if (skills.controls.length > 1) {
+                                <p-button icon="pi pi-trash" severity="danger" [text]="true"
+                                    (onClick)="removeSkill(i)"></p-button>
+                                }
+                            </div>
+                            <div class="col-12 md:col-4 field flex flex-column gap-2">
+                                <label>Category Name</label>
+                                <input pInputText formControlName="category" placeholder="e.g. Programming Languages" />
+                            </div>
+                            <div class="col-12 md:col-8 field flex flex-column gap-2">
+                                <label class="field-required">Skills (comma separated)</label>
+                                <input pInputText formControlName="skills"
+                                    placeholder="e.g. JavaScript, TypeScript, Python" />
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    <p-button label="Add New Skill Group" icon="pi pi-plus" (onClick)="addSkill()"
+                        styleClass="p-button-outlined w-full p-3 font-bold"></p-button>
+                </div>
+                }
+
+                <!-- Step 3: Work Experience -->
+                @if (activeStep === 3) {
+                <div formArrayName="workExperience" class="fadein">
+                    <h2 class="mb-2 font-bold text-3xl">Work History</h2>
+                    <p class="text-gray-600 mb-4 text-lg">Document your professional journey and achievements.</p>
+
+                    @for (work of workExperience.controls; track work; let i = $index) {
+                    <div [formGroupName]="i"
+                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-indigo-500">
+                        <div class="grid p-fluid">
+                            <div class="col-12 flex justify-content-between align-items-center mb-3">
+                                <span class="font-bold text-xl text-indigo-600">Work Experience #{{i+1}}</span>
+                                @if (workExperience.controls.length > 1) {
+                                <p-button icon="pi pi-trash" severity="danger" [text]="true"
+                                    (onClick)="removeWorkExperience(i)"></p-button>
+                                }
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label class="field-required">Job Title</label>
+                                <input pInputText formControlName="jobTitle"
+                                    placeholder="e.g. Senior Software Engineer" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label class="field-required">Company / Organization</label>
+                                <input pInputText formControlName="company" placeholder="e.g. Microsoft" />
+                            </div>
+                            <div class="col-12 field flex flex-column gap-2">
+                                <label>Work Location</label>
+                                <input pInputText formControlName="location" placeholder="e.g. Bangalore, India" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>Start Date</label>
+                                <p-datepicker formControlName="startDate" view="month" dateFormat="mm/yy"
+                                    [showIcon]="true" placeholder="MM/YY" styleClass="w-full"></p-datepicker>
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>End Date</label>
+                                <p-datepicker formControlName="endDate" view="month" dateFormat="mm/yy"
+                                    [showIcon]="true" placeholder="MM/YY" [disabled]="work.get('current')?.value"
+                                    styleClass="w-full"></p-datepicker>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <div class="flex align-items-center gap-2 mb-3">
+                                    <p-checkbox formControlName="current" [binary]="true"
+                                        inputId="workCurrent{{i}}"></p-checkbox>
+                                    <label for="workCurrent{{i}}" class="m-0">I currently work in this role</label>
+                                </div>
+                            </div>
+                            <div class="col-12 field flex flex-column gap-2">
+                                <label>Description & Achievements</label>
+                                <textarea pInputTextarea formControlName="description" rows="4" autoResize="true"
+                                    placeholder="Key responsibilities and bullet points of your achievements..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    <p-button label="Add Professional Experience" icon="pi pi-plus" (onClick)="addWorkExperience()"
+                        styleClass="p-button-outlined w-full p-3 font-bold"></p-button>
+                </div>
+                }
+
+                <!-- Step 4: Projects -->
+                @if (activeStep === 4) {
+                <div formArrayName="projects" class="fadein">
+                    <h2 class="mb-2 font-bold text-3xl">Portfolio Projects</h2>
+                    <p class="text-gray-600 mb-4 text-lg">Highlight your technical projects and innovative solutions.
+                    </p>
+
+                    @for (prof of projects.controls; track prof; let i = $index) {
+                    <div [formGroupName]="i"
+                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-orange-500">
+                        <div class="grid p-fluid">
+                            <div class="col-12 flex justify-content-between align-items-center mb-3">
+                                <span class="font-bold text-xl text-orange-600">Project Detail #{{i+1}}</span>
+                                @if (projects.controls.length > 1) {
+                                <p-button icon="pi pi-trash" severity="danger" [text]="true"
+                                    (onClick)="removeProject(i)"></p-button>
+                                }
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label class="field-required">Project Title</label>
+                                <input pInputText formControlName="title"
+                                    placeholder="e.g. AI-Powered Resume Analyzer" />
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>Technologies Used</label>
+                                <input pInputText formControlName="technologies"
+                                    placeholder="e.g. Angular, Node.js, Gemini API" />
+                            </div>
+                            <div class="col-12 field flex flex-column gap-2">
+                                <label>Project URL / GitHub Link</label>
+                                <input pInputText formControlName="link"
+                                    placeholder="e.g. https://github.com/nitin/project-repo" />
+                            </div>
+                            <div class="col-12 field flex flex-column gap-2">
+                                <label>Project Description</label>
+                                <textarea pInputTextarea formControlName="description" rows="4" autoResize="true"
+                                    placeholder="Explain the project scope, your role, and the impact..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    <p-button label="Add New Project" icon="pi pi-plus" (onClick)="addProject()"
+                        styleClass="p-button-outlined w-full p-3 font-bold"></p-button>
+                </div>
+                }
+
+                <!-- Step 5: Other -->
+                @if (activeStep === 5) {
+                <div formArrayName="other" class="fadein">
+                    <h2 class="mb-2 font-bold text-3xl">Awards & Certifications</h2>
+                    <p class="text-gray-600 mb-4 text-lg">Include other noteworthy achievements that make you stand out.
+                    </p>
+
+                    @for (item of other.controls; track item; let i = $index) {
+                    <div [formGroupName]="i"
+                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-teal-500">
+                        <div class="grid p-fluid">
+                            <div class="col-12 flex justify-content-between align-items-center mb-3">
+                                <span class="font-bold text-xl text-teal-600">Additional Highlight #{{i+1}}</span>
+                                @if (other.controls.length > 1) {
+                                <p-button icon="pi pi-trash" severity="danger" [text]="true"
+                                    (onClick)="removeOther(i)"></p-button>
+                                }
+                            </div>
+                            <div class="col-12 field flex flex-column gap-2">
+                                <label>Title / Recognition</label>
+                                <input pInputText formControlName="title"
+                                    placeholder="e.g. AWS Certified Developer Associate" />
+                            </div>
+                            <div class="col-12 field flex flex-column gap-2">
+                                <label>Issuer / Details</label>
+                                <textarea pInputTextarea formControlName="description" rows="2" autoResize="true"
+                                    placeholder="e.g. Issued by Amazon Web Services in June 2023"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    <p-button label="Add Certification/Award" icon="pi pi-plus" (onClick)="addOther()"
+                        styleClass="p-button-outlined w-full p-3 font-bold"></p-button>
+                </div>
+                }
+
+                <!-- Step 6: Layout Settings -->
+                @if (activeStep === 6) {
+                <div class="fadein">
+                    <h2 class="mb-2 font-bold text-3xl">Layout Settings</h2>
+                    <p class="text-gray-600 mb-4 text-lg">Fine-tune the appearance and structure of your resume.</p>
+
+                    <!-- Density Selection -->
+                    <div class="surface-card p-4 border-round-xl shadow-2 mb-4">
+                        <h3 class="mt-0 mb-2 font-bold">Layout Density</h3>
+                        <p class="text-sm text-gray-500 mb-4">Adjust spacing and sizing to fit your content perfectly.
+                        </p>
+
+                        <div class="grid">
+                            <div class="col-12 md:col-4">
+                                <div class="density-card p-4 border-round-xl text-center"
+                                    [class.active]="density === 'compact'" (click)="setDensity('compact')">
+                                    <i class="pi pi-align-justify text-3xl mb-3"></i>
+                                    <div class="font-bold">Compact</div>
+                                    <small class="text-gray-600 text-xs">High density, small fonts</small>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-4">
+                                <div class="density-card p-4 border-round-xl text-center"
+                                    [class.active]="density === 'normal'" (click)="setDensity('normal')">
+                                    <i class="pi pi-bars text-3xl mb-3"></i>
+                                    <div class="font-bold">Normal</div>
+                                    <small class="text-gray-600 text-xs">Standard professional look</small>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-4">
+                                <div class="density-card p-4 border-round-xl text-center"
+                                    [class.active]="density === 'spacious'" (click)="setDensity('spacious')">
+                                    <i class="pi pi-list text-3xl mb-3"></i>
+                                    <div class="font-bold">Spacious</div>
+                                    <small class="text-gray-600 text-xs">More whitespace, larger fonts</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section Reordering -->
+                    <div class="surface-card p-4 border-round-xl shadow-2">
+                        <h3 class="mt-0 mb-2 font-bold">Section Order</h3>
+                        <p class="text-sm text-gray-500 mb-4">Drag and drop to rearrange the sections of your resume.
+                        </p>
+
+                        <div cdkDropList class="drag-list" (cdkDropListDropped)="onDrop($event)">
+                            @for (section of sectionOrder; track section.id) {
+                            <div class="drag-item shadow-1" cdkDrag>
+                                <div class="flex align-items-center gap-3">
+                                    <div
+                                        [class]="section.color + ' w-3rem h-3rem border-round flex align-items-center justify-content-center'">
+                                        <i [class]="section.icon + ' text-white text-xl'"></i>
+                                    </div>
+                                    <span class="font-bold text-xl">{{section.label}}</span>
+                                </div>
+                                <i class="pi pi-bars drag-handle text-2xl"></i>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                }
+
+                <!-- Footer Navigation -->
+                <div class="flex justify-content-between align-items-center mt-6 p-4 border-top-1 surface-border">
+                    @if (activeStep > 0) {
+                    <p-button label="Previous Step" (onClick)="prev()" icon="pi pi-chevron-left" severity="secondary"
+                        styleClass="p-button-text font-bold"></p-button>
+                    }
+
+                    @if (activeStep === 0) {
+                    <div></div> <!-- Spacer -->
+                    }
+
+                    <div class="flex gap-3">
+                        @if (!isLastStep()) {
+                        <p-button label="Continue" (onClick)="next()" icon="pi pi-chevron-right" iconPos="right"
+                            styleClass="p-4 font-bold p-button-raised"></p-button>
+                        }
+
+                        @if (isLastStep()) {
+                        <p-button label="Complete & Finish" icon="pi pi-check-circle" severity="success"
+                            (onClick)="downloadPDF()" styleClass="p-4 font-bold shadow-4"></p-button>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Preview Section -->
+    @if (showPreview) {
+    <div class="col-12 lg:col-6 fadein" style="position: sticky; top: 1rem; align-self: flex-start;">
+        <div class="flex justify-content-end mb-2">
+            <p-button label="Download PDF" icon="pi pi-file-pdf" severity="danger" (onClick)="downloadPDF()"
+                styleClass="p-button-sm"></p-button>
+        </div>
+        <div id="resumePreview" class="card p-5 shadow-8 border-round-none bg-white resume-preview-container"
+            [class.density-compact]="density === 'compact'" [class.density-spacious]="density === 'spacious'"
+            style="min-height: 297mm; width: 210mm; margin: 0 auto; box-sizing: border-box;">
+
+            <!-- Centered Header -->
+            <div class="text-center mb-4">
+                <h1 class="bold uppercase m-0">{{ generalInfo.get('fullName')?.value || 'FULL NAME' }}</h1>
+                <div class="flex justify-content-center flex-wrap gap-2 text-sm-resume mt-1">
+                    @if (generalInfo.get('email')?.value) {
+                    <span>{{ generalInfo.get('email')?.value }}</span>
+                    }
+                    @if (generalInfo.get('email')?.value && generalInfo.get('mobileNumber')?.value) {
+                    <span>|</span>
+                    }
+                    @if (generalInfo.get('mobileNumber')?.value) {
+                    <span>{{ generalInfo.get('mobileNumber')?.value }}</span>
+                    }
+                    @if (generalInfo.get('mobileNumber')?.value && generalInfo.get('linkedinUrl')?.value) {
+                    <span>|</span>
+                    }
+                    @if (generalInfo.get('linkedinUrl')?.value) {
+                    <span>LinkedIn Profile</span>
+                    }
+                </div>
+                <div class="flex justify-content-center flex-wrap gap-2 text-xs-resume mt-1">
+                    @if (generalInfo.get('githubUrl')?.value) {
+                    <span>{{ generalInfo.get('githubUrl')?.value }}</span>
+                    }
+                    @if (generalInfo.get('githubUrl')?.value && generalInfo.get('portfolioUrl')?.value) {
+                    <span>|</span>
+                    }
+                    @if (generalInfo.get('portfolioUrl')?.value) {
+                    <span>Portfolio</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Dynamic Section Order Rendering -->
+            @for (section of sectionOrder; track section.id) {
+
+            <!-- Education -->
+            @if (section.id === 'education' && education.length > 0 && education.controls[0].get('institute')?.value) {
+            <div class="resume-section">
+                <h2>Education</h2>
+                @for (edu of education.controls; track edu) {
+                <div class="resume-item">
+                    <div class="flex-row">
+                        <span class="bold">{{ edu.get('institute')?.value }}</span>
+                        <span class="bold">{{ edu.get('location')?.value }}</span>
+                    </div>
+                    <div class="flex-row">
+                        <span class="italic">{{ edu.get('degree')?.value }} @if (edu.get('fieldOfStudy')?.value) {
+                            <span>in {{ edu.get('fieldOfStudy')?.value }}</span> }</span>
+                        <span>{{ edu.get('startDate')?.value | date: 'MMM yyyy' }} — {{ edu.get('current')?.value ?
+                            'Present' : (edu.get('endDate')?.value | date: 'MMM yyyy') }}</span>
+                    </div>
+                    @if (edu.get('grade')?.value) {
+                    <div class="text-sm-resume mt-1">GPA: {{ edu.get('grade')?.value }}</div>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Skills -->
+            @if (section.id === 'skills' && skills.length > 0 && skills.controls[0].get('skills')?.value) {
+            <div class="resume-section">
+                <h2>Skills</h2>
+                @for (skill of skills.controls; track skill) {
+                <div class="text-sm-resume mb-1">
+                    @if (skill.get('category')?.value) {
+                    <span class="bold">{{ skill.get('category')?.value }}: </span>
+                    }
+                    <span>{{ skill.get('skills')?.value }}</span>
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Experience -->
+            @if (section.id === 'workExperience' && workExperience.length > 0 &&
+            workExperience.controls[0].get('jobTitle')?.value) {
+            <div class="resume-section">
+                <h2>Experience</h2>
+                @for (work of workExperience.controls; track work) {
+                <div class="resume-item">
+                    <div class="flex-row">
+                        <span class="bold">{{ work.get('jobTitle')?.value }}</span>
+                        <span class="bold">{{ work.get('startDate')?.value | date: 'MMM yyyy' }} — {{
+                            work.get('current')?.value ? 'Present' : (work.get('endDate')?.value | date: 'MMM yyyy')
+                            }}</span>
+                    </div>
+                    <div class="flex-row mb-1">
+                        <span class="bold italic">{{ work.get('company')?.value }}</span>
+                        <span class="italic">{{ work.get('location')?.value }}</span>
+                    </div>
+                    @if (work.get('description')?.value) {
+                    <ul>
+                        @for (point of work.get('description')?.value.split('\n'); track point) {
+                        <li>{{ point }}</li>
+                        }
+                    </ul>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Projects -->
+            @if (section.id === 'projects' && projects.length > 0 && projects.controls[0].get('title')?.value) {
+            <div class="resume-section">
+                <h2>Projects</h2>
+                @for (proj of projects.controls; track proj) {
+                <div class="resume-item">
+                    <div class="flex-row">
+                        <span class="bold">{{ proj.get('title')?.value }}</span>
+                        @if (proj.get('technologies')?.value) {
+                        <span class="italic text-sm-resume">{{ proj.get('technologies')?.value }}</span>
+                        }
+                    </div>
+                    @if (proj.get('description')?.value) {
+                    <ul>
+                        @for (point of proj.get('description')?.value.split('\n'); track point) {
+                        <li>{{ point }}</li>
+                        }
+                    </ul>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Awards/Other -->
+            @if (section.id === 'other' && other.length > 0 && other.controls[0].get('title')?.value) {
+            <div class="resume-section">
+                <h2>Activities & Leadership</h2>
+                @for (item of other.controls; track item) {
+                <div class="resume-item">
+                    <div class="bold">{{ item.get('title')?.value }}</div>
+                    @if (item.get('description')?.value) {
+                    <div class="text-sm-resume italic">{{ item.get('description')?.value }}</div>
+                    }
+                </div>
+                }
+            </div>
+            }
+            }
+        </div>
+    </div>
+    }
+</div>

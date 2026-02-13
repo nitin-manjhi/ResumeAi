@@ -1,0 +1,77 @@
+<p-toast />
+
+<div class="signup-container flex align-items-center justify-content-center min-h-screen p-4">
+    <div class="signup-box w-full max-w-30rem">
+        <div class="text-center mb-5">
+            <div class="flex align-items-center justify-content-center mb-4">
+                <div
+                    class="logo-box bg-primary border-round-xl w-4rem h-4rem flex align-items-center justify-content-center shadow-4">
+                    <i class="pi pi-sparkles text-white text-3xl"></i>
+                </div>
+            </div>
+            <h1 class="text-white text-3xl font-bold mb-2">Create Account</h1>
+            <p class="text-blue-100 font-medium">Join ResumeAi and build your future</p>
+        </div>
+
+        <p-card styleClass="p-0 overflow-hidden shadow-8 border-round-2xl surface-card">
+            <div class="p-5">
+                <form [formGroup]="signupForm" (ngSubmit)="onSignup()">
+                    <div class="flex flex-column gap-3">
+                        <div class="field m-0 p-fluid">
+                            <label for="username" class="block font-bold mb-2 text-900">Username</label>
+                            <input id="username" type="text" pInputText formControlName="username"
+                                placeholder="Choose a username"
+                                [class.p-invalid]="signupForm.get('username')?.invalid && signupForm.get('username')?.touched" />
+                            @if (signupForm.get('username')?.invalid && signupForm.get('username')?.touched) {
+                            <small class="text-red-500 mt-1 block">Username is required (min 3 chars)</small>
+                            }
+                        </div>
+
+                        <div class="field m-0 p-fluid">
+                            <label for="email" class="block font-bold mb-2 text-900">Email Address</label>
+                            <input id="email" type="email" pInputText formControlName="email"
+                                placeholder="Enter your email"
+                                [class.p-invalid]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched" />
+                            @if (signupForm.get('email')?.invalid && signupForm.get('email')?.touched) {
+                            <small class="text-red-500 mt-1 block">Valid email is required</small>
+                            }
+                        </div>
+
+                        <div class="field m-0 p-fluid">
+                            <label for="password" class="block font-bold mb-2 text-900">Password</label>
+                            <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="true"
+                                placeholder="Create a password" styleClass="w-full"
+                                [inputStyleClass]="(signupForm.get('password')?.invalid && signupForm.get('password')?.touched) ? 'p-invalid w-full' : 'w-full'"></p-password>
+                            @if (signupForm.get('password')?.invalid && signupForm.get('password')?.touched) {
+                            <small class="text-red-500 mt-1 block">Password is required (min 6 chars)</small>
+                            }
+                        </div>
+
+                        <div class="field m-0 p-fluid">
+                            <label for="confirmPassword" class="block font-bold mb-2 text-900">Confirm Password</label>
+                            <p-password id="confirmPassword" formControlName="confirmPassword" [toggleMask]="true"
+                                [feedback]="false" placeholder="Repeat your password" styleClass="w-full"
+                                [inputStyleClass]="(signupForm.get('confirmPassword')?.invalid && signupForm.get('confirmPassword')?.touched) ? 'p-invalid w-full' : 'w-full'"></p-password>
+                            @if (signupForm.hasError('mismatch') && signupForm.get('confirmPassword')?.touched) {
+                            <small class="text-red-500 mt-1 block">Passwords do not match</small>
+                            }
+                        </div>
+
+                        <p-button label="Create Account" icon="pi pi-user-plus" iconPos="right" [loading]="loading()"
+                            type="submit" styleClass="w-full p-3 font-bold mt-2"></p-button>
+                    </div>
+                </form>
+
+                <div class="mt-5 text-center">
+                    <span class="text-600">Already have an account? </span>
+                    <a routerLink="/login"
+                        class="text-primary font-bold no-underline hover:underline cursor-pointer">Sign in</a>
+                </div>
+            </div>
+        </p-card>
+
+        <p class="text-blue-200 text-center mt-6 text-sm">
+            By signing up, you agree to our Terms and Conditions
+        </p>
+    </div>
+</div>
