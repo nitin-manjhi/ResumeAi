@@ -8,20 +8,24 @@
   }
 
   @if (!analysisResult()) {
-  <div class="card flex flex-column align-items-center justify-content-center mt-4 gap-2">
-    <label class="font-semibold" for="jobDescription">Job Description</label>
-    <textarea rows="8" cols="30" pInputTextarea [ngModel]="jobDescription()"
-      (ngModelChange)="jobDescription.set($event)" maxlength="2000" class="w-full md:w-30rem"
-      style="overflow-y: auto; height: 12rem;" placeholder="Paste job description here (Max 2000 chars)"></textarea>
-  </div>
+  <div class="flex flex-column align-items-center mt-4 gap-4 px-4">
+    <!-- Job Description Section (80% Width) -->
+    <div class="w-full md:w-10 flex flex-column gap-2" style="max-width: 1200px;">
+      <label class="font-semibold text-xl" for="jobDescription">Job Description</label>
+      <textarea rows="12" pInputTextarea [ngModel]="jobDescription()" (ngModelChange)="jobDescription.set($event)"
+        maxlength="2000" class="w-full" style="overflow-y: auto; height: 18rem;"
+        placeholder="Paste job description here (Max 2000 chars)"></textarea>
+    </div>
 
-  <div class="card flex flex-column align-items-center justify-content-center mt-4 gap-2">
-    <label class="font-semibold">Upload Resume</label>
-    <div class="flex gap-6 align-items-center">
-      <p-fileupload #fu mode="basic" chooseLabel="Choose" chooseIcon="pi pi-upload" name="demo[]"
-        accept=".pdf,.doc,.docx" maxFileSize="1000000" />
-      <p-button label="Upload" (onClick)="onUpload(fu)" severity="secondary"
-        [disabled]="!jobDescription() || !jobDescription().trim()" />
+    <!-- Upload Resume Section -->
+    <div class="w-full flex flex-column align-items-center gap-3 mt-4">
+      <label class="font-semibold text-xl">Upload Resume</label>
+      <div class="flex gap-4 align-items-center flex-wrap justify-content-center">
+        <p-fileupload #fu mode="basic" chooseLabel="Choose File" chooseIcon="pi pi-upload" name="demo[]"
+          accept=".pdf,.doc,.docx" maxFileSize="1000000" />
+        <p-button label="Analyze Resume" (onClick)="onUpload(fu)" severity="secondary" icon="pi pi-bolt"
+          [disabled]="!jobDescription() || !jobDescription().trim()" />
+      </div>
     </div>
   </div>
   } @else {

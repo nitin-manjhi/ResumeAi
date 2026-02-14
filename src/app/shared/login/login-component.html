@@ -20,7 +20,7 @@
                         <div class="field m-0 p-fluid">
                             <label for="username" class="block font-bold mb-2 text-900">Username or Email</label>
                             <input id="username" type="text" pInputText formControlName="username"
-                                placeholder="Enter your email"
+                                placeholder="Enter your email" class="w-full"
                                 [class.p-invalid]="loginForm.get('username')?.invalid && loginForm.get('username')?.touched" />
                             @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
                             <small class="text-red-500 mt-1 block">Username is required</small>

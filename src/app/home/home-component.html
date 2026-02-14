@@ -1,2 +1,142 @@
-<p>home works!</p>
-<p-button label="Check"></p-button>
+<div class="min-h-screen surface-ground">
+    <!-- HERO SECTION -->
+    <section
+        class="flex flex-column align-items-center justify-content-center py-8 px-4 text-center border-none shadow-4"
+        style="background: linear-gradient(135deg, #4f46e5 0%, #1e1b4b 100%); min-height: 70vh; margin-top: -1rem; border-radius: 0 0 2rem 2rem;">
+        <h1 class="text-white text-4xl md:text-7xl font-bold mb-4 line-height-2"
+            style="text-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+            AI-Powered Resume Analysis <br class="hidden md:block"> & Smart Generation
+        </h1>
+
+        <p class="text-0 text-xl md:text-2xl max-w-40rem mx-auto mb-8 line-height-3 opacity-90 font-medium">
+            Match your resume to any job, generate ATS-ready resumes, cover letters,
+            and professional recruiter emails in seconds.
+        </p>
+
+        <div class="flex flex-column sm:flex-row gap-4 justify-center mt-4">
+            <p-button label="Start ATS Analysis" icon="pi pi-bolt" routerLink="/analyse-resume"
+                styleClass="p-button-lg p-button-success shadow-6 border-round-xl px-6 py-4 font-bold text-xl h-4rem"></p-button>
+
+            <p-button label="Build New Resume" icon="pi pi-file-edit" severity="secondary" routerLink="/generate-resume"
+                styleClass="p-button-lg p-button-info shadow-6 border-round-xl px-6 py-4 font-bold text-xl h-4rem"></p-button>
+        </div>
+    </section>
+
+    <!-- WORKFLOW SECTION -->
+    <section class="py-8 px-4 md:px-8">
+        <div class="text-center mb-6">
+            <h2 class="text-900 text-3xl font-bold mb-2">How It Works</h2>
+            <div class="h-1px w-4rem bg-primary mx-auto"></div>
+        </div>
+
+        <div class="grid max-w-7xl mx-auto">
+            <div class="col-12 md:col-4 p-3 line-height-3">
+                <p-card styleClass="h-full shadow-2 hover:shadow-4 transition-all transition-duration-300">
+                    <div
+                        class="flex align-items-center justify-content-center bg-blue-100 border-round-circle w-4rem h-4rem mb-4">
+                        <i class="pi pi-upload text-blue-700 text-2xl"></i>
+                    </div>
+                    <div class="text-xl font-bold mb-2 text-900">1. Upload Resume</div>
+                    <p class="text-600 m-0">Securely upload your existing resume in PDF or DOCX format for our AI to
+                        scan.</p>
+                </p-card>
+            </div>
+
+            <div class="col-12 md:col-4 p-3">
+                <p-card styleClass="h-full shadow-2 hover:shadow-4 transition-all transition-duration-300">
+                    <div
+                        class="flex align-items-center justify-content-center bg-orange-100 border-round-circle w-4rem h-4rem mb-4">
+                        <i class="pi pi-copy text-orange-700 text-2xl"></i>
+                    </div>
+                    <div class="text-xl font-bold mb-2 text-900">2. Add Job Context</div>
+                    <p class="text-600 m-0">Paste the job description you're targeting to analyze skill gaps and
+                        compatibility.</p>
+                </p-card>
+            </div>
+
+            <div class="col-12 md:col-4 p-3">
+                <p-card styleClass="h-full shadow-2 hover:shadow-4 transition-all transition-duration-300">
+                    <div
+                        class="flex align-items-center justify-content-center bg-green-100 border-round-circle w-4rem h-4rem mb-4">
+                        <i class="pi pi-download text-green-700 text-2xl"></i>
+                    </div>
+                    <div class="text-xl font-bold mb-2 text-900">3. Get Optimized docs</div>
+                    <p class="text-600 m-0">Receive a detailed ATS score, an optimized resume, and a custom cover letter
+                        instantly.</p>
+                </p-card>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES GRID -->
+    <section class="py-8 px-4 md:px-8 surface-card">
+        <div class="text-center mb-6">
+            <h2 class="text-900 text-3xl font-bold mb-2">Advance Features</h2>
+            <div class="h-1px w-4rem bg-primary mx-auto"></div>
+        </div>
+
+        <div class="grid max-w-7xl mx-auto">
+            <div class="col-12 md:col-6 lg:col-3 p-3">
+                <div
+                    class="p-4 border-round-xl surface-100 h-full border-1 border-transparent hover:border-primary transition-all transition-duration-300">
+                    <i class="pi pi-check-circle text-primary text-2xl mb-3"></i>
+                    <h3 class="text-xl font-bold mb-2 text-900">ATS Score Matching</h3>
+                    <p class="text-600 line-height-3 m-0">Get a percentage score reflecting how well your resume matches
+                        the job requirements.</p>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 lg:col-3 p-3">
+                <div
+                    class="p-4 border-round-xl surface-100 h-full border-1 border-transparent hover:border-primary transition-all transition-duration-300">
+                    <i class="pi pi-file-edit text-primary text-2xl mb-3"></i>
+                    <h3 class="text-xl font-bold mb-2 text-900">AI Resume Generator</h3>
+                    <p class="text-600 line-height-3 m-0">Build high-quality, professional resumes using smart templates
+                        that beat ATS filters.</p>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 lg:col-3 p-3">
+                <div
+                    class="p-4 border-round-xl surface-100 h-full border-1 border-transparent hover:border-primary transition-all transition-duration-300">
+                    <i class="pi pi-envelope text-primary text-2xl mb-3"></i>
+                    <h3 class="text-xl font-bold mb-2 text-900">Cover Letter & Email</h3>
+                    <p class="text-600 line-height-3 m-0">Generate personalized emails and cover letters that grab
+                        recruiter attention.</p>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 lg:col-3 p-3">
+                <div
+                    class="p-4 border-round-xl surface-100 h-full border-1 border-transparent hover:border-primary transition-all transition-duration-300">
+                    <i class="pi pi-file-pdf text-primary text-2xl mb-3"></i>
+                    <h3 class="text-xl font-bold mb-2 text-900">Export Anywhere</h3>
+                    <p class="text-600 line-height-3 m-0">Download your documents in clean, professional PDF formats
+                        ready for submission.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VALUE PROPOSITION -->
+    <section class="py-8 px-4 surface-section">
+        <div
+            class="max-w-5xl mx-auto text-center surface-card p-6 md:p-8 border-round-3xl shadow-4 border-left-4 border-primary">
+            <h2 class="text-4xl font-bold mb-4 text-900 italic">"Tailoring resumes is slow... AI makes it instant."</h2>
+            <p class="text-600 text-xl font-medium line-height-4 max-w-40rem mx-auto m-0">
+                CareerAlign Intelligence automates the repetitive parts of applying for jobs.
+                Focus on the interview, let us handle the documents.
+            </p>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="py-8 px-4 mb-4">
+        <div class="max-w-7xl mx-auto border-round-3xl bg-primary-900 p-6 md:p-8 text-center text-white shadow-8"
+            style="background: linear-gradient(135deg, #1a237e 0%, var(--primary-color) 100%);">
+            <h2 class="text-4xl font-bold mb-3">Ready to Land Your Dream Job?</h2>
+            <p class="text-blue-100 text-xl mb-6 opacity-80">Stop guessing and start applying with optimized documents.
+            </p>
+
+            <p-button label="Analyze My Resume Now" icon="pi pi-bolt" routerLink="/analyse-resume"
+                styleClass="p-button-lg p-button-success shadow-4 px-6 py-4 border-round-xl font-bold"></p-button>
+        </div>
+    </section>
+</div>
