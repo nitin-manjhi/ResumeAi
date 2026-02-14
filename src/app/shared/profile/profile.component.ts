@@ -7,7 +7,10 @@ import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
 import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
+import { AdminService } from '../../service/admin.service';
+import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
     selector: 'app-profile',
@@ -19,16 +22,22 @@ import { ToastModule } from 'primeng/toast';
         ButtonModule,
         DividerModule,
         TagModule,
-        ToastModule
+        DialogModule,
+        FormsModule,
+        TextareaModule
     ],
-    providers: [MessageService],
     templateUrl: './profile.component.html',
     styleUrl: './profile.component.scss'
 })
 export class ProfileComponent implements OnInit {
     authService = inject(AuthService);
+    private adminService = inject(AdminService);
     private messageService = inject(MessageService);
     user = this.authService.currentUser;
+
+    showUpgradeDialog = false;
+    upgradeReason = '';
+    submitting = false;
 
     ngOnInit() {
         // Fetch latest profile data when entering profile page
@@ -36,11 +45,31 @@ export class ProfileComponent implements OnInit {
     }
 
     upgradePlan() {
-        this.messageService.add({
-            severity: 'info',
-            summary: 'Coming Soon',
-            detail: 'Premium plans and payment integration are currently being developed. You will be notified once they are available!',
-            life: 5000
+        this.showUpgradeDialog = true;
+    }
+
+    submitUpgradeRequest() {
+        if (!this.upgradeReason.trim()) return;
+
+        this.submitting = true;
+        this.adminService.createUpgradeRequest(this.upgradeReason).subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Request Sent',
+                    detail: 'Your upgrade request has been sent to the admin. You will be notified once it is processed.',
+                });
+                this.showUpgradeDialog = false;
+                this.upgradeReason = '';
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Failed to send upgrade request. Please try again.',
+                });
+            },
+            complete: () => this.submitting = false
         });
     }
 

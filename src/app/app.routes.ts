@@ -20,6 +20,7 @@ export const routes: Routes = [
   { path: 'send-mail', component: SendMailComponent, canActivate: [authGuard] },
   { path: 'logout', component: LogOutComponent },
   { path: 'generate-resume', component: GenerateResumeComponent, canActivate: [authGuard] },
+  { path: 'admin', loadComponent: () => import('./admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent), canActivate: [authGuard] },
   { path: 'review-cover-letter', loadComponent: () => import('./review-cover-letter/review-cover-letter-component').then(m => m.ReviewCoverLetterComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

@@ -1,0 +1,26 @@
+.customer-badge {
+    border-radius: 2px;
+    padding: .25em .5rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: .3px;
+
+    &.status-qualified {
+        background: #C8E6C9;
+        color: #256029;
+    }
+
+    &.status-new {
+        background: #feedaf;
+        color: #8a5340;
+    }
+}
+
+:host ::v-deep {
+    .p-datatable {
+        .p-datatable-header {
+            background: #f8f9fa;
+        }
+    }
+}
