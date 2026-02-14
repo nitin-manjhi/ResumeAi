@@ -107,26 +107,70 @@
                                     (onClick)="removeEducation(i)"></p-button>
                                 }
                             </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>State</label>
+                                <p-select [options]="states" formControlName="state"
+                                    (onChange)="onEducationStateChange(i)" placeholder="Select State" [filter]="true"
+                                    styleClass="w-full"></p-select>
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>City</label>
+                                <p-select [options]="educationCities[i]" formControlName="city"
+                                    (onChange)="onEducationCityChange(i)" placeholder="Select City" [filter]="true"
+                                    styleClass="w-full"></p-select>
+                            </div>
+
+                            @if (edu.get('city')?.value === 'Other') {
+                            <div class="col-12 field flex flex-column gap-2 fadein">
+                                <label class="field-required">Enter City Name</label>
+                                <input pInputText formControlName="otherCity" (input)="onEducationOtherCityChange(i)"
+                                    placeholder="e.g. My Custom City" />
+                            </div>
+                            }
                             <div class="col-12 field flex flex-column gap-2">
                                 <label class="field-required">Institute Name</label>
-                                <input pInputText formControlName="institute"
-                                    placeholder="e.g. University of Technology" />
+                                <p-select [options]="educationColleges[i]" formControlName="institute"
+                                    (onChange)="onEducationInstituteChange(i)" placeholder="Select Institute"
+                                    [filter]="true" styleClass="w-full"></p-select>
                             </div>
-                            <div class="col-12 md:col-6 field flex flex-column gap-2">
-                                <label>Location</label>
-                                <input pInputText formControlName="location" placeholder="e.g. Delhi, India" />
+
+                            @if (edu.get('institute')?.value === 'Other') {
+                            <div class="col-12 field flex flex-column gap-2 fadein">
+                                <label class="field-required">Enter Institute Name</label>
+                                <input pInputText formControlName="otherInstitute"
+                                    placeholder="e.g. My Custom College" />
                             </div>
+                            }
+
                             <div class="col-12 md:col-6 field flex flex-column gap-2">
                                 <label class="field-required">Degree</label>
-                                <input pInputText formControlName="degree" placeholder="e.g. Bachelor of Technology" />
+                                <p-select [options]="degrees" formControlName="degree" placeholder="Select Degree"
+                                    [filter]="true" styleClass="w-full"></p-select>
                             </div>
                             <div class="col-12 md:col-6 field flex flex-column gap-2">
                                 <label>Field of Study</label>
                                 <input pInputText formControlName="fieldOfStudy" placeholder="e.g. Computer Science" />
                             </div>
                             <div class="col-12 md:col-6 field flex flex-column gap-2">
-                                <label>Grade/CGPA</label>
-                                <input pInputText formControlName="grade" placeholder="e.g. 9.1 / 10" />
+                                <label>Score Type</label>
+                                <div class="flex gap-4 p-2 surface-100 border-round">
+                                    <div class="flex align-items-center gap-2">
+                                        <p-radioButton formControlName="gradeType" value="CGPA" inputId="cgpa{{i}}"
+                                            (onClick)="onGradeTypeChange(i)"></p-radioButton>
+                                        <label for="cgpa{{i}}" class="m-0 cursor-pointer">CGPA</label>
+                                    </div>
+                                    <div class="flex align-items-center gap-2">
+                                        <p-radioButton formControlName="gradeType" value="Percentage"
+                                            inputId="percent{{i}}" (onClick)="onGradeTypeChange(i)"></p-radioButton>
+                                        <label for="percent{{i}}" class="m-0 cursor-pointer">Percentage</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>{{ edu.get('gradeType')?.value === 'CGPA' ? 'Grade/CGPA' : 'Percentage'
+                                    }}</label>
+                                <input pInputText formControlName="grade"
+                                    [placeholder]="edu.get('gradeType')?.value === 'CGPA' ? 'e.g. 9.1 / 10' : 'e.g. 85%'" />
                             </div>
                             <div class="col-12 md:col-6 field flex flex-column gap-2">
                                 <label>Start Date</label>
@@ -156,35 +200,65 @@
 
                 <!-- Step 2: Skills -->
                 @if (activeStep === 2) {
-                <div formArrayName="skills" class="fadein">
+                <div formGroupName="skills" class="fadein">
                     <h2 class="mb-2 font-bold text-3xl">Key Skills</h2>
-                    <p class="text-gray-600 mb-4 text-lg">Group your skills by category (e.g., Languages, Tools).</p>
+                    <p class="text-gray-600 mb-4 text-lg">Choose a layout and list your technical expertise.</p>
 
-                    @for (skill of skills.controls; track skill; let i = $index) {
-                    <div [formGroupName]="i"
-                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-cyan-500">
-                        <div class="grid p-fluid">
-                            <div class="col-12 flex justify-content-between align-items-center mb-3">
-                                <span class="font-bold text-xl text-cyan-600">Skill Category #{{i+1}}</span>
-                                @if (skills.controls.length > 1) {
-                                <p-button icon="pi pi-trash" severity="danger" [text]="true"
-                                    (onClick)="removeSkill(i)"></p-button>
-                                }
+                    <div class="surface-card p-3 border-round-xl mb-4 bg-primary-50 border-primary-100 border-1">
+                        <div class="flex gap-4 justify-content-center">
+                            <div class="flex align-items-center gap-2">
+                                <p-radioButton formControlName="layout" value="categorized"
+                                    inputId="layoutCat"></p-radioButton>
+                                <label for="layoutCat" class="m-0 font-bold cursor-pointer">Categorized Grouping</label>
                             </div>
-                            <div class="col-12 md:col-4 field flex flex-column gap-2">
-                                <label>Category Name</label>
-                                <input pInputText formControlName="category" placeholder="e.g. Programming Languages" />
-                            </div>
-                            <div class="col-12 md:col-8 field flex flex-column gap-2">
-                                <label class="field-required">Skills (comma separated)</label>
-                                <input pInputText formControlName="skills"
-                                    placeholder="e.g. JavaScript, TypeScript, Python" />
+                            <div class="flex align-items-center gap-2">
+                                <p-radioButton formControlName="layout" value="bullets"
+                                    inputId="layoutBul"></p-radioButton>
+                                <label for="layoutBul" class="m-0 font-bold cursor-pointer">Bullet Points List</label>
                             </div>
                         </div>
                     </div>
+
+                    @if (skillGroup.get('layout')?.value === 'categorized') {
+                    <div formArrayName="categories">
+                        @for (skill of skillCategories.controls; track skill; let i = $index) {
+                        <div [formGroupName]="i"
+                            class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-cyan-500">
+                            <div class="grid p-fluid">
+                                <div class="col-12 flex justify-content-between align-items-center mb-3">
+                                    <span class="font-bold text-xl text-cyan-600">Skill Category #{{i+1}}</span>
+                                    @if (skillCategories.controls.length > 1) {
+                                    <p-button icon="pi pi-trash" severity="danger" [text]="true"
+                                        (onClick)="removeSkillCategory(i)"></p-button>
+                                    }
+                                </div>
+                                <div class="col-12 md:col-4 field flex flex-column gap-2">
+                                    <label>Category Name</label>
+                                    <input pInputText formControlName="category"
+                                        placeholder="e.g. Programming Languages" />
+                                </div>
+                                <div class="col-12 md:col-8 field flex flex-column gap-2">
+                                    <label class="field-required">Skills (comma separated)</label>
+                                    <input pInputText formControlName="skills"
+                                        placeholder="e.g. JavaScript, TypeScript, Python" />
+                                </div>
+                            </div>
+                        </div>
+                        }
+                        <p-button label="Add New Skill Group" icon="pi pi-plus" (onClick)="addSkillCategory()"
+                            styleClass="p-button-outlined w-full p-3 font-bold"></p-button>
+                    </div>
+                    } @else {
+                    <div class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-cyan-500">
+                        <div class="field flex flex-column gap-2">
+                            <label class="field-required text-xl mb-2">Technical Skills</label>
+                            <p class="text-gray-500 text-sm mb-3">Enter all your skills separated by commas. They will
+                                be displayed in a neat 3-column bulleted list.</p>
+                            <textarea pInputTextarea formControlName="bulletSkills" rows="8" autoResize="true"
+                                placeholder="e.g. Java, Spring Boot, Angular, TypeScript, Docker, Kubernetes, Nginx..."></textarea>
+                        </div>
+                    </div>
                     }
-                    <p-button label="Add New Skill Group" icon="pi pi-plus" (onClick)="addSkill()"
-                        styleClass="p-button-outlined w-full p-3 font-bold"></p-button>
                 </div>
                 }
 
@@ -214,10 +288,25 @@
                                 <label class="field-required">Company / Organization</label>
                                 <input pInputText formControlName="company" placeholder="e.g. Microsoft" />
                             </div>
-                            <div class="col-12 field flex flex-column gap-2">
-                                <label>Work Location</label>
-                                <input pInputText formControlName="location" placeholder="e.g. Bangalore, India" />
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>State</label>
+                                <p-select [options]="states" formControlName="state" (onChange)="onWorkStateChange(i)"
+                                    placeholder="Select State" [filter]="true" styleClass="w-full"></p-select>
                             </div>
+                            <div class="col-12 md:col-6 field flex flex-column gap-2">
+                                <label>City</label>
+                                <p-select [options]="workCities[i]" formControlName="city"
+                                    (onChange)="onWorkCityChange(i)" placeholder="Select City" [filter]="true"
+                                    styleClass="w-full"></p-select>
+                            </div>
+
+                            @if (work.get('city')?.value === 'Other') {
+                            <div class="col-12 field flex flex-column gap-2 fadein">
+                                <label class="field-required">Enter City Name</label>
+                                <input pInputText formControlName="otherCity" (input)="onWorkOtherCityChange(i)"
+                                    placeholder="e.g. My Custom City" />
+                            </div>
+                            }
                             <div class="col-12 md:col-6 field flex flex-column gap-2">
                                 <label>Start Date</label>
                                 <p-datepicker formControlName="startDate" view="month" dateFormat="mm/yy"
@@ -409,12 +498,12 @@
                     <div class="flex gap-3">
                         @if (!isLastStep()) {
                         <p-button label="Continue" (onClick)="next()" icon="pi pi-chevron-right" iconPos="right"
-                            styleClass="p-4 font-bold p-button-raised"></p-button>
+                            styleClass="h-3rem px-5 font-bold p-button-raised"></p-button>
                         }
 
                         @if (isLastStep()) {
                         <p-button label="Complete & Finish" icon="pi pi-check-circle" severity="success"
-                            (onClick)="downloadPDF()" styleClass="p-4 font-bold shadow-4"></p-button>
+                            (onClick)="downloadPDF()" styleClass="h-3rem px-5 font-bold shadow-4"></p-button>
                         }
                     </div>
                 </div>
@@ -475,7 +564,10 @@
                     @for (edu of education.controls; track edu) {
                     <div class="resume-item">
                         <div class="flex-row">
-                            <span class="bold">{{ edu.get('institute')?.value }}</span>
+                            <span class="bold">
+                                {{ edu.get('institute')?.value === 'Other' ? (edu.get('otherInstitute')?.value ||
+                                'Institute Name') : (edu.get('institute')?.value || 'Institute Name') }}
+                            </span>
                             <span class="bold">{{ edu.get('location')?.value }}</span>
                         </div>
                         <div class="flex-row">
@@ -485,7 +577,10 @@
                                 'Present' : (edu.get('endDate')?.value | date: 'MMM yyyy') }}</span>
                         </div>
                         @if (edu.get('grade')?.value) {
-                        <div class="text-sm-resume mt-1">GPA: {{ edu.get('grade')?.value }}</div>
+                        <div class="text-sm-resume mt-1">
+                            {{ edu.get('gradeType')?.value === 'CGPA' ? 'GPA' : 'Percentage' }}: {{
+                            edu.get('grade')?.value }}
+                        </div>
                         }
                     </div>
                     }
@@ -493,15 +588,30 @@
                 }
 
                 <!-- Skills -->
-                @if (section.id === 'skills' && skills.length > 0 && skills.controls[0].get('skills')?.value) {
+                @if (section.id === 'skills' && (
+                (skillGroup.get('layout')?.value === 'categorized' && skillCategories.length > 0 &&
+                skillCategories.at(0).get('skills')?.value) ||
+                (skillGroup.get('layout')?.value === 'bullets' && skillGroup.get('bulletSkills')?.value)
+                )) {
                 <div class="resume-section">
                     <h2>Skills</h2>
-                    @for (skill of skills.controls; track skill) {
+                    @if (skillGroup.get('layout')?.value === 'categorized') {
+                    @for (skill of skillCategories.controls; track skill) {
                     <div class="text-sm-resume mb-1">
                         @if (skill.get('category')?.value) {
                         <span class="bold">{{ skill.get('category')?.value }}: </span>
                         }
                         <span>{{ skill.get('skills')?.value }}</span>
+                    </div>
+                    }
+                    } @else {
+                    <div class="skills-grid">
+                        @for (item of getBulletSkillsArray(); track item) {
+                        <div class="skill-bullet-item">
+                            <span class="bullet-dot">•</span>
+                            <span>{{ item }}</span>
+                        </div>
+                        }
                     </div>
                     }
                 </div>

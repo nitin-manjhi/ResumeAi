@@ -10,9 +10,9 @@
   @if (!analysisResult()) {
   <div class="card flex flex-column align-items-center justify-content-center mt-4 gap-2">
     <label class="font-semibold" for="jobDescription">Job Description</label>
-    <textarea rows="5" cols="30" pInputTextarea [ngModel]="jobDescription()"
-      (ngModelChange)="jobDescription.set($event)" [autoResize]="true" maxlength="1000" class="w-full md:w-30rem"
-      placeholder="Paste job description here (Max 1000 chars)"></textarea>
+    <textarea rows="8" cols="30" pInputTextarea [ngModel]="jobDescription()"
+      (ngModelChange)="jobDescription.set($event)" maxlength="2000" class="w-full md:w-30rem"
+      style="overflow-y: auto; height: 12rem;" placeholder="Paste job description here (Max 2000 chars)"></textarea>
   </div>
 
   <div class="card flex flex-column align-items-center justify-content-center mt-4 gap-2">

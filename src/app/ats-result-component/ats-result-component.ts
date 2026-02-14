@@ -35,14 +35,4 @@ export class AtsResultComponent {
     this.router.navigate(['/review-cover-letter']);
   }
 
-  private downloadFile(blob: Blob, fileName: string) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  }
 }

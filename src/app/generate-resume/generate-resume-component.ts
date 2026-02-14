@@ -9,12 +9,16 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
+import { SelectModule } from 'primeng/select';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
 import { DatePickerModule } from 'primeng/datepicker';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { LocationService } from '../service/location.service';
+import { EducationService } from '../service/education.service';
 
 @Component({
   selector: 'app-generate-resume-component',
@@ -30,7 +34,9 @@ import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-
     TextareaModule,
     ToastModule,
     DatePickerModule,
-    DragDropModule
+    DragDropModule,
+    SelectModule,
+    RadioButtonModule
   ],
   providers: [MessageService],
   templateUrl: './generate-resume-component.html',
@@ -39,11 +45,21 @@ import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-
 export class GenerateResumeComponent implements OnInit {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
+  private locationService = inject(LocationService);
+  private educationService = inject(EducationService);
 
   steps: MenuItem[] = [];
   activeStep: number = 0;
   resumeForm!: FormGroup;
   showPreview: boolean = true;
+
+  states: string[] = [];
+  degrees: string[] = [];
+  educationCities: { [key: number]: string[] } = {};
+  educationColleges: { [key: number]: string[] } = {};
+  workCities: { [key: number]: string[] } = {};
+  private lastEducationState: { [key: number]: string } = {};
+  private lastWorkState: { [key: number]: string } = {};
 
   // Layout Settings
   sectionOrder = [
@@ -90,7 +106,11 @@ export class GenerateResumeComponent implements OnInit {
         summary: ['']
       }),
       education: this.fb.array([]),
-      skills: this.fb.array([]),
+      skills: this.fb.group({
+        layout: ['categorized'], // 'categorized' or 'bullets'
+        categories: this.fb.array([]),
+        bulletSkills: [''] // Comma separated for bullet points
+      }),
       workExperience: this.fb.array([]),
       projects: this.fb.array([]),
       other: this.fb.array([])
@@ -98,10 +118,22 @@ export class GenerateResumeComponent implements OnInit {
 
     // Initialize with one item for each to encourage user (optional, but good UX)
     this.addEducation();
-    this.addSkill();
+    this.addSkillCategory();
     this.addWorkExperience();
     this.addProject();
     this.addOther();
+
+    // Fetch States
+    this.locationService.getStates().subscribe({
+      next: (data: string[]) => this.states = data,
+      error: (err: any) => console.error('Error fetching states', err)
+    });
+
+    // Fetch Degrees
+    this.educationService.getDegrees().subscribe({
+      next: (data: string[]) => this.degrees = data,
+      error: (err: any) => console.error('Error fetching degrees', err)
+    });
   }
 
   get generalInfo() {
@@ -109,7 +141,8 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   get education() { return this.resumeForm.get('education') as FormArray; }
-  get skills() { return this.resumeForm.get('skills') as FormArray; }
+  get skillGroup() { return this.resumeForm.get('skills') as FormGroup; }
+  get skillCategories() { return this.skillGroup.get('categories') as FormArray; }
   get workExperience() { return this.resumeForm.get('workExperience') as FormArray; }
   get projects() { return this.resumeForm.get('projects') as FormArray; }
   get other() { return this.resumeForm.get('other') as FormArray; }
@@ -118,12 +151,17 @@ export class GenerateResumeComponent implements OnInit {
   createEducationGroup(): FormGroup {
     return this.fb.group({
       institute: ['', Validators.required],
+      otherInstitute: [''],
+      state: [''],
+      city: [''],
+      otherCity: [''],
       location: [''],
       degree: ['', Validators.required],
       fieldOfStudy: [''],
       startDate: [''],
       endDate: [''],
       current: [false],
+      gradeType: ['CGPA'],
       grade: ['']
     });
   }
@@ -134,22 +172,109 @@ export class GenerateResumeComponent implements OnInit {
 
   removeEducation(index: number) {
     this.education.removeAt(index);
+    delete this.educationCities[index];
+    delete this.educationColleges[index];
+    delete this.lastEducationState[index];
+  }
+
+  onEducationStateChange(index: number) {
+    const group = this.education.at(index);
+    const state = group.get('state')?.value;
+
+    if (this.lastEducationState[index] === state) return;
+    this.lastEducationState[index] = state;
+
+    // Reset dependent fields
+    group.patchValue({
+      city: '',
+      institute: '',
+      location: ''
+    }, { emitEvent: false });
+
+    if (state) {
+      // Fetch Cities
+      this.locationService.getCities(state).subscribe({
+        next: (cities: string[]) => {
+          this.educationCities[index] = [...cities, 'Other'];
+        },
+        error: (err: any) => console.error('Error fetching cities', err)
+      });
+
+      // Fetch Colleges
+      this.educationService.getCollegesByState(state).subscribe({
+        next: (colleges: string[]) => {
+          // Use backend data directly as 'Other' is already included
+          this.educationColleges[index] = colleges;
+        },
+        error: (err: any) => console.error('Error fetching colleges', err)
+      });
+    } else {
+      this.educationCities[index] = [];
+      this.educationColleges[index] = [];
+    }
+  }
+
+  onEducationCityChange(index: number) {
+    const group = this.education.at(index);
+    const city = group.get('city')?.value;
+    const state = group.get('state')?.value;
+
+    if (city !== 'Other') {
+      group.patchValue({ otherCity: '' }, { emitEvent: false });
+      group.get('otherCity')?.clearValidators();
+      if (city && state) {
+        group.get('location')?.setValue(`${city}, ${state}`);
+      }
+    } else {
+      group.get('otherCity')?.setValidators([Validators.required]);
+      group.get('location')?.setValue(state ? `, ${state}` : '');
+    }
+    group.get('otherCity')?.updateValueAndValidity();
+  }
+
+  onEducationOtherCityChange(index: number) {
+    const group = this.education.at(index);
+    const otherCity = group.get('otherCity')?.value;
+    const state = group.get('state')?.value;
+    if (otherCity && state) {
+      group.get('location')?.setValue(`${otherCity}, ${state}`);
+    }
+  }
+
+  onEducationInstituteChange(index: number) {
+    const institute = this.education.at(index).get('institute')?.value;
+    if (institute !== 'Other') {
+      this.education.at(index).get('otherInstitute')?.setValue('');
+      this.education.at(index).get('otherInstitute')?.clearValidators();
+    } else {
+      this.education.at(index).get('otherInstitute')?.setValidators([Validators.required]);
+    }
+    this.education.at(index).get('otherInstitute')?.updateValueAndValidity();
+  }
+
+  onGradeTypeChange(index: number) {
+    this.education.at(index).get('grade')?.setValue('');
   }
 
   // Skills Helpers
-  createSkillGroup(): FormGroup {
+  createSkillCategoryGroup(): FormGroup {
     return this.fb.group({
       category: [''], // e.g. Languages, Frameworks
       skills: ['', Validators.required] // Comma separated
     });
   }
 
-  addSkill() {
-    this.skills.push(this.createSkillGroup());
+  addSkillCategory() {
+    this.skillCategories.push(this.createSkillCategoryGroup());
   }
 
-  removeSkill(index: number) {
-    this.skills.removeAt(index);
+  removeSkillCategory(index: number) {
+    this.skillCategories.removeAt(index);
+  }
+
+  getBulletSkillsArray(): string[] {
+    const skills = this.skillGroup.get('bulletSkills')?.value || '';
+    return skills.split(',').map((s: string) => s.trim()).filter((s: string) => s !== '');
   }
 
   // Work Experience Helpers
@@ -157,6 +282,9 @@ export class GenerateResumeComponent implements OnInit {
     return this.fb.group({
       jobTitle: ['', Validators.required],
       company: ['', Validators.required],
+      state: [''],
+      city: [''],
+      otherCity: [''],
       location: [''],
       startDate: [''],
       endDate: [''],
@@ -171,6 +299,59 @@ export class GenerateResumeComponent implements OnInit {
 
   removeWorkExperience(index: number) {
     this.workExperience.removeAt(index);
+    delete this.workCities[index];
+    delete this.lastWorkState[index];
+  }
+
+  onWorkStateChange(index: number) {
+    const group = this.workExperience.at(index);
+    const state = group.get('state')?.value;
+
+    if (this.lastWorkState[index] === state) return;
+    this.lastWorkState[index] = state;
+
+    group.patchValue({
+      city: '',
+      location: ''
+    }, { emitEvent: false });
+
+    if (state) {
+      this.locationService.getCities(state).subscribe({
+        next: (cities: string[]) => {
+          this.workCities[index] = [...cities, 'Other'];
+        },
+        error: (err: any) => console.error('Error fetching cities', err)
+      });
+    } else {
+      this.workCities[index] = [];
+    }
+  }
+
+  onWorkCityChange(index: number) {
+    const group = this.workExperience.at(index);
+    const city = group.get('city')?.value;
+    const state = group.get('state')?.value;
+
+    if (city !== 'Other') {
+      group.patchValue({ otherCity: '' }, { emitEvent: false });
+      group.get('otherCity')?.clearValidators();
+      if (city && state) {
+        group.get('location')?.setValue(`${city}, ${state}`);
+      }
+    } else {
+      group.get('otherCity')?.setValidators([Validators.required]);
+      group.get('location')?.setValue(state ? `, ${state}` : '');
+    }
+    group.get('otherCity')?.updateValueAndValidity();
+  }
+
+  onWorkOtherCityChange(index: number) {
+    const group = this.workExperience.at(index);
+    const otherCity = group.get('otherCity')?.value;
+    const state = group.get('state')?.value;
+    if (otherCity && state) {
+      group.get('location')?.setValue(`${otherCity}, ${state}`);
+    }
   }
 
   // Project Helpers
@@ -210,38 +391,71 @@ export class GenerateResumeComponent implements OnInit {
 
 
   async downloadPDF() {
-    const data = document.getElementById('resumePreview');
-    if (!data) {
+    const originalElement = document.getElementById('resumePreview');
+    if (!originalElement) {
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not find resume preview.' });
       return;
     }
 
-    this.messageService.add({ severity: 'info', summary: 'Generating PDF', detail: 'Please wait...' });
+    this.messageService.add({ severity: 'info', summary: 'Generating PDF', detail: 'Optimizing for high quality...' });
+
+    // Create a clone to avoid capturing browser scaling/transforms
+    const clone = originalElement.cloneNode(true) as HTMLElement;
+
+    // Style the clone for perfect capture
+    Object.assign(clone.style, {
+      position: 'absolute',
+      left: '-9999px',
+      top: '0',
+      transform: 'none',
+      width: '210mm',
+      height: 'auto',
+      margin: '0',
+      padding: '15mm 20mm',
+      boxSizing: 'border-box'
+    });
+
+    document.body.appendChild(clone);
+
+    // Wait for a few frames to ensure layout is stable
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      const canvas = await html2canvas(data, {
-        scale: 2, // Higher quality
+      // Use higher scale and fix letter rendering issues
+      const canvas = await html2canvas(clone, {
+        scale: 3, // Increased scale for better resolution
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        windowWidth: 794, // Standard A4 width in pixels at 96 DPI
+        onclone: (document) => {
+          // Additional fixes during capture
+          const elements = document.getElementsByClassName('resume-preview-container');
+          if (elements.length > 0) {
+            (elements[0] as HTMLElement).style.transform = 'none';
+          }
+        }
       });
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      const contentDataURL = canvas.toDataURL('image/jpeg', 0.8);
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
 
-      pdf.addImage(contentDataURL, 'JPEG', 0, 0, imgWidth, imgHeight, undefined, 'FAST');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      const fileName = `${this.generalInfo.get('fullName')?.value || 'Resume'}.pdf`;
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+
+      const fileName = `${this.generalInfo.get('fullName')?.value || 'Resume'}_${new Date().getTime()}.pdf`;
       pdf.save(fileName);
 
       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'PDF downloaded successfully!' });
     } catch (error) {
       console.error('PDF Generation Error:', error);
       this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to generate PDF.' });
+    } finally {
+      // Cleanup the clone
+      document.body.removeChild(clone);
     }
   }
 
