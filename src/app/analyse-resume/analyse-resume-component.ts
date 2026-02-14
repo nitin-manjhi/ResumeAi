@@ -12,6 +12,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { firstValueFrom } from 'rxjs';
 import { AtsResultComponent } from "../ats-result-component/ats-result-component";
 import { AtsAnalysisResult } from '../shared/modal/ats-analysis-result';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-analyse-resume-component',
@@ -22,6 +23,7 @@ import { AtsAnalysisResult } from '../shared/modal/ats-analysis-result';
 })
 export class AnalyseResumeComponent {
   private readonly resumeService = inject(ResumeAnalysisService);
+  private readonly authService = inject(AuthService);
   private messageService = inject(MessageService);
   protected jobDescription = signal('');
   protected isLoading = signal(false);
@@ -44,14 +46,28 @@ export class AnalyseResumeComponent {
           detail: 'Resume analysis completed successfully',
         });
         this.resumeService.setResult(response);
+
+        // Refresh profile to update usage counts
+        this.authService.getUserProfile().subscribe();
+
         fileUpload.clear();
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to analyze resume',
-        });
+        const errorMessage = error.error?.message || error.message || '';
+        if (errorMessage.includes('limit reached')) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Limit Reached',
+            detail: 'You have reached your analysis limit. Please upgrade your plan in the profile section to get more credits.',
+            life: 5000
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to analyze resume',
+          });
+        }
       } finally {
         this.isLoading.set(false);
       }

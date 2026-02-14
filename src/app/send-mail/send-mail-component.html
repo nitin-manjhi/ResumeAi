@@ -1,61 +1,37 @@
 <div class="flex justify-content-center mt-4">
     <p-toast />
-    <p-card header="Compose Email" class="w-full md:w-8 lg:w-6" styleClass="p-fluid">
-        <div class="field">
-            <label for="recipient" class="font-bold">Recipient Email</label>
-            <input id="recipient" type="email" pInputText [(ngModel)]="recipientEmail"
-                placeholder="recruiter@example.com" class="w-full" />
-        </div>
-
+    <p-card header="Email Application Draft" class="w-full md:w-8 lg:w-6" styleClass="p-fluid">
         <div class="field mt-3">
             <label for="subject" class="font-bold">Subject</label>
-            <input id="subject" type="text" pInputText [(ngModel)]="subject" placeholder="Application for..."
-                class="w-full" />
+            <div class="flex gap-2">
+                <input id="subject" type="text" pInputText [(ngModel)]="subject" class="flex-grow-1" />
+                <p-button icon="pi pi-copy" severity="secondary" (onClick)="copyToClipboard(subject)"
+                    pTooltip="Copy Subject" />
+            </div>
         </div>
 
         <div class="field mt-3">
             <label for="body" class="font-bold">Message Body</label>
-            <textarea id="body" rows="10" pInputTextarea [(ngModel)]="body" [autoResize]="true"
-                class="w-full"></textarea>
+            <div class="relative">
+                <textarea id="body" rows="12" pInputTextarea [(ngModel)]="body" [autoResize]="false"
+                    class="w-full"></textarea>
+                <p-button icon="pi pi-copy" severity="secondary" (onClick)="copyToClipboard(body)"
+                    styleClass="absolute top-0 right-0 m-2" pTooltip="Copy Body" />
+            </div>
         </div>
 
-        <div class="field mt-4">
-            <label class="font-bold">Upload Resume & Cover Letter</label>
-            <p-fileUpload #fu mode="advanced" name="attachments[]" [showUploadButton]="false" [showCancelButton]="false"
-                (onSelect)="onFileSelect($event)" [multiple]="true" maxFileSize="10000000">
-                <ng-template pTemplate="content">
-                    @if (fu.files.length) {
-                    <div class="p-0">
-                        @for (file of fu.files; track file; let i = $index) {
-                        <div
-                            class="flex align-items-center justify-content-between mb-2 p-2 surface-border border-1 border-round">
-                            <div class="flex align-items-center gap-2">
-                                <i class="pi pi-file text-xl text-primary"></i>
-                                <div class="flex flex-column">
-                                    <span class="font-semibold">{{file.name}}</span>
-                                    <small class="text-gray-500">{{file.size}} bytes</small>
-                                </div>
-                            </div>
-                            <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger"
-                                (onClick)="remove(file, fu)"></p-button>
-                        </div>
-                        }
-                    </div>
-                    }
-                </ng-template>
-            </p-fileUpload>
+        <div class="mt-4 p-3 bg-blue-50 border-round flex align-items-center gap-2 text-blue-700">
+            <i class="pi pi-info-circle text-xl"></i>
+            <span class="text-sm">You can now copy and paste these details into your preferred email client (e.g.,
+                Gmail) to send your application manually.</span>
         </div>
 
         <ng-template pTemplate="footer">
-            <div [class]="result ? 'flex justify-content-between' : 'flex justify-content-end'">
+            <div class="flex justify-content-between align-items-center">
                 @if (result) {
                 <p-button label="Back to Result" icon="pi pi-arrow-left" (onClick)="cancel()" severity="secondary"
                     [text]="true" />
                 }
-                <div class="flex gap-2">
-                    <p-button label="Send Email" icon="pi pi-send" (onClick)="send()"
-                        [disabled]="!recipientEmail || !subject || !body" />
-                </div>
             </div>
         </ng-template>
     </p-card>

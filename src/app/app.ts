@@ -19,6 +19,7 @@ export class AppComponent {
 
   protected readonly title = signal('ResumeAi');
   isLoggedIn = this.authService.isLoggedIn;
+  currentUser = this.authService.currentUser;
 
   protected items = computed<MenuItem[] | undefined>(() => {
     if (!this.isLoggedIn()) return undefined;
@@ -38,14 +39,13 @@ export class AppComponent {
         label: 'Analyse Resume',
         icon: 'pi pi-bolt',
         routerLink: '/analyse-resume',
-      },
-      {
-        label: 'Send Mail',
-        icon: 'pi pi-envelope',
-        routerLink: '/send-mail',
       }
     ];
   });
+
+  goToProfile() {
+    this.router.navigate(['/profile']);
+  }
 
   logout() {
     this.router.navigate(['/logout']);

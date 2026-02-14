@@ -19,6 +19,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LocationService } from '../service/location.service';
 import { EducationService } from '../service/education.service';
+import { ResumeAnalysisService } from '../service/resume-analysis-service';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-generate-resume-component',
@@ -47,6 +49,8 @@ export class GenerateResumeComponent implements OnInit {
   private messageService = inject(MessageService);
   private locationService = inject(LocationService);
   private educationService = inject(EducationService);
+  private resumeService = inject(ResumeAnalysisService);
+  private authService = inject(AuthService);
 
   steps: MenuItem[] = [];
   activeStep: number = 0;
@@ -448,6 +452,23 @@ export class GenerateResumeComponent implements OnInit {
 
       const fileName = `${this.generalInfo.get('fullName')?.value || 'Resume'}_${new Date().getTime()}.pdf`;
       pdf.save(fileName);
+
+      // Track usage and refresh profile
+      this.resumeService.trackGeneration().subscribe({
+        next: () => this.authService.getUserProfile().subscribe(),
+        error: (err) => {
+          console.error('Failed to track generation', err);
+          const errorMessage = err.error?.message || err.message || '';
+          if (errorMessage.includes('limit reached')) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Limit Reached',
+              detail: 'You have reached your generation limit. This PDF was downloaded, but future generations will be restricted until you upgrade.',
+              life: 5000
+            });
+          }
+        }
+      });
 
       this.messageService.add({ severity: 'success', summary: 'Success', detail: 'PDF downloaded successfully!' });
     } catch (error) {

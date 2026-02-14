@@ -40,7 +40,7 @@ export class ResumeAnalysisService {
     });
   }
 
-  sendEmail(formData: FormData) {
-    return this.http.post(`${this.baseUrl}/send-email`, formData);
+  trackGeneration() {
+    return this.http.post(`${this.baseUrl}/track-generation`, {});
   }
 }
