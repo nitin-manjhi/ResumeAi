@@ -1,4 +1,5 @@
 <p-toast />
+<p-confirmDialog />
 
 <div class="card shadow-1 p-3 mb-4 surface-card">
     <p-steps [model]="steps" [(activeIndex)]="activeStep" [readonly]="false" styleClass="p-2"></p-steps>
@@ -207,13 +208,15 @@
                     <div class="surface-card p-3 border-round-xl mb-4 bg-primary-50 border-primary-100 border-1">
                         <div class="flex gap-4 justify-content-center">
                             <div class="flex align-items-center gap-2">
-                                <p-radioButton formControlName="layout" value="categorized"
-                                    inputId="layoutCat"></p-radioButton>
+                                <p-radioButton [ngModel]="skillGroup.get('layout')?.value"
+                                    [ngModelOptions]="{standalone: true}" value="categorized" inputId="layoutCat"
+                                    name="skillLayoutGroup" (onClick)="onLayoutChange('categorized')"></p-radioButton>
                                 <label for="layoutCat" class="m-0 font-bold cursor-pointer">Categorized Grouping</label>
                             </div>
                             <div class="flex align-items-center gap-2">
-                                <p-radioButton formControlName="layout" value="bullets"
-                                    inputId="layoutBul"></p-radioButton>
+                                <p-radioButton [ngModel]="skillGroup.get('layout')?.value"
+                                    [ngModelOptions]="{standalone: true}" value="bullets" inputId="layoutBul"
+                                    name="skillLayoutGroup" (onClick)="onLayoutChange('bullets')"></p-radioButton>
                                 <label for="layoutBul" class="m-0 font-bold cursor-pointer">Bullet Points List</label>
                             </div>
                         </div>
@@ -238,9 +241,20 @@
                                         placeholder="e.g. Programming Languages" />
                                 </div>
                                 <div class="col-12 md:col-8 field flex flex-column gap-2">
-                                    <label class="field-required">Skills (comma separated)</label>
-                                    <input pInputText formControlName="skills"
-                                        placeholder="e.g. JavaScript, TypeScript, Python" />
+                                    <label class="field-required">Skills (Press Enter or use comma to add)</label>
+                                    <div
+                                        class="flex flex-wrap gap-2 p-2 surface-card border-1 surface-border border-round-md min-h-3rem align-items-center">
+                                        @for (s of skill.get('skills')?.value; track s) {
+                                        <p-chip [label]="s" [removable]="true"
+                                            (onRemove)="removeSkillFromControl(s, skill.get('skills'))"
+                                            class="fadein"></p-chip>
+                                        }
+                                        <input pInputText type="text"
+                                            class="flex-1 border-none outline-none bg-transparent p-1 surface-text"
+                                            [placeholder]="addedSuggestionsCount >= MAX_SUGGESTIONS ? 'Limit reached' : 'Add skill...'"
+                                            [disabled]="addedSuggestionsCount >= MAX_SUGGESTIONS"
+                                            (keydown)="onSkillInput($event, skill.get('skills'))" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -252,11 +266,46 @@
                     <div class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-cyan-500">
                         <div class="field flex flex-column gap-2">
                             <label class="field-required text-xl mb-2">Technical Skills</label>
-                            <p class="text-gray-500 text-sm mb-3">Enter all your skills separated by commas. They will
-                                be displayed in a neat 3-column bulleted list.</p>
-                            <textarea pInputTextarea formControlName="bulletSkills" rows="8" autoResize="true"
-                                placeholder="e.g. Java, Spring Boot, Angular, TypeScript, Docker, Kubernetes, Nginx..."></textarea>
+                            <p class="text-gray-500 text-sm mb-3">Add your skills below. Press enter after each skill.
+                            </p>
+                            <div
+                                class="flex flex-wrap gap-2 p-3 surface-card border-1 surface-border border-round-md min-h-4rem align-items-center mb-2 shadow-inner">
+                                @for (s of skillGroup.get('bulletSkills')?.value; track s) {
+                                <p-chip [label]="s" [removable]="true"
+                                    (onRemove)="removeSkillFromControl(s, skillGroup.get('bulletSkills'))"
+                                    class="fadein"></p-chip>
+                                }
+                                <input pInputText type="text"
+                                    class="flex-1 border-none outline-none bg-transparent p-2 surface-text text-lg"
+                                    [placeholder]="addedSuggestionsCount >= MAX_SUGGESTIONS ? 'Limit reached' : 'Type skill and press Enter...'"
+                                    [disabled]="addedSuggestionsCount >= MAX_SUGGESTIONS"
+                                    (keydown)="onSkillInput($event, skillGroup.get('bulletSkills'))" />
+                            </div>
                         </div>
+                        @if (missingSkills.length > 0) {
+                        <div class="mt-3 p-3 border-round-xl surface-100 border-1 surface-border shadow-1">
+                            <div class="flex justify-content-between align-items-center mb-3">
+                                <span class="block font-bold text-primary">
+                                    <i class="pi pi-sparkles mr-1"></i> Smart Suggestions
+                                </span>
+                                <span class="text-xs font-semibold px-2 py-1 border-round bg-primary text-white">
+                                    {{addedSuggestionsCount}}/{{MAX_SUGGESTIONS}} Skills Added
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @for (skill of missingSkills; track skill) {
+                                <p-button [label]="skill" icon="pi pi-plus" size="small" severity="info"
+                                    [outlined]="true" (onClick)="addSkillToBullets(skill)" styleClass="bg-surface-card"
+                                    [disabled]="addedSuggestionsCount >= MAX_SUGGESTIONS"></p-button>
+                                }
+                            </div>
+                            @if (addedSuggestionsCount >= MAX_SUGGESTIONS) {
+                            <p class="text-xs text-orange-500 mt-3 font-semibold">
+                                <i class="pi pi-exclamation-triangle mr-1"></i> Maximum skill limit reached (20 skills).
+                            </p>
+                            }
+                        </div>
+                        }
                     </div>
                     }
                 </div>
@@ -601,7 +650,7 @@
                         @if (skill.get('category')?.value) {
                         <span class="bold">{{ skill.get('category')?.value }}: </span>
                         }
-                        <span>{{ skill.get('skills')?.value }}</span>
+                        <span>{{ (skill.get('skills')?.value || []).join(', ') }}</span>
                     </div>
                     }
                     } @else {

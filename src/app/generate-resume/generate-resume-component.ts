@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MenuItem, MessageService } from 'primeng/api';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { StepsModule } from 'primeng/steps';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,6 +11,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { SelectModule } from 'primeng/select';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { ChipModule } from 'primeng/chip';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -27,6 +29,7 @@ import { AuthService } from '../service/auth.service';
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     StepsModule,
     CardModule,
@@ -38,15 +41,18 @@ import { AuthService } from '../service/auth.service';
     DatePickerModule,
     DragDropModule,
     SelectModule,
-    RadioButtonModule
+    RadioButtonModule,
+    ChipModule,
+    ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './generate-resume-component.html',
   styleUrl: './generate-resume-component.scss',
 })
 export class GenerateResumeComponent implements OnInit {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
   private locationService = inject(LocationService);
   private educationService = inject(EducationService);
   private resumeService = inject(ResumeAnalysisService);
@@ -64,6 +70,8 @@ export class GenerateResumeComponent implements OnInit {
   workCities: { [key: number]: string[] } = {};
   private lastEducationState: { [key: number]: string } = {};
   private lastWorkState: { [key: number]: string } = {};
+
+  readonly MAX_SUGGESTIONS = 20;
 
   // Layout Settings
   sectionOrder = [
@@ -113,7 +121,7 @@ export class GenerateResumeComponent implements OnInit {
       skills: this.fb.group({
         layout: ['categorized'], // 'categorized' or 'bullets'
         categories: this.fb.array([]),
-        bulletSkills: [''] // Comma separated for bullet points
+        bulletSkills: [[]] // Array for p-chips
       }),
       workExperience: this.fb.array([]),
       projects: this.fb.array([]),
@@ -138,6 +146,47 @@ export class GenerateResumeComponent implements OnInit {
       next: (data: string[]) => this.degrees = data,
       error: (err: any) => console.error('Error fetching degrees', err)
     });
+  }
+
+  get missingSkills() {
+    const allAddedSkills = new Set<string>();
+
+    // Collect skills from bullets
+    const bullets = this.skillGroup.get('bulletSkills')?.value || [];
+    if (Array.isArray(bullets)) {
+      bullets.forEach(s => allAddedSkills.add(s.toLowerCase().trim()));
+    }
+
+    // Collect skills from categories
+    this.skillCategories.controls.forEach(control => {
+      const skills = control.get('skills')?.value || [];
+      if (Array.isArray(skills)) {
+        skills.forEach(s => allAddedSkills.add(s.toLowerCase().trim()));
+      }
+    });
+
+    return (this.resumeService.currentResult()?.missingSkills || [])
+      .filter(skill => !allAddedSkills.has(skill.toLowerCase().trim()));
+  }
+
+  get addedSuggestionsCount(): number {
+    const allAddedSkills = new Set<string>();
+
+    // Collect skills from bullets
+    const bullets = this.skillGroup?.get('bulletSkills')?.value || [];
+    if (Array.isArray(bullets)) {
+      bullets.forEach(s => allAddedSkills.add(s.toLowerCase().trim()));
+    }
+
+    // Collect skills from categories
+    this.skillCategories?.controls?.forEach(control => {
+      const skills = control.get('skills')?.value || [];
+      if (Array.isArray(skills)) {
+        skills.forEach(s => allAddedSkills.add(s.toLowerCase().trim()));
+      }
+    });
+
+    return allAddedSkills.size;
   }
 
   get generalInfo() {
@@ -264,7 +313,7 @@ export class GenerateResumeComponent implements OnInit {
   createSkillCategoryGroup(): FormGroup {
     return this.fb.group({
       category: [''], // e.g. Languages, Frameworks
-      skills: ['', Validators.required] // Comma separated
+      skills: [[], Validators.required] // Array for p-chips
     });
   }
 
@@ -276,9 +325,87 @@ export class GenerateResumeComponent implements OnInit {
     this.skillCategories.removeAt(index);
   }
 
+  onLayoutChange(newLayout: string) {
+    const currentLayout = this.skillGroup.get('layout')?.value;
+    if (currentLayout === newLayout) return;
+
+    if (this.addedSuggestionsCount === 0) {
+      this.skillGroup.get('layout')?.setValue(newLayout);
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: 'Switching layouts will clear your current skills in the other layout.',
+      header: 'Warning: Data Loss',
+      icon: 'pi pi-exclamation-triangle',
+      acceptIcon: "none",
+      rejectVisible: false,
+      acceptLabel: 'OK',
+      accept: () => {
+        this.skillGroup.get('layout')?.setValue(newLayout);
+      }
+    });
+  }
+
   getBulletSkillsArray(): string[] {
-    const skills = this.skillGroup.get('bulletSkills')?.value || '';
-    return skills.split(',').map((s: string) => s.trim()).filter((s: string) => s !== '');
+    return this.skillGroup.get('bulletSkills')?.value || [];
+  }
+
+  addSkillToBullets(skill: string) {
+    if (this.addedSuggestionsCount >= this.MAX_SUGGESTIONS) {
+      this.messageService.add({ severity: 'warn', summary: 'Limit Reached', detail: `You can only add up to ${this.MAX_SUGGESTIONS} suggestions.` });
+      return;
+    }
+
+    const currentSkills = this.skillGroup.get('bulletSkills')?.value || [];
+    if (!currentSkills.includes(skill)) {
+      this.skillGroup.get('bulletSkills')?.setValue([...currentSkills, skill]);
+      this.messageService.add({ severity: 'success', summary: 'Skill Added', detail: `${skill} added to your skills.` });
+    }
+  }
+
+  addSkillToCategory(skill: string, categoryIndex: number) {
+    if (this.addedSuggestionsCount >= this.MAX_SUGGESTIONS) {
+      this.messageService.add({ severity: 'warn', summary: 'Limit Reached', detail: `You can only add up to ${this.MAX_SUGGESTIONS} suggestions.` });
+      return;
+    }
+
+    const category = this.skillCategories.at(categoryIndex);
+    const currentSkills = category.get('skills')?.value || [];
+    if (!currentSkills.includes(skill)) {
+      category.get('skills')?.setValue([...currentSkills, skill]);
+      this.messageService.add({ severity: 'success', summary: 'Skill Added', detail: `${skill} added to ${category.get('category')?.value || 'category'}.` });
+    }
+  }
+
+  // Manual Chip Management
+  onSkillInput(event: any, control: any) {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault();
+
+      if (this.addedSuggestionsCount >= this.MAX_SUGGESTIONS) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Limit Reached',
+          detail: `You have reached the AI suggestion limit of ${this.MAX_SUGGESTIONS} skills.`
+        });
+        return;
+      }
+
+      const value = event.target.value.trim().replace(/,$/, '');
+      if (value) {
+        const currentSkills = control.value || [];
+        if (!currentSkills.includes(value)) {
+          control.setValue([...currentSkills, value]);
+        }
+        event.target.value = '';
+      }
+    }
+  }
+
+  removeSkillFromControl(skill: string, control: any) {
+    const currentSkills = control.value || [];
+    control.setValue(currentSkills.filter((s: string) => s !== skill));
   }
 
   // Work Experience Helpers
