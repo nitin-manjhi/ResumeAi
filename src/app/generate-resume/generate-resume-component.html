@@ -5,14 +5,16 @@
     <p-steps [model]="steps" [(activeIndex)]="activeStep" [readonly]="false" styleClass="p-2"></p-steps>
 </div>
 
-<div class="flex justify-content-end mb-4 px-3 sticky top-0 bg-white z-2 py-2 border-bottom-1 surface-border">
+<div class="flex justify-content-end mb-4 px-3 sticky top-0 z-5 py-3 glass-header shadow-2">
     <div class="flex align-items-center gap-3">
         @if (showPreview) {
-        <span class="text-sm font-medium text-secondary">Live Preview Active</span>
+        <span class="text-sm font-bold text-primary flex align-items-center gap-2">
+            <i class="pi pi-check-circle text-green-500"></i> Live Preview Active
+        </span>
         }
         <p-button (onClick)="togglePreview()" [label]="showPreview ? 'Hide Preview' : 'Show Preview'"
-            [icon]="showPreview ? 'pi pi-eye-slash' : 'pi pi-eye'" [severity]="showPreview ? 'secondary' : 'primary'"
-            styleClass="p-button-outlined p-button-sm"></p-button>
+            [icon]="showPreview ? 'pi pi-eye-slash' : 'pi pi-eye'" [severity]="showPreview ? 'help' : 'info'"
+            styleClass="p-button-raised p-button-sm font-bold shadow-3"></p-button>
     </div>
 </div>
 
@@ -206,21 +208,56 @@
                     <p class="text-gray-600 mb-4 text-lg">Choose a layout and list your technical expertise.</p>
 
                     <div class="surface-card p-3 border-round-xl mb-4 bg-primary-50 border-primary-100 border-1">
-                        <div class="flex gap-4 justify-content-center">
-                            <div class="flex align-items-center gap-2">
-                                <p-radioButton [ngModel]="skillGroup.get('layout')?.value"
-                                    [ngModelOptions]="{standalone: true}" value="categorized" inputId="layoutCat"
-                                    name="skillLayoutGroup" (onClick)="onLayoutChange('categorized')"></p-radioButton>
-                                <label for="layoutCat" class="m-0 font-bold cursor-pointer">Categorized Grouping</label>
+                        <div class="flex flex-column md:flex-row gap-4 justify-content-between align-items-center">
+                            <div class="flex gap-4">
+                                <div class="flex align-items-center gap-2">
+                                    <p-radioButton [ngModel]="skillGroup.get('layout')?.value"
+                                        [ngModelOptions]="{standalone: true}" value="categorized" inputId="layoutCat"
+                                        name="skillLayoutGroup"
+                                        (onClick)="onLayoutChange('categorized')"></p-radioButton>
+                                    <label for="layoutCat" class="m-0 font-bold cursor-pointer">Categorized
+                                        Grouping</label>
+                                </div>
+                                <div class="flex align-items-center gap-2">
+                                    <p-radioButton [ngModel]="skillGroup.get('layout')?.value"
+                                        [ngModelOptions]="{standalone: true}" value="bullets" inputId="layoutBul"
+                                        name="skillLayoutGroup" (onClick)="onLayoutChange('bullets')"></p-radioButton>
+                                    <label for="layoutBul" class="m-0 font-bold cursor-pointer">Bullet Points
+                                        List</label>
+                                </div>
                             </div>
-                            <div class="flex align-items-center gap-2">
-                                <p-radioButton [ngModel]="skillGroup.get('layout')?.value"
-                                    [ngModelOptions]="{standalone: true}" value="bullets" inputId="layoutBul"
-                                    name="skillLayoutGroup" (onClick)="onLayoutChange('bullets')"></p-radioButton>
-                                <label for="layoutBul" class="m-0 font-bold cursor-pointer">Bullet Points List</label>
-                            </div>
+
+                            @if (skillGroup.get('layout')?.value === 'categorized' && missingSkills.length > 0) {
+                            <p-button label="Generate Skills by Categories" icon="pi pi-sparkles" severity="help"
+                                size="small" [raised]="true" (onClick)="showCategorizationDialog = true"></p-button>
+                            }
                         </div>
                     </div>
+
+                    <p-dialog header="AI Categorization Guidance" [(visible)]="showCategorizationDialog" [modal]="true"
+                        [style]="{width: '450px'}" [draggable]="false" [resizable]="false">
+                        <div class="flex flex-column gap-3">
+                            <div class="flex align-items-center gap-3 p-3 bg-blue-50 border-round-xl text-blue-700">
+                                <i class="pi pi-info-circle text-2xl"></i>
+                                <span class="font-medium">How it works</span>
+                            </div>
+                            <p class="line-height-3 m-0">
+                                Our AI will analyze your recommended skills and organize them into professional
+                                categories like <b>Programming Languages</b>, <b>Frameworks</b>, and <b>Tools</b>.
+                            </p>
+                            <ul class="m-0 pl-3 line-height-3 text-secondary">
+                                <li>Existing categories will be preserved.</li>
+                                <li>The global limit of <b>{{MAX_SUGGESTIONS}} skills</b> still applies.</li>
+                                <li>You can always edit or move skills manually after generation.</li>
+                            </ul>
+                            <div class="flex justify-content-end gap-2 mt-3">
+                                <p-button label="Cancel" severity="secondary" [text]="true"
+                                    (onClick)="showCategorizationDialog = false"></p-button>
+                                <p-button label="Start Generation" icon="pi pi-bolt"
+                                    (onClick)="generateCategorizedSkills()" [loading]="isCategorizing"></p-button>
+                            </div>
+                        </div>
+                    </p-dialog>
 
                     @if (skillGroup.get('layout')?.value === 'categorized') {
                     <div formArrayName="categories">
@@ -638,9 +675,8 @@
 
                 <!-- Skills -->
                 @if (section.id === 'skills' && (
-                (skillGroup.get('layout')?.value === 'categorized' && skillCategories.length > 0 &&
-                skillCategories.at(0).get('skills')?.value) ||
-                (skillGroup.get('layout')?.value === 'bullets' && skillGroup.get('bulletSkills')?.value)
+                (skillGroup.get('layout')?.value === 'categorized' && addedSuggestionsCount > 0) ||
+                (skillGroup.get('layout')?.value === 'bullets' && addedSuggestionsCount > 0)
                 )) {
                 <div class="resume-section">
                     <h2>Skills</h2>

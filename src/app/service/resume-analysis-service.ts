@@ -43,4 +43,8 @@ export class ResumeAnalysisService {
   trackGeneration() {
     return this.http.post(`${this.baseUrl}/track-generation`, {});
   }
+
+  categorizeSkills(skills: string[]) {
+    return this.http.post<any>(`${this.baseUrl}/categorize-skills`, skills);
+  }
 }

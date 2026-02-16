@@ -16,6 +16,17 @@
     }
 }
 
+.glass-header {
+    background-color: var(--surface-card) !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--surface-border) !important;
+
+    // For modern browsers, we can add a bit of transparency
+    @supports (background-color: color-mix(in srgb, white, black)) {
+        background-color: color-mix(in srgb, var(--surface-card), transparent 15%) !important;
+    }
+}
+
 .field label {
     display: block;
     margin-bottom: 0.5rem;

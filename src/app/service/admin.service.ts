@@ -36,8 +36,9 @@ export class AdminService {
         return this.http.get<UpgradeRequest[]>(`${this.baseUrl}/upgrade-requests`);
     }
 
-    processUpgradeRequest(requestId: number, status: string) {
+    processUpgradeRequest(requestId: number, status: string, newLimit?: number) {
         let params = new HttpParams().set('status', status);
+        if (newLimit !== undefined) params = params.set('newLimit', newLimit.toString());
         return this.http.put(`${this.baseUrl}/upgrade-requests/${requestId}`, null, { params });
     }
 

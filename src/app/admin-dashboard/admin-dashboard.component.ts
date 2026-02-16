@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -20,7 +21,8 @@ import { CardModule } from 'primeng/card';
         InputNumberModule,
         FormsModule,
         ToastModule,
-        CardModule
+        CardModule,
+        DialogModule
     ],
     providers: [MessageService],
     templateUrl: './admin-dashboard.component.html',
@@ -34,6 +36,11 @@ export class AdminDashboardComponent implements OnInit {
     upgradeRequests = signal<UpgradeRequest[]>([]);
     loadingUsers = signal(false);
     loadingRequests = signal(false);
+
+    showApproveDialog = signal(false);
+    selectedRequestId: number | null = null;
+    currentRequestUsername = signal('');
+    newUsageLimit = signal(50); // Default or proposed limit
 
     ngOnInit() {
         this.loadUsers();
@@ -82,7 +89,32 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     processRequest(requestId: number, status: 'APPROVED' | 'REJECTED') {
-        this.adminService.processUpgradeRequest(requestId, status).subscribe({
+        if (status === 'APPROVED') {
+            this.selectedRequestId = requestId;
+            const request = this.upgradeRequests().find(r => r.id === requestId);
+            this.currentRequestUsername.set(request?.username || '');
+
+            // Try to find the user's current limit to propose an increase
+            const user = this.users().find(u => u.username === request?.username);
+            this.newUsageLimit.set((user?.usageLimit || 20) + 10); // Propose current + 10
+
+            this.showApproveDialog.set(true);
+            return;
+        }
+
+        this.executeProcessRequest(requestId, 'REJECTED');
+    }
+
+    confirmApprove() {
+        if (this.selectedRequestId) {
+            this.executeProcessRequest(this.selectedRequestId, 'APPROVED', this.newUsageLimit());
+            this.showApproveDialog.set(false);
+            this.selectedRequestId = null;
+        }
+    }
+
+    private executeProcessRequest(requestId: number, status: 'APPROVED' | 'REJECTED', newLimit?: number) {
+        this.adminService.processUpgradeRequest(requestId, status, newLimit).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',
@@ -90,7 +122,7 @@ export class AdminDashboardComponent implements OnInit {
                     detail: `Request ${status === 'APPROVED' ? 'approved' : 'rejected'}`
                 });
                 this.loadUpgradeRequests(); // Reload requests
-                if (status === 'APPROVED') this.loadUsers(); // Reload users to see updated usage if changed
+                if (status === 'APPROVED') this.loadUsers(); // Reload users to see updated usage
             },
             error: (err) => {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to process request' });

@@ -2,16 +2,25 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { MenuItem, SharedModule } from 'primeng/api';
 import { Menubar } from 'primeng/menubar';
-import { ButtonModule } from 'primeng/button';
+import { ButtonModule, ButtonSeverity } from 'primeng/button';
 import { AuthService } from './service/auth.service';
 import { CommonModule } from '@angular/common';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, Menubar, ButtonModule, SharedModule, Toast],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    Menubar,
+    ButtonModule,
+    SharedModule,
+    Toast,
+    Tooltip,
+  ],
   providers: [MessageService],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -24,14 +33,18 @@ export class AppComponent {
   protected readonly title = signal('ResumeAi');
   isLoggedIn = this.authService.isLoggedIn;
   currentUser = this.authService.currentUser;
+  isDarkMode = signal(false);
+  readonly lightSeverity: ButtonSeverity = 'secondary';
+  readonly darkSeverity: ButtonSeverity = 'primary';
 
   constructor() {
+    this.initTheme();
     this.authService.usageUpgraded$.subscribe(() => {
       this.messageService.add({
         severity: 'success',
         summary: 'Usage Upgraded',
         detail: `Congratulations! Your usage limit has been increased to ${this.currentUser()?.usageLimit}.`,
-        life: 5000
+        life: 5000,
       });
     });
   }
@@ -54,7 +67,7 @@ export class AppComponent {
         label: 'Analyse Resume',
         icon: 'pi pi-bolt',
         routerLink: '/analyse-resume',
-      }
+      },
     ];
 
     if (this.currentUser()?.role === 'ADMIN') {
@@ -74,5 +87,35 @@ export class AppComponent {
 
   logout() {
     this.router.navigate(['/logout']);
+  }
+
+  private initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia(
+      '(prefers-color-scheme: dark)',
+    ).matches;
+
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      this.setDarkTheme(true);
+    } else {
+      this.setDarkTheme(false);
+    }
+  }
+
+  toggleTheme() {
+    this.setDarkTheme(!this.isDarkMode());
+  }
+
+  private setDarkTheme(isDark: boolean) {
+    this.isDarkMode.set(isDark);
+    const element = document.documentElement; // More direct than querySelector('html')
+
+    if (isDark) {
+      element.classList.add('p-dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      element.classList.remove('p-dark');
+      localStorage.setItem('theme', 'light');
+    }
   }
 }

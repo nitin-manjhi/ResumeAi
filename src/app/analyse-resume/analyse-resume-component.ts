@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -10,13 +10,22 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { firstValueFrom } from 'rxjs';
-import { AtsResultComponent } from "../ats-result-component/ats-result-component";
+import { AtsResultComponent } from '../ats-result-component/ats-result-component';
 import { AtsAnalysisResult } from '../shared/modal/ats-analysis-result';
 import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-analyse-resume-component',
-  imports: [ButtonModule, FileUploadModule, ToastModule, FormsModule, TextareaModule, FloatLabelModule, ProgressSpinnerModule, AtsResultComponent],
+  imports: [
+    ButtonModule,
+    FileUploadModule,
+    ToastModule,
+    FormsModule,
+    TextareaModule,
+    FloatLabelModule,
+    ProgressSpinnerModule,
+    AtsResultComponent,
+  ],
   providers: [MessageService],
   templateUrl: './analyse-resume-component.html',
   styleUrl: './analyse-resume-component.scss',
@@ -37,7 +46,7 @@ export class AnalyseResumeComponent {
       this.isLoading.set(true);
       try {
         const response = await firstValueFrom(
-          this.resumeService.analyzeResume(file, this.jobDescription())
+          this.resumeService.analyzeResume(file, this.jobDescription()),
         );
         console.log(response);
         this.messageService.add({
@@ -58,8 +67,9 @@ export class AnalyseResumeComponent {
           this.messageService.add({
             severity: 'warn',
             summary: 'Limit Reached',
-            detail: 'You have reached your analysis limit. Please upgrade your plan in the profile section to get more credits.',
-            life: 5000
+            detail:
+              'You have reached your analysis limit. Please upgrade your plan in the profile section to get more credits.',
+            life: 5000,
           });
         } else {
           this.messageService.add({

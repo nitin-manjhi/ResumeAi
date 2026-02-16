@@ -13,6 +13,7 @@ import { SelectModule } from 'primeng/select';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ChipModule } from 'primeng/chip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
 
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -43,7 +44,8 @@ import { AuthService } from '../service/auth.service';
     SelectModule,
     RadioButtonModule,
     ChipModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    DialogModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './generate-resume-component.html',
@@ -62,6 +64,8 @@ export class GenerateResumeComponent implements OnInit {
   activeStep: number = 0;
   resumeForm!: FormGroup;
   showPreview: boolean = true;
+  showCategorizationDialog: boolean = false;
+  isCategorizing: boolean = false;
 
   states: string[] = [];
   degrees: string[] = [];
@@ -97,13 +101,13 @@ export class GenerateResumeComponent implements OnInit {
 
   ngOnInit() {
     this.steps = [
-      { label: 'General Information', command: (event: any) => this.activeStep = 0 },
-      { label: 'Education', command: (event: any) => this.activeStep = 1 },
-      { label: 'Skills', command: (event: any) => this.activeStep = 2 },
-      { label: 'Work Experience', command: (event: any) => this.activeStep = 3 },
-      { label: 'Projects', command: (event: any) => this.activeStep = 4 },
-      { label: 'Other', command: (event: any) => this.activeStep = 5 },
-      { label: 'Layout', command: (event: any) => this.activeStep = 6 }
+      { label: 'General Information', command: (event: any) => this.goToStep(0) },
+      { label: 'Education', command: (event: any) => this.goToStep(1) },
+      { label: 'Skills', command: (event: any) => this.goToStep(2) },
+      { label: 'Work Experience', command: (event: any) => this.goToStep(3) },
+      { label: 'Projects', command: (event: any) => this.goToStep(4) },
+      { label: 'Other', command: (event: any) => this.goToStep(5) },
+      { label: 'Layout', command: (event: any) => this.goToStep(6) }
     ];
 
     this.resumeForm = this.fb.group({
@@ -199,6 +203,42 @@ export class GenerateResumeComponent implements OnInit {
   get workExperience() { return this.resumeForm.get('workExperience') as FormArray; }
   get projects() { return this.resumeForm.get('projects') as FormArray; }
   get other() { return this.resumeForm.get('other') as FormArray; }
+
+  isStepValid(index: number): boolean {
+    switch (index) {
+      case 0: // General Info
+        return this.generalInfo.valid;
+      case 1: // Education
+        return this.education.length > 0 && this.education.valid;
+      case 2: // Skills
+        return this.addedSuggestionsCount > 0;
+      case 3: // Work Experience
+        return this.workExperience.length > 0 && this.workExperience.valid;
+      default:
+        return true;
+    }
+  }
+
+  goToStep(index: number) {
+    if (index === 0 || index === 6) { // General Info and Layout are always accessible
+      this.activeStep = index;
+      return;
+    }
+
+    // Check if all MANDATORY steps BEFORE the target step are valid
+    for (let i = 0; i < index; i++) {
+      if (i <= 3 && !this.isStepValid(i)) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Missing Information',
+          detail: `Please complete the mandatory step: ${this.steps[i].label} before moving forward.`
+        });
+        this.activeStep = i;
+        return;
+      }
+    }
+    this.activeStep = index;
+  }
 
   // Education Helpers
   createEducationGroup(): FormGroup {
@@ -335,14 +375,68 @@ export class GenerateResumeComponent implements OnInit {
     }
 
     this.confirmationService.confirm({
-      message: 'Switching layouts will clear your current skills in the other layout.',
+      message: 'Switching layouts will clear your current entries to refresh suggestions.',
       header: 'Warning: Data Loss',
       icon: 'pi pi-exclamation-triangle',
       acceptIcon: "none",
-      rejectVisible: false,
+      rejectVisible: false, // User requested no 'No' option
       acceptLabel: 'OK',
       accept: () => {
+        // Clear data from the layout we are LEAVING
+        if (currentLayout === 'categorized') {
+          this.skillCategories.clear();
+          this.addSkillCategory();
+        } else {
+          this.skillGroup.get('bulletSkills')?.setValue([]);
+        }
+
+        // Switch to the new layout
         this.skillGroup.get('layout')?.setValue(newLayout);
+        this.messageService.add({ severity: 'info', summary: 'Layout Switched', detail: 'Skills have been reset.' });
+      }
+    });
+  }
+
+  generateCategorizedSkills() {
+    const missing = this.missingSkills;
+    if (missing.length === 0) {
+      this.messageService.add({ severity: 'warn', summary: 'No suggestions', detail: 'No missing skills to categorize.' });
+      return;
+    }
+
+    this.isCategorizing = true;
+    this.resumeService.categorizeSkills(missing).subscribe({
+      next: (response: any) => {
+        const data = typeof response === 'string' ? JSON.parse(response) : response;
+        if (data.categories) {
+          // Clear existing categories if they only have placeholder data
+          if (this.skillCategories.length === 1 && (!this.skillCategories.at(0).get('category')?.value && this.skillCategories.at(0).get('skills')?.value.length === 0)) {
+            this.skillCategories.clear();
+          }
+
+          data.categories.forEach((cat: any) => {
+            // Check limit before adding
+            if (this.addedSuggestionsCount < this.MAX_SUGGESTIONS) {
+              const skillsToAdd = cat.skills.slice(0, this.MAX_SUGGESTIONS - this.addedSuggestionsCount);
+              if (skillsToAdd.length > 0) {
+                const group = this.createSkillCategoryGroup();
+                group.patchValue({
+                  category: cat.category,
+                  skills: skillsToAdd
+                });
+                this.skillCategories.push(group);
+              }
+            }
+          });
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Skills categorized successfully!' });
+        }
+        this.isCategorizing = false;
+        this.showCategorizationDialog = false;
+      },
+      error: (err) => {
+        console.error('Categorization error:', err);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to categorize skills.' });
+        this.isCategorizing = false;
       }
     });
   }
@@ -609,9 +703,16 @@ export class GenerateResumeComponent implements OnInit {
 
   next() {
     if (this.activeStep < this.steps.length - 1) {
-      if (this.activeStep === 0 && this.generalInfo.invalid) {
-        this.generalInfo.markAllAsTouched();
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Please fill in all required fields.' });
+      if (this.activeStep <= 3 && !this.isStepValid(this.activeStep)) {
+        if (this.activeStep === 0) this.generalInfo.markAllAsTouched();
+        if (this.activeStep === 1) this.education.markAllAsTouched();
+        if (this.activeStep === 3) this.workExperience.markAllAsTouched();
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `Please complete all required fields for ${this.steps[this.activeStep].label}.`
+        });
         return;
       }
       this.activeStep++;
