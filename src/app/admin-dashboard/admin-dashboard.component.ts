@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService, UpgradeRequest } from '../service/admin.service';
-import { UserProfile } from '../service/auth.service';
+import { AuthService, UserProfile } from '../service/auth.service';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -10,6 +10,8 @@ import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
+import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -22,7 +24,9 @@ import { DialogModule } from 'primeng/dialog';
         FormsModule,
         ToastModule,
         CardModule,
-        DialogModule
+        DialogModule,
+        SelectModule,
+        TooltipModule
     ],
     providers: [MessageService],
     templateUrl: './admin-dashboard.component.html',
@@ -31,6 +35,7 @@ import { DialogModule } from 'primeng/dialog';
 export class AdminDashboardComponent implements OnInit {
     private adminService = inject(AdminService);
     private messageService = inject(MessageService);
+    authService = inject(AuthService);
 
     users = signal<UserProfile[]>([]);
     upgradeRequests = signal<UpgradeRequest[]>([]);
@@ -41,6 +46,11 @@ export class AdminDashboardComponent implements OnInit {
     selectedRequestId: number | null = null;
     currentRequestUsername = signal('');
     newUsageLimit = signal(50); // Default or proposed limit
+
+    roles = [
+        { label: 'User', value: 'USER' },
+        { label: 'Admin', value: 'ADMIN' }
+    ];
 
     ngOnInit() {
         this.loadUsers();
@@ -76,11 +86,11 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     saveUsage(user: UserProfile) {
-        this.adminService.updateUserUsage(user.id, user.analysisCount, user.generationCount, user.usageLimit).subscribe({
+        this.adminService.updateUserUsage(user.id, user.analysisCount, user.generationCount, user.usageLimit, user.role).subscribe({
             next: (updatedUser) => {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: `Updated usage for ${user.username}` });
-                // Update local state
-                this.users.update(users => users.map(u => u.id === updatedUser.id ? updatedUser : u));
+                // Update local state by merging the updated fields
+                this.users.update(users => users.map(u => u.id === updatedUser.id ? { ...u, ...updatedUser } : u));
             },
             error: (err) => {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update usage' });

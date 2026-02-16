@@ -68,11 +68,9 @@
                                     <div class="flex flex-column" style="min-width: 10rem">
                                         <span class="font-bold">{{user.username}}</span>
                                         <span class="text-xs text-secondary">{{user.email}}</span>
-                                        <span
-                                            [class]="'customer-badge mt-1 status-' + (user.role === 'ADMIN' ? 'qualified' : 'new')"
-                                            style="width: fit-content">
-                                            {{user.role}}
-                                        </span>
+                                        <p-select [options]="roles" [(ngModel)]="user.role" optionLabel="label"
+                                            optionValue="value" styleClass="w-full mt-2" [fluid]="true" appendTo="body"
+                                            [disabled]="user.id === authService.currentUser()?.id" />
                                     </div>
                                 </td>
                                 <td>

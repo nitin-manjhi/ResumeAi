@@ -23,13 +23,14 @@ export class AdminService {
         return this.http.get<UserProfile[]>(`${this.baseUrl}/users`);
     }
 
-    updateUserUsage(userId: number, analysisCount: number, generationCount: number, usageLimit: number) {
+    updateUserUsage(userId: number, analysisCount: number, generationCount: number, usageLimit: number, role: string) {
         let params = new HttpParams();
         if (analysisCount !== null) params = params.set('analysisCount', analysisCount.toString());
         if (generationCount !== null) params = params.set('generationCount', generationCount.toString());
         if (usageLimit !== null) params = params.set('usageLimit', usageLimit.toString());
+        if (role !== null) params = params.set('role', role);
 
-        return this.http.put<UserProfile>(`${this.baseUrl}/users/${userId}/usage`, null, { params });
+        return this.http.put<any>(`${this.baseUrl}/users/${userId}/usage`, null, { params });
     }
 
     getPendingUpgradeRequests() {
