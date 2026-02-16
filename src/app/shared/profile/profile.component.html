@@ -1,0 +1,120 @@
+<div class="profile-container p-4 fadein">
+    <div class="max-w-30rem mx-auto">
+        <p-card styleClass="shadow-8 border-round-2xl overflow-hidden">
+            <ng-template pTemplate="header">
+                <div class="bg-primary p-5 text-center text-white">
+                    <div class="flex justify-content-center mb-3">
+                        <div
+                            class="w-6rem h-6rem bg-white-alpha-20 border-circle flex align-items-center justify-content-center shadow-4">
+                            <i class="pi pi-user text-4xl"></i>
+                        </div>
+                    </div>
+                    <h2 class="m-0 font-bold text-2xl">{{ user()?.name || 'User Profile' }}</h2>
+                    <p class="text-blue-100 m-0 mt-1">{{ user()?.email }}</p>
+                </div>
+            </ng-template>
+
+            <div class="p-3">
+                <div class="flex flex-column gap-4">
+                    <!-- Account Details -->
+                    <section>
+                        <h3 class="text-900 font-bold mb-3 flex align-items-center gap-2">
+                            <i class="pi pi-info-circle text-primary"></i> Account Details
+                        </h3>
+                        <div class="grid p-fluid">
+                            <div class="col-12 flex justify-content-between py-2">
+                                <span class="text-600">Username</span>
+                                <span class="font-bold text-900">{{ user()?.username }}</span>
+                            </div>
+                            <div class="col-12 flex justify-content-between py-2">
+                                <span class="text-600">Email Status</span>
+                                <p-tag severity="success" value="Verified" [rounded]="true"></p-tag>
+                            </div>
+                        </div>
+                    </section>
+
+                    <p-divider></p-divider>
+
+                    <!-- Usage Statistics -->
+                    <section>
+                        <div class="flex justify-content-between align-items-center mb-3">
+                            <h3 class="text-900 font-bold m-0 flex align-items-center gap-2">
+                                <i class="pi pi-chart-line text-primary"></i> Service Usage
+                            </h3>
+                            <p-tag [severity]="usageSeverity"
+                                [value]="user()?.analysisCount + ' / ' + user()?.usageLimit" [rounded]="true"></p-tag>
+                        </div>
+
+                        <div class="field mb-4">
+                            <div class="flex justify-content-between mb-2">
+                                <span class="text-700 font-medium">Resume Analysis</span>
+                                <span class="text-primary font-bold">{{ analysisPercentage | number:'1.0-0' }}%</span>
+                            </div>
+                            <p-progressBar [value]="analysisPercentage" [showValue]="false" [style]="{'height': '12px'}"
+                                [color]="usageSeverity === 'danger' ? '#f44336' : usageSeverity === 'warn' ? '#ff9800' : '#4caf50'"></p-progressBar>
+                            <p class="text-sm text-600 mt-2">
+                                You have used <b>{{ user()?.analysisCount }}</b> out of <b>{{ user()?.usageLimit }}</b>
+                                analysis credits.
+                            </p>
+                        </div>
+
+                        <div class="field mb-4">
+                            <div class="flex justify-content-between mb-2">
+                                <span class="text-700 font-medium">Resume Generation</span>
+                                <span class="text-primary font-bold">{{ generationPercentage | number:'1.0-0' }}%</span>
+                            </div>
+                            <p-progressBar [value]="generationPercentage" [showValue]="false"
+                                [style]="{'height': '12px'}"
+                                [color]="getSeverity(generationPercentage) === 'danger' ? '#f44336' : getSeverity(generationPercentage) === 'warn' ? '#ff9800' : '#4caf50'"></p-progressBar>
+                            <p class="text-sm text-600 mt-2">
+                                You have used <b>{{ user()?.generationCount }}</b> out of <b>{{ user()?.usageLimit
+                                    }}</b> generation credits.
+                            </p>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="mt-5 text-center">
+                    @if (user() && (user()!.analysisCount >= user()!.usageLimit || user()!.generationCount >=
+                    user()!.usageLimit)) {
+                    <div class="p-3 bg-red-50 border-round mb-4 text-red-700 text-sm flex align-items-center gap-2">
+                        <i class="pi pi-exclamation-circle text-xl"></i>
+                        <div class="text-left">
+                            <span class="font-bold block">Credit Limit Reached!</span>
+                            <span>You've used all your allotted credits. Upgrade your plan to continue using our
+                                services.</span>
+                        </div>
+                    </div>
+                    } @else if (user() && (analysisPercentage >= 80 || generationPercentage >= 80)) {
+                    <div
+                        class="p-3 bg-orange-50 border-round mb-4 text-orange-700 text-sm flex align-items-center gap-2">
+                        <i class="pi pi-info-circle text-xl"></i>
+                        <div class="text-left">
+                            <span class="font-bold block">Running Low!</span>
+                            <span>You're almost out of credits. Consider upgrading soon to avoid interruption.</span>
+                        </div>
+                    </div>
+                    }
+                    <p-button label="Upgrade Plan" icon="pi pi-bolt" (onClick)="upgradePlan()"
+                        styleClass="w-full p-3 font-bold p-button-raised shadow-4" severity="primary"></p-button>
+                    <p class="text-xs text-600 mt-3">Resetting in 15 days</p>
+                </div>
+            </div>
+        </p-card>
+    </div>
+    <p-dialog header="Request Plan Upgrade" [(visible)]="showUpgradeDialog" [modal]="true" [style]="{ width: '450px' }"
+        [draggable]="false" [resizable]="false">
+        <div class="flex flex-column gap-3 py-3">
+            <label for="reason" class="font-bold">Why do you need an upgrade?</label>
+            <textarea id="reason" pInputTextarea [(ngModel)]="upgradeReason" rows="5" class="w-full"
+                placeholder="e.g., I'm applying for multiple jobs and need more analysis credits."></textarea>
+            <small class="text-500">Your request will be sent to the admin for manual approval.</small>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="Cancel" icon="pi pi-times" (onClick)="showUpgradeDialog = false" severity="secondary"
+                [text]="true" />
+            <p-button label="Send Request" icon="pi pi-send" (onClick)="submitUpgradeRequest()" [loading]="submitting"
+                [disabled]="!upgradeReason.trim()" />
+        </ng-template>
+    </p-dialog>
+</div>

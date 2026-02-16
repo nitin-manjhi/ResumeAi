@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -10,22 +10,34 @@ import { FloatLabelModule } from 'primeng/floatlabel';
 
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { firstValueFrom } from 'rxjs';
-import { AtsResultComponent } from "../ats-result-component/ats-result-component";
+import { AtsResultComponent } from '../ats-result-component/ats-result-component';
 import { AtsAnalysisResult } from '../shared/modal/ats-analysis-result';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-analyse-resume-component',
-  imports: [ButtonModule, FileUploadModule, ToastModule, FormsModule, TextareaModule, FloatLabelModule, ProgressSpinnerModule, AtsResultComponent],
+  imports: [
+    ButtonModule,
+    FileUploadModule,
+    ToastModule,
+    FormsModule,
+    TextareaModule,
+    FloatLabelModule,
+    ProgressSpinnerModule,
+    AtsResultComponent,
+  ],
   providers: [MessageService],
   templateUrl: './analyse-resume-component.html',
   styleUrl: './analyse-resume-component.scss',
 })
 export class AnalyseResumeComponent {
   private readonly resumeService = inject(ResumeAnalysisService);
+  private readonly authService = inject(AuthService);
   private messageService = inject(MessageService);
   protected jobDescription = signal('');
   protected isLoading = signal(false);
-  protected analysisResult = signal<AtsAnalysisResult | null>(null);
+  protected analysisResult = this.resumeService.currentResult;
+
   async onUpload(fileUpload: any) {
     if (fileUpload.files && fileUpload.files.length > 0) {
       const file = fileUpload.files[0];
@@ -34,7 +46,7 @@ export class AnalyseResumeComponent {
       this.isLoading.set(true);
       try {
         const response = await firstValueFrom(
-          this.resumeService.analyzeResume(file, this.jobDescription())
+          this.resumeService.analyzeResume(file, this.jobDescription()),
         );
         console.log(response);
         this.messageService.add({
@@ -42,15 +54,30 @@ export class AnalyseResumeComponent {
           summary: 'Success',
           detail: 'Resume analysis completed successfully',
         });
-        this.analysisResult.set(response);
+        this.resumeService.setResult(response);
+
+        // Refresh profile to update usage counts
+        this.authService.getUserProfile().subscribe();
+
         fileUpload.clear();
-      } catch (error) {
+      } catch (error: any) {
         console.error(error);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to analyze resume',
-        });
+        const errorMessage = error.error?.message || error.message || '';
+        if (errorMessage.includes('limit reached')) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Limit Reached',
+            detail:
+              'You have reached your analysis limit. Please upgrade your plan in the profile section to get more credits.',
+            life: 5000,
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to analyze resume',
+          });
+        }
       } finally {
         this.isLoading.set(false);
       }
@@ -64,7 +91,7 @@ export class AnalyseResumeComponent {
   }
 
   onReset() {
-    this.analysisResult.set(null);
+    this.resumeService.clearResult();
     this.jobDescription.set('');
   }
 }

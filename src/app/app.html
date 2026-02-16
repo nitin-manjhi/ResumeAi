@@ -1,3 +1,5 @@
+<p-toast />
+
 @if (isLoggedIn()) {
 <div class="card p-2 surface-card shadow-1 mb-3">
   <p-menubar [model]="items()">
@@ -9,6 +11,19 @@
     </ng-template>
     <ng-template pTemplate="end">
       <div class="flex align-items-center gap-3">
+        @if (currentUser()) {
+        <div class="flex align-items-center gap-2">
+          <div
+            class="flex align-items-center gap-2 px-3 py-2 bg-primary-50 border-round-xl cursor-pointer hover:bg-primary-100 transition-colors transition-duration-200"
+            (click)="goToProfile()">
+            <i class="pi pi-user text-primary font-bold"></i>
+            <span class="font-bold text-primary">{{ currentUser()?.name }}</span>
+          </div>
+          <p-button [icon]="isDarkMode() ? 'pi pi-sun' : 'pi pi-moon'" [text]="true" [rounded]="true"
+            (onClick)="toggleTheme()" [severity]="isDarkMode() ? darkSeverity : lightSeverity"
+            pTooltip="Toggle Dark/Light Mode" />
+        </div>
+        }
         <p-button label="Logout" icon="pi pi-sign-out" [text]="true" (onClick)="logout()" severity="danger"
           styleClass="p-button-sm font-bold" />
       </div>

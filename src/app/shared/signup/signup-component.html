@@ -18,9 +18,19 @@
                 <form [formGroup]="signupForm" (ngSubmit)="onSignup()">
                     <div class="flex flex-column gap-3">
                         <div class="field m-0 p-fluid">
+                            <label for="name" class="block font-bold mb-2 text-900">Full Name</label>
+                            <input id="name" type="text" pInputText formControlName="name"
+                                placeholder="Enter your full name" class="w-full"
+                                [class.p-invalid]="signupForm.get('name')?.invalid && signupForm.get('name')?.touched" />
+                            @if (signupForm.get('name')?.invalid && signupForm.get('name')?.touched) {
+                            <small class="text-red-500 mt-1 block">Full Name is required</small>
+                            }
+                        </div>
+
+                        <div class="field m-0 p-fluid">
                             <label for="username" class="block font-bold mb-2 text-900">Username</label>
                             <input id="username" type="text" pInputText formControlName="username"
-                                placeholder="Choose a username"
+                                placeholder="Choose a username" class="w-full"
                                 [class.p-invalid]="signupForm.get('username')?.invalid && signupForm.get('username')?.touched" />
                             @if (signupForm.get('username')?.invalid && signupForm.get('username')?.touched) {
                             <small class="text-red-500 mt-1 block">Username is required (min 3 chars)</small>
@@ -30,7 +40,7 @@
                         <div class="field m-0 p-fluid">
                             <label for="email" class="block font-bold mb-2 text-900">Email Address</label>
                             <input id="email" type="email" pInputText formControlName="email"
-                                placeholder="Enter your email"
+                                placeholder="Enter your email" class="w-full"
                                 [class.p-invalid]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched" />
                             @if (signupForm.get('email')?.invalid && signupForm.get('email')?.touched) {
                             <small class="text-red-500 mt-1 block">Valid email is required</small>

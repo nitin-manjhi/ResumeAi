@@ -1,0 +1,40 @@
+.profile-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+:host ::ng-deep {
+    .p-card {
+        border-radius: 20px;
+        border: none;
+
+        .p-card-body {
+            padding: 0;
+        }
+    }
+
+    .p-progressbar {
+        border-radius: 10px;
+        background-color: #f1f3f4;
+
+        .p-progressbar-value {
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+        }
+    }
+
+    .p-divider {
+        margin: 1.5rem 0;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -2,9 +2,9 @@
     <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-3">
         <h2 class="m-0 text-primary">ATS Analysis Result</h2>
         <div class="flex flex-wrap gap-2">
-            <p-button label="Download Cover Letter" icon="pi pi-file-pdf" (onClick)="downloadCoverLetter()"
+            <p-button label="Review & Edit Cover Letter" icon="pi pi-file-edit" (onClick)="reviewCoverLetter()"
                 severity="info" />
-            <p-button label="Send Mail" icon="pi pi-envelope" (onClick)="sendMail()" severity="success" />
+            <p-button label="Email Draft" icon="pi pi-envelope" (onClick)="sendMail()" severity="success" />
             <p-button label="Analyze New" icon="pi pi-refresh" (onClick)="reset()" severity="secondary" />
         </div>
     </div>

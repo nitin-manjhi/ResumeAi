@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
       theme: {
         preset: Aura,
         options: {
-          darkModeSelector: false, // This disables the automatic black background
+          darkModeSelector: '.p-dark', // This disables the automatic black background
         },
       },
     }),
