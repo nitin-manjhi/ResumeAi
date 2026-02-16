@@ -322,3 +322,11 @@ textarea {
         margin-right: -50%;
     }
 }
+
+a {
+  color: inherit; /* Keeps the link the same color as your text */
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline; /* Shows it's clickable only when hovering */
+}
