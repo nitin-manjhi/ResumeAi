@@ -39,7 +39,7 @@ export class AnalyseResumeComponent {
   private messageService = inject(MessageService);
   protected jobDescription = signal('');
   protected isLoading = signal(false);
-  protected jobSubmitted = signal(false);
+  protected jobSubmitted = computed(() => this.resumeService.isAnalyzing() || !!this.readyResultId());
   protected readyResultId = this.notificationService.latestResultId;
   protected analysisResult = this.resumeService.currentResult;
 
@@ -60,7 +60,7 @@ export class AnalyseResumeComponent {
           detail: 'Resume submitted for analysis. You will be notified via WebSocket once processing is complete.',
         });
 
-        this.jobSubmitted.set(true);
+        this.resumeService.setAnalyzing(true, response.uuid);
         this.jobDescription.set('');
 
         // Refresh profile to update usage counts
@@ -100,8 +100,7 @@ export class AnalyseResumeComponent {
   onReset() {
     this.resumeService.clearResult();
     this.jobDescription.set('');
-    this.jobSubmitted.set(false);
-    // Note: We don't clear notificationService.latestResultId here as it might be useful elsewhere
+    this.notificationService.clearLatestResultId();
   }
 
   viewResult() {

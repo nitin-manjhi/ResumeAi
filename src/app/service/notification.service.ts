@@ -76,6 +76,9 @@ export class NotificationService {
 
             this._notifications.update(prev => [...prev, data.message]);
 
+            // Clear analyzing state as we got result
+            this.resumeService.setAnalyzing(false);
+
             // Check if resultId is actually a valid UUID string and not "null"
             if (data.resultId && data.resultId !== 'null') {
                 this._latestResultId.set(data.resultId);
@@ -112,6 +115,7 @@ export class NotificationService {
             next: () => {
                 this.router.navigate(['/analyse-resume']);
                 this.messageService.clear();
+                this.clearLatestResultId();
             },
             error: (err) => {
                 console.error('Failed to fetch result', err);
@@ -122,5 +126,9 @@ export class NotificationService {
                 });
             }
         });
+    }
+
+    clearLatestResultId() {
+        this._latestResultId.set(null);
     }
 }

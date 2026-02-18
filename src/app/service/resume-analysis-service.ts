@@ -14,12 +14,25 @@ export class ResumeAnalysisService {
   private readonly _currentResult = signal<AtsAnalysisResult | null>(null);
   readonly currentResult = this._currentResult.asReadonly();
 
+  private readonly _isAnalyzing = signal<boolean>(false);
+  readonly isAnalyzing = this._isAnalyzing.asReadonly();
+
+  private readonly _lastJobId = signal<string | null>(null);
+  readonly lastJobId = this._lastJobId.asReadonly();
+
   setResult(result: AtsAnalysisResult) {
     this._currentResult.set(result);
   }
 
   clearResult() {
     this._currentResult.set(null);
+    this._isAnalyzing.set(false);
+    this._lastJobId.set(null);
+  }
+
+  setAnalyzing(status: boolean, jobId: string | null = null) {
+    this._isAnalyzing.set(status);
+    if (jobId) this._lastJobId.set(jobId);
   }
 
   analyzeResume(file: File, jdText: string) {
