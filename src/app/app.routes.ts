@@ -15,7 +15,7 @@ export const routes: Routes = [
   { path: 'signup', component: SignupComponent },
   { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
-  { path: '', component: HomeComponent, canActivate: [authGuard] },
+  { path: '', component: HomeComponent },
   { path: 'analyse-resume', component: AnalyseResumeComponent, canActivate: [authGuard] },
   { path: 'send-mail', component: SendMailComponent, canActivate: [authGuard] },
   { path: 'logout', component: LogOutComponent },

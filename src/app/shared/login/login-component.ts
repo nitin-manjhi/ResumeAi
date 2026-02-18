@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -25,7 +25,6 @@ import { AuthService } from '../../service/auth.service';
         ToastModule,
         RouterLink
     ],
-    providers: [MessageService],
     templateUrl: './login-component.html',
     styleUrl: './login-component.scss'
 })
@@ -33,6 +32,7 @@ export class LoginComponent {
     private fb = inject(FormBuilder);
     private authService = inject(AuthService);
     private router = inject(Router);
+    private route = inject(ActivatedRoute);
     private messageService = inject(MessageService);
 
     loginForm: FormGroup;
@@ -57,7 +57,8 @@ export class LoginComponent {
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Login successful!' });
                 setTimeout(() => {
-                    this.router.navigate(['/']);
+                    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+                    this.router.navigateByUrl(returnUrl);
                 }, 1000);
             },
             error: (err) => {

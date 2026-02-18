@@ -3,6 +3,7 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ResumeAnalysisService } from '../service/resume-analysis-service';
+import { CardModule } from 'primeng/card';
 import { FileUploadModule } from 'primeng/fileupload';
 import { FormsModule } from '@angular/forms';
 import { TextareaModule } from 'primeng/textarea';
@@ -13,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 import { AtsResultComponent } from '../ats-result-component/ats-result-component';
 import { AtsAnalysisResult } from '../shared/modal/ats-analysis-result';
 import { AuthService } from '../service/auth.service';
+import { NotificationService } from '../service/notification.service';
 
 @Component({
   selector: 'app-analyse-resume-component',
@@ -23,19 +25,22 @@ import { AuthService } from '../service/auth.service';
     FormsModule,
     TextareaModule,
     FloatLabelModule,
+    CardModule,
     ProgressSpinnerModule,
     AtsResultComponent,
   ],
-  providers: [MessageService],
   templateUrl: './analyse-resume-component.html',
   styleUrl: './analyse-resume-component.scss',
 })
 export class AnalyseResumeComponent {
   private readonly resumeService = inject(ResumeAnalysisService);
   private readonly authService = inject(AuthService);
+  private readonly notificationService = inject(NotificationService);
   private messageService = inject(MessageService);
   protected jobDescription = signal('');
   protected isLoading = signal(false);
+  protected jobSubmitted = signal(false);
+  protected readyResultId = this.notificationService.latestResultId;
   protected analysisResult = this.resumeService.currentResult;
 
   async onUpload(fileUpload: any) {
@@ -51,10 +56,12 @@ export class AnalyseResumeComponent {
         console.log(response);
         this.messageService.add({
           severity: 'success',
-          summary: 'Success',
-          detail: 'Resume analysis completed successfully',
+          summary: 'Submitted',
+          detail: 'Resume submitted for analysis. You will be notified via WebSocket once processing is complete.',
         });
-        this.resumeService.setResult(response);
+
+        this.jobSubmitted.set(true);
+        this.jobDescription.set('');
 
         // Refresh profile to update usage counts
         this.authService.getUserProfile().subscribe();
@@ -93,5 +100,14 @@ export class AnalyseResumeComponent {
   onReset() {
     this.resumeService.clearResult();
     this.jobDescription.set('');
+    this.jobSubmitted.set(false);
+    // Note: We don't clear notificationService.latestResultId here as it might be useful elsewhere
+  }
+
+  viewResult() {
+    const id = this.readyResultId();
+    if (id) {
+      this.notificationService.viewResult(id);
+    }
   }
 }

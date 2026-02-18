@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { Tooltip } from 'primeng/tooltip';
+import { NotificationService } from './service/notification.service';
 
 @Component({
   selector: 'app-root',
@@ -21,14 +22,14 @@ import { Tooltip } from 'primeng/tooltip';
     Toast,
     Tooltip,
   ],
-  providers: [MessageService],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class AppComponent {
   private authService = inject(AuthService);
-  private router = inject(Router);
+  public router = inject(Router);
   private messageService = inject(MessageService);
+  public notificationService = inject(NotificationService);
 
   protected readonly title = signal('ResumeAi');
   isLoggedIn = this.authService.isLoggedIn;
@@ -87,6 +88,10 @@ export class AppComponent {
 
   logout() {
     this.router.navigate(['/logout']);
+  }
+
+  goToLogin() {
+    this.router.navigate(['/login']);
   }
 
   private initTheme() {

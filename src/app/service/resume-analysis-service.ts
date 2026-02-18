@@ -1,6 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AtsAnalysisResult } from '../shared/modal/ats-analysis-result';
+import { tap } from 'rxjs';
 
 
 @Injectable({
@@ -8,7 +9,7 @@ import { AtsAnalysisResult } from '../shared/modal/ats-analysis-result';
 })
 export class ResumeAnalysisService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8080';
+  private readonly baseUrl = '/api';
 
   private readonly _currentResult = signal<AtsAnalysisResult | null>(null);
   readonly currentResult = this._currentResult.asReadonly();
@@ -26,6 +27,12 @@ export class ResumeAnalysisService {
     formData.append('file', file);
     formData.append('jdText', jdText);
     return this.http.post<AtsAnalysisResult>(`${this.baseUrl}/analyze`, formData);
+  }
+
+  getAnalysisResult(resultId: string) {
+    return this.http.get<AtsAnalysisResult>(`${this.baseUrl}/analysis-result/${resultId}`).pipe(
+      tap(result => this._currentResult.set(result))
+    );
   }
 
   downloadResume(id: string) {

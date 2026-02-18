@@ -1,4 +1,3 @@
-<p-toast />
 <p-confirmDialog />
 
 <div class="card shadow-1 p-3 mb-4 surface-card">
@@ -621,19 +620,25 @@
                         @if (generalInfo.get('email')?.value) { <span>|</span> }
                         <span>{{ generalInfo.get('mobileNumber')?.value }}</span>
                         }
-                      @if (generalInfo.get('linkedinUrl')?.value) {
-                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value) { <span>|</span> }
-                        <a [href]="generalInfo.get('linkedinUrl')?.value" target="_blank" class="text-decoration-none">LinkedIn</a>
-                      }
-                      @if (generalInfo.get('githubUrl')?.value) {
-                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value || generalInfo.get('linkedinUrl')?.value) { <span>|</span> }
-                        <a [href]="generalInfo.get('githubUrl')?.value" target="_blank" class="text-decoration-none">GitHub</a>
-                      }
+                        @if (generalInfo.get('linkedinUrl')?.value) {
+                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value) { <span>|</span>
+                        }
+                        <a [href]="generalInfo.get('linkedinUrl')?.value" target="_blank"
+                            class="text-decoration-none">LinkedIn</a>
+                        }
+                        @if (generalInfo.get('githubUrl')?.value) {
+                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value ||
+                        generalInfo.get('linkedinUrl')?.value) { <span>|</span> }
+                        <a [href]="generalInfo.get('githubUrl')?.value" target="_blank"
+                            class="text-decoration-none">GitHub</a>
+                        }
 
-                      @if (generalInfo.get('portfolioUrl')?.value) {
-                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value || generalInfo.get('linkedinUrl')?.value || generalInfo.get('githubUrl')?.value) { <span>|</span> }
-                        <a [href]="generalInfo.get('portfolioUrl')?.value" target="_blank" class="text-decoration-none">Portfolio</a>
-                      }
+                        @if (generalInfo.get('portfolioUrl')?.value) {
+                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value ||
+                        generalInfo.get('linkedinUrl')?.value || generalInfo.get('githubUrl')?.value) { <span>|</span> }
+                        <a [href]="generalInfo.get('portfolioUrl')?.value" target="_blank"
+                            class="text-decoration-none">Portfolio</a>
+                        }
                     </div>
                 </div>
 

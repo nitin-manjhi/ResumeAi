@@ -23,7 +23,6 @@ import { AuthService } from '../../service/auth.service';
         ToastModule,
         RouterLink
     ],
-    providers: [MessageService],
     templateUrl: './signup-component.html',
     styleUrl: './signup-component.scss'
 })
