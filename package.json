@@ -31,6 +31,7 @@
     "@angular/router": "^20.1.0",
     "@primeuix/themes": "^2.0.3",
     "@stomp/stompjs": "^7.3.0",
+    "cloudflared": "^0.7.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.1.0",
     "primeflex": "^4.0.0",

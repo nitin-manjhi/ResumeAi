@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class LocationService {
     private readonly http = inject(HttpClient);
-    private readonly baseUrl = 'http://localhost:8080/api/locations';
+    private readonly baseUrl = '/api/locations';
 
     getStates(): Observable<string[]> {
         return this.http.get<string[]>(`${this.baseUrl}/states`);

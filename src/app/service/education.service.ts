@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class EducationService {
     private readonly http = inject(HttpClient);
-    private readonly baseUrl = 'http://localhost:8080/api/education';
+    private readonly baseUrl = '/api/education';
 
     getDegrees(): Observable<string[]> {
         return this.http.get<string[]>(`${this.baseUrl}/degrees`);

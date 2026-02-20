@@ -17,7 +17,7 @@ export interface UpgradeRequest {
 })
 export class AdminService {
     private readonly http = inject(HttpClient);
-    private readonly baseUrl = 'http://localhost:8080/api/admin';
+    private readonly baseUrl = '/api/admin';
 
     getAllUsers() {
         return this.http.get<UserProfile[]>(`${this.baseUrl}/users`);
@@ -45,6 +45,6 @@ export class AdminService {
 
     createUpgradeRequest(reason: string) {
         let params = new HttpParams().set('reason', reason);
-        return this.http.post(`http://localhost:8080/api/auth/upgrade-requests`, null, { params });
+        return this.http.post(`/api/auth/upgrade-requests`, null, { params });
     }
 }
