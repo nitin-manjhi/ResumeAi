@@ -1,2 +1,2 @@
 # ResumeAi
-Frontend for career align intelligence
+Frontend for career align intelligence application
