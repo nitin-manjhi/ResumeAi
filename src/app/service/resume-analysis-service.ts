@@ -35,10 +35,11 @@ export class ResumeAnalysisService {
     if (jobId) this._lastJobId.set(jobId);
   }
 
-  analyzeResume(file: File, jdText: string) {
+  analyzeResume(file: File, jdText: string, model: string = 'ollama') {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('jdText', jdText);
+    formData.append('model', model);
     return this.http.post<AtsAnalysisResult>(`${this.baseUrl}/analyze`, formData);
   }
 

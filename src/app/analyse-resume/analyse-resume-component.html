@@ -22,11 +22,14 @@
           <p-button label="Start Over" icon="pi pi-refresh" severity="secondary" (onClick)="onReset()" />
         </div>
         } @else {
-        <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4" />
-        <div class="flex flex-column gap-2">
+        <div class="w-full flex flex-column gap-3">
           <h2 class="text-2xl font-bold text-900 m-0">Processing Resume...</h2>
-          <p class="text-600 text-lg">Our AI is analyzing your resume against the job description. This usually takes a
-            few moments.</p>
+          <p-progressBar [value]="progress()" [showValue]="false" styleClass="h-1rem border-round-xl" />
+          <div class="flex justify-content-between text-600 font-medium">
+            <span>{{ progressMessage() || 'Initializing...' }}</span>
+            <span>{{ progress() }}%</span>
+          </div>
+          <p class="text-500 mt-2">Our AI is working task-by-task to analyze your resume and generate documents.</p>
         </div>
         <p-button label="Cancel & Start Over" icon="pi pi-times" severity="danger" [text]="true"
           (onClick)="onReset()" />
@@ -34,6 +37,27 @@
       </div>
     </p-card>
     } @else {
+    <!-- Model Selection Section -->
+    <div class="w-full md:w-10 flex flex-column gap-3 mb-4" style="max-width: 1200px;">
+      <label class="font-semibold text-xl">Select AI Intelligence</label>
+      <p-selectButton [options]="modelOptions()" [ngModel]="selectedModel()" (ngModelChange)="selectedModel.set($event)"
+        optionLabel="label" optionValue="value" [optionDisabled]="'disabled'">
+        <ng-template let-item pTemplate="item">
+          <div class="flex flex-column align-items-center gap-1 px-3 py-2">
+            <i [class]="item.icon" [style.color]="item.disabled ? '#ccc' : 'inherit'"></i>
+            <span [class.text-400]="item.disabled">{{ item.label }}</span>
+            @if(item.disabled) {
+            <span class="text-xs text-orange-400 font-bold">PREMIUM</span>
+            }
+          </div>
+        </ng-template>
+      </p-selectButton>
+      @if(!isPremium()) {
+      <p class="text-xs text-600 mt-1"><i class="pi pi-info-circle mr-1"></i>OpenAI and Gemini models are available for
+        premium accounts only.</p>
+      }
+    </div>
+
     <!-- Job Description Section (80% Width) -->
     <div class="w-full md:w-10 flex flex-column gap-2" style="max-width: 1200px;">
       <label class="font-semibold text-xl" for="jobDescription">Job Description</label>

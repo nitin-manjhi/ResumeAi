@@ -85,6 +85,12 @@ export class ProfileComponent implements OnInit {
         return (user.generationCount / user.usageLimit) * 100;
     }
 
+    get premiumPercentage(): number {
+        const user = this.user();
+        if (!user || !user.premiumUsageLimit) return 0;
+        return (user.premiumUsageCount / user.premiumUsageLimit) * 100;
+    }
+
     getSeverity(percentage: number): 'success' | 'warn' | 'danger' {
         if (percentage < 70) return 'success';
         if (percentage < 90) return 'warn';
@@ -93,5 +99,9 @@ export class ProfileComponent implements OnInit {
 
     get usageSeverity(): 'success' | 'warn' | 'danger' {
         return this.getSeverity(this.analysisPercentage);
+    }
+
+    get premiumUsageSeverity(): 'success' | 'warn' | 'danger' {
+        return this.getSeverity(this.premiumPercentage);
     }
 }
