@@ -3,7 +3,7 @@ export interface AtsAnalysisResult {
     score: number;
     matchedSkills: string[];
     missingSkills: string[];
-    improvements: string[];
+    improvementSuggestions: string[];
     coverLetter: string;
     email: {
         subject: string;
