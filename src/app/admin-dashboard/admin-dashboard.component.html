@@ -1,3 +1,4 @@
+<p-toast />
 <div class="p-4 admin-container surface-ground min-h-screen">
     <div class="flex flex-column gap-5 max-w-85rem mx-auto">
 
@@ -86,8 +87,8 @@
                                     </div>
                                 </div>
 
-                                <div class="flex flex-column gap-2 mt-2 pt-3 border-top-1 border-50">
-                                    <label class="text-xs font-bold text-600 uppercase">Application Role</label>
+                                <div class="flex flex-column gap-3 mt-2 pt-3 border-top-1 border-50">
+                                    <label class="quota-label">Application Role</label>
                                     <p-select [options]="roles" [(ngModel)]="user.role" optionLabel="label"
                                         optionValue="value" appendTo="body" styleClass="w-full shadow-1 border-300"
                                         [disabled]="user.id === authService.currentUser()?.id" />
@@ -212,7 +213,7 @@
             </div>
 
             <div class="flex flex-column gap-3">
-                <label class="font-bold text-800 ml-2">Assigned Limit</label>
+                <label class="quota-label">Assigned Limit</label>
                 <p-inputNumber [ngModel]="newUsageLimit()" (ngModelChange)="newUsageLimit.set($event)"
                     [showButtons]="true" buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
                     decrementButtonIcon="pi pi-minus" [min]="0" styleClass="w-full modern-input"
