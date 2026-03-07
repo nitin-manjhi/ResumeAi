@@ -36,15 +36,21 @@ export class AtsResultComponent implements OnInit {
   editableResume = '';
 
   ngOnInit() {
-    if (this.result?.newResume) {
-      this.editableResume = this.result.newResume;
+    if (this.result?.optimizedResume) {
+      this.editableResume = this.result.optimizedResume;
     }
   }
 
   get formattedScoreExplanation(): string[] {
-    if (!this.result?.scoreExplanation) return [];
-    // Split by newlines or bullet symbols and filter out empty strings
-    return this.result.scoreExplanation
+    const explanation = this.result?.scoreExplanation;
+    if (!explanation) return [];
+
+    if (Array.isArray(explanation)) {
+      return explanation.map(line => line.replace(/^[•\-\*]\s*/, '').trim());
+    }
+
+    // Fallback for string split
+    return explanation
       .split(/\n|•/)
       .map(line => line.trim())
       .filter(line => line.length > 0);
@@ -84,7 +90,7 @@ export class AtsResultComponent implements OnInit {
   }
 
   copyResume() {
-    const textToCopy = this.editableResume || this.result.newResume;
+    const textToCopy = this.editableResume || this.result.optimizedResume;
     if (textToCopy) {
       navigator.clipboard.writeText(textToCopy);
       this.messageService.add({ severity: 'info', summary: 'Copied', detail: 'Resume copied to clipboard' });

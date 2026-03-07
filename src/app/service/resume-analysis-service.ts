@@ -44,8 +44,43 @@ export class ResumeAnalysisService {
   }
 
   getAnalysisResult(resultId: string) {
-    return this.http.get<AtsAnalysisResult>(`${this.baseUrl}/analysis-result/${resultId}`).pipe(
-      tap(result => this._currentResult.set(result))
+    const current = this._currentResult();
+    let params: any = {};
+
+    if (current && current.uuid === resultId) {
+      // If we already have some data, only ask for what's missing
+      const missingFields = [];
+      if (current.score === undefined || current.score === null) missingFields.push('score');
+      if (!current.scoreExplanation || current.scoreExplanation.length === 0) missingFields.push('scoreExplanation');
+      if (!current.matchedSkills || current.matchedSkills.length === 0) missingFields.push('matchedSkills');
+      if (!current.missingSkills || current.missingSkills.length === 0) missingFields.push('missingSkills');
+      if (!current.improvementSuggestions || current.improvementSuggestions.length === 0) missingFields.push('improvementSuggestions');
+      if (!current.optimizedResume) missingFields.push('optimizedResume');
+      if (!current.coverLetter) missingFields.push('coverLetter');
+      if (!current.email) missingFields.push('email');
+
+      if (missingFields.length > 0) {
+        params.fields = missingFields;
+      }
+    }
+
+    return this.http.get<AtsAnalysisResult>(`${this.baseUrl}/analysis-result/${resultId}`, { params }).pipe(
+      tap(newResult => {
+        if (current && current.uuid === resultId) {
+          // Merge
+          const merged = { ...current };
+          Object.keys(newResult).forEach(key => {
+            const val = (newResult as any)[key];
+            if (val !== null && val !== undefined) {
+              (merged as any)[key] = val;
+            }
+          });
+          this._currentResult.set(merged);
+        } else {
+          // Fresh set
+          this._currentResult.set(newResult);
+        }
+      })
     );
   }
 

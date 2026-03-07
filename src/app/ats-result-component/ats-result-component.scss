@@ -2,22 +2,132 @@
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
-.max-w-700px {
-    max-width: 700px;
-}
-
-.min-h-297mm {
-    /* Rough A4 height estimate for preview */
-    min-height: 297mm;
-}
-
 :host ::ng-deep {
     .p-tabview-panels {
         padding: 0;
     }
 
-    /* Fix potential PrimeNG 18+ Tab styling if needed */
     .p-tabs {
         border: none;
+    }
+
+    /* ATS PREMIUM RESUME PREVIEW STYLES */
+    #resume-preview-content {
+        background-color: white !important;
+        color: black !important;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+        line-height: 1.4 !important;
+        font-size: 10pt !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid #ddd !important;
+        padding: 15mm 20mm !important;
+        max-width: 210mm !important;
+        min-height: 297mm !important;
+        margin: auto;
+        word-wrap: break-word;
+        text-align: left !important;
+
+        /* Plain Text Fallback */
+        &.plain-text-mode {
+            white-space: pre-wrap !important;
+        }
+
+        /* Structured Mode Styles */
+        .resume-header {
+            text-align: center;
+            margin-bottom: 12pt;
+
+            h1 {
+                font-size: 22pt !important;
+                margin: 0 !important;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                color: #000 !important;
+            }
+
+            .title {
+                font-size: 11pt;
+                font-weight: bold;
+                margin-top: 2pt;
+            }
+
+            .contact {
+                font-size: 9pt;
+                margin-top: 4pt;
+                color: #333 !important;
+            }
+        }
+
+        .resume-section {
+            margin-top: 10pt;
+            margin-bottom: 6pt;
+
+            h2 {
+                font-size: 11pt !important;
+                font-weight: bold !important;
+                text-transform: uppercase;
+                border-bottom: 1.5pt solid #000 !important;
+                margin: 0 0 4pt 0 !important;
+                padding-bottom: 1pt;
+                color: #1a56db !important;
+                /* Tech Blue flavor */
+            }
+        }
+
+        .summary-text {
+            font-size: 9.5pt;
+            line-height: 1.5;
+            margin-bottom: 8pt;
+        }
+
+        /* Skills 3-Column Grid */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2pt 1rem;
+
+            .skill-item {
+                display: flex;
+                align-items: center;
+                gap: 5pt;
+                font-size: 9pt;
+
+                .dot {
+                    color: #000;
+                    font-weight: bold;
+                }
+            }
+        }
+
+        /* Experience & Education Items */
+        .exp-item {
+            margin-bottom: 8pt;
+
+            .row-header {
+                display: flex;
+                justify-content: space-between;
+                font-weight: bold;
+                font-size: 10pt;
+            }
+
+            .row-sub {
+                display: flex;
+                justify-content: space-between;
+                font-style: italic;
+                font-size: 9pt;
+                margin-top: 1pt;
+            }
+
+            ul {
+                margin: 2pt 0 0 0;
+                padding-left: 14pt;
+
+                li {
+                    margin-bottom: 1pt;
+                    font-size: 9pt;
+                    line-height: 1.3;
+                }
+            }
+        }
     }
 }

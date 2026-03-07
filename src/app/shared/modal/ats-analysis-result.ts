@@ -1,14 +1,15 @@
 export interface AtsAnalysisResult {
     uuid: string;
     score: number;
-    scoreExplanation: string;
+    scoreExplanation: string | string[];
     matchedSkills: string[];
     missingSkills: string[];
     improvementSuggestions: string[];
-    newResume: string;
+    optimizedResume: string;
     coverLetter: string;
     email: {
         subject: string;
         body: string;
     };
+    structuredResume?: any;
 }
