@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -96,6 +96,11 @@ export class GenerateResumeComponent implements OnInit {
 
   readonly MAX_SUGGESTIONS = 20;
 
+  isFormValid = signal(false);
+  updateFormValidity() {
+    this.isFormValid.set(this.isAllMandatoryStepsValid());
+  }
+
   // Layout Settings
   sectionOrder = [
     {
@@ -186,6 +191,9 @@ export class GenerateResumeComponent implements OnInit {
     this.addProject();
     this.addOther();
 
+    // Track form changes for validity
+    this.resumeForm.valueChanges.subscribe(() => this.updateFormValidity());
+
     // Fetch States
     this.locationService.getStates().subscribe({
       next: (data: string[]) => (this.states = data),
@@ -265,48 +273,53 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   isStepValid(index: number): boolean {
+    const form = this.resumeForm;
+    if (!form) return false;
+
     switch (index) {
       case 0: // General Info
-        return this.generalInfo.valid;
+        const gi = this.generalInfo;
+        return gi && gi.valid && !!gi.get('fullName')?.value;
       case 1: // Education
-        return this.education.length > 0 && this.education.valid;
+        const edu = this.education;
+        return edu && edu.length > 0 && edu.valid && !!edu.at(0).get('institute')?.value;
       case 2: // Skills
         return this.addedSuggestionsCount > 0;
       case 3: // Work Experience
-        return this.workExperience.length > 0 && this.workExperience.valid;
+        const work = this.workExperience;
+        return work && work.length > 0 && work.valid && !!work.at(0).get('jobTitle')?.value;
       default:
         return true;
     }
   }
 
-  goToStep(index: number) {
-    if (index === 0) {
-      // General Info is always accessible
-      this.activeStep = index;
-      return;
-    }
+  isAllMandatoryStepsValid(): boolean {
+    return this.isStepValid(0) && this.isStepValid(1) && this.isStepValid(2) && this.isStepValid(3);
+  }
 
-    // Check if all MANDATORY steps BEFORE the target step are valid
-    for (let i = 0; i < index; i++) {
-      if (i <= 3 && !this.isStepValid(i)) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Missing Information',
-          detail: `Please complete the mandatory step: ${this.steps[i].label} before moving forward.`,
-        });
-        this.activeStep = i;
-        return;
+  goToStep(index: number) {
+    if (index === this.activeStep) return;
+
+    // If trying to move forward, check if all mandatory steps up to that index are valid
+    if (index > this.activeStep) {
+      for (let i = 0; i < index; i++) {
+        if (i <= 3 && !this.isStepValid(i)) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Action Blocked',
+            detail: `Mandatory section "${this.steps[i].label}" is incomplete.`,
+          });
+          this.activeStep = i; // Force back to the invalid step
+          return;
+        }
       }
     }
+
+    // If moving backward or valid forward, allow it
     this.activeStep = index;
   }
 
-  isAllMandatoryStepsValid(): boolean {
-    for (let i = 0; i <= 3; i++) {
-      if (!this.isStepValid(i)) return false;
-    }
-    return true;
-  }
+
 
   // Education Helpers
   createEducationGroup(): FormGroup {
@@ -732,6 +745,22 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   async downloadPDF() {
+    if (!this.isAllMandatoryStepsValid()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Form Incomplete',
+        detail: 'Please fill all mandatory sections (General Info, Education, Skills, Work Experience) before generating the PDF.',
+      });
+      // Navigate to the first invalid step
+      for (let i = 0; i <= 3; i++) {
+        if (!this.isStepValid(i)) {
+          this.activeStep = i;
+          break;
+        }
+      }
+      return;
+    }
+
     if (this.isGenerationQuotaReached()) {
       this.messageService.add({
         severity: 'error',
@@ -1019,6 +1048,9 @@ export class GenerateResumeComponent implements OnInit {
       if (this.activeStep <= 3 && !this.isStepValid(this.activeStep)) {
         if (this.activeStep === 0) this.generalInfo.markAllAsTouched();
         if (this.activeStep === 1) this.education.markAllAsTouched();
+        if (this.activeStep === 2) {
+          this.messageService.add({ severity: 'warn', summary: 'Missing Skills', detail: 'Please add at least one skill to continue.' });
+        }
         if (this.activeStep === 3) this.workExperience.markAllAsTouched();
 
         this.messageService.add({

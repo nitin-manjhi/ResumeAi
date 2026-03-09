@@ -1,7 +1,7 @@
 <p-confirmDialog />
 
 <div class="card shadow-1 p-3 mb-4 surface-card">
-    <p-steps [model]="steps" [(activeIndex)]="activeStep" [readonly]="false" styleClass="p-2"></p-steps>
+    <p-steps [model]="steps" [activeIndex]="activeStep" [readonly]="true" styleClass="p-2"></p-steps>
 </div>
 
 <div class="flex justify-content-end mb-4 px-3 sticky top-0 z-5 py-3 glass-header shadow-2">
@@ -597,8 +597,7 @@
 
                             @if (isLastStep()) {
                             <p-button label="Complete & Finish" icon="pi pi-check-circle" severity="success"
-                                (onClick)="downloadPDF()"
-                                [disabled]="!isAllMandatoryStepsValid() || isGenerationQuotaReached()"
+                                (onClick)="downloadPDF()" [disabled]="!isFormValid() || isGenerationQuotaReached()"
                                 styleClass="h-3rem px-5 font-bold shadow-4"></p-button>
                             }
                         </div>
