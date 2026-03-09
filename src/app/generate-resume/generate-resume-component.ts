@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormArray,
@@ -70,6 +70,14 @@ export class GenerateResumeComponent implements OnInit {
   private educationService = inject(EducationService);
   private resumeService = inject(ResumeAnalysisService);
   private authService = inject(AuthService);
+
+  isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
+  isGenerationQuotaReached = computed(() => {
+    if (this.isAdmin()) return false;
+    const user = this.authService.currentUser();
+    if (!user) return true;
+    return user.generationCount >= user.generationLimit;
+  });
 
   steps: MenuItem[] = [];
   activeStep: number = 0;
@@ -724,6 +732,15 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   async downloadPDF() {
+    if (this.isGenerationQuotaReached()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Quota Exceeded',
+        detail: 'You have reached your resume generation limit. Please upgrade your plan or contact admin.',
+      });
+      return;
+    }
+
     try {
       this.messageService.add({
         severity: 'info',

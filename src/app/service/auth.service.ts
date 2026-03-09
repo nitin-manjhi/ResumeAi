@@ -8,6 +8,7 @@ export interface UserProfile {
     name: string;
     email: string;
     usageLimit: number;
+    generationLimit: number;
     analysisCount: number;
     generationCount: number;
     role: string;
