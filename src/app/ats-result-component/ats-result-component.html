@@ -2,57 +2,245 @@
     <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-3">
         <h2 class="m-0 text-primary">ATS Analysis Result</h2>
         <div class="flex flex-wrap gap-2">
-            <p-button label="Review & Edit Cover Letter" icon="pi pi-file-edit" (onClick)="reviewCoverLetter()"
-                severity="info" />
-            <p-button label="Email Draft" icon="pi pi-envelope" (onClick)="sendMail()" severity="success" />
+            <p-button [label]="result.coverLetter ? 'Review Cover Letter' : 'Generating...'"
+                [icon]="result.coverLetter ? 'pi pi-file-edit' : 'pi pi-spin pi-spinner'"
+                (onClick)="reviewCoverLetter()" [disabled]="!result.coverLetter" severity="info" />
+            <p-button [label]="result.email ? 'Email Draft' : 'Generating...'"
+                [icon]="result.email ? 'pi pi-envelope' : 'pi pi-spin pi-spinner'" (onClick)="sendMail()"
+                [disabled]="!result.email" severity="success" />
             <p-button label="Analyze New" icon="pi pi-refresh" (onClick)="reset()" severity="secondary" />
         </div>
     </div>
 
-    <div class="grid">
-        <div class="col-12 md:col-4 flex flex-column align-items-center justify-content-center">
-            <h3 class="mb-3">ATS Score</h3>
-            <p-knob [(ngModel)]="result.score" [readonly]="true" [size]="150" [strokeWidth]="10"
-                valueTemplate="{value}%" [valueColor]="result.score >= 70 ? 'var(--green-500)' : 'var(--orange-500)'" />
-        </div>
+    <p-tabs [(value)]="activeMainTab">
+        <p-tablist>
+            <p-tab [value]="0"><i class="pi pi-chart-bar mr-2"></i>Analysis Dashboard</p-tab>
+            <p-tab [value]="1" [disabled]="!result.optimizedResume"><i class="pi pi-file mr-2"></i>ATS Optimized
+                Resume</p-tab>
+        </p-tablist>
 
-        <div class="col-12 md:col-8">
-            <div class="card">
-                <h3>Matched Skills</h3>
-                <div class="flex flex-wrap gap-2 mb-4">
-                    @for (skill of result.matchedSkills; track skill) {
-                    <p-tag [value]="skill" severity="success" icon="pi pi-check" />
+        <p-tabpanels>
+            <!-- TOP REPORTS TAB -->
+            <p-tabpanel [value]="0">
+                <div class="flex flex-column gap-4 mt-2">
+                    <!-- SCORE SECTION -->
+                    <div class="card flex flex-column align-items-center justify-content-center p-3 text-center border-top-3"
+                        [style.border-color]="scoreColor">
+                        <h3 class="mb-2 text-900 text-xl font-bold">ATS Match Score</h3>
+                        <p-knob [(ngModel)]="result.score" [readonly]="true" [size]="140" [strokeWidth]="12"
+                            valueTemplate="{value}%" [valueColor]="scoreColor" />
+                        <p-tag [value]="scoreLabel" [severity]="scoreSeverity" [rounded]="true"
+                            styleClass="mt-2 px-3 font-bold" />
+                    </div>
+
+                    <!-- SCORE INSIGHTS -->
+                    @if (formattedScoreExplanation.length > 0) {
+                    <div class="card p-4 border-left-3 border-cyan-500">
+                        <h3 class="text-900 mb-3 border-bottom-1 border-100 pb-2 flex align-items-center">
+                            <i class="pi pi-info-circle mr-2 text-cyan-500 text-xl"></i>Score Insights
+                        </h3>
+                        <ul class="list-none p-0 m-0 flex flex-column gap-3">
+                            @for (point of formattedScoreExplanation; track point) {
+                            <li class="flex align-items-start gap-3 p-2 surface-50 border-round">
+                                <i class="pi pi-check-circle text-green-500 mt-1"></i>
+                                <span class="text-sm text-700 font-medium line-height-3">{{ point }}</span>
+                            </li>
+                            }
+                        </ul>
+                    </div>
                     }
-                    @if (result.matchedSkills.length === 0) {
-                    <span class="text-gray-500">No matched skills found.</span>
-                    }
+
+                    <!-- KEYWORDS SECTION -->
+                    <div class="card p-4 border-left-3 border-green-500">
+                        <h3 class="text-900 mb-3 flex align-items-center"><i
+                                class="pi pi-tags mr-2 text-green-500 text-xl"></i>Extracted ATS Keywords
+                        </h3>
+                        <div class="flex flex-wrap gap-3">
+                            @for (skill of result.matchedSkills; track skill) {
+                            <div
+                                class="flex align-items-center gap-1 p-2 surface-50 border-round border-1 surface-border shadow-1">
+                                <span class="font-bold text-900">{{ skill }}</span>
+                                @if (getImportanceLabel(skill) !== 'OPTIONAL') {
+                                <p-tag [value]="getImportanceLabel(skill)" [severity]="getImportanceSeverity(skill)"
+                                    styleClass="text-xs px-2"></p-tag>
+                                }
+                            </div>
+                            }
+                            @if (result.matchedSkills.length === 0) {
+                            <span class="text-gray-500 italic">No specific keywords extracted.</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- MISSING SKILLS SECTION -->
+                    <div class="card p-4 border-left-3 border-orange-500">
+                        <h3 class="text-900 mb-3 flex align-items-center"><i
+                                class="pi pi-exclamation-triangle mr-2 text-orange-500 text-xl"></i>Missing
+                            Skills Alignment</h3>
+                        <div class="flex flex-wrap gap-3">
+                            @for (skill of result.missingSkills; track skill) {
+                            <div
+                                class="flex align-items-center gap-2 p-2 px-3 surface-50 border-round border-1 surface-border shadow-1 border-left-3 border-orange-500">
+                                <span class="font-bold text-700">{{ skill }}</span>
+                                @if (getImportanceLabel(skill) !== 'OPTIONAL') {
+                                <p-tag [value]="getImportanceLabel(skill)" [severity]="getImportanceSeverity(skill)"
+                                    styleClass="text-xs px-2"></p-tag>
+                                }
+                            </div>
+                            }
+                            @if (result.missingSkills.length === 0) {
+                            <span class="text-gray-500 italic">Excellent alignment! No major gaps found.</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- WEAKNESS ANALYSIS -->
+                    <div class="card p-4 border-left-3 border-red-500">
+                        <h3 class="text-900 mb-3 flex align-items-center"><i
+                                class="pi pi-search mr-2 text-red-500 text-xl"></i>Weakness Analysis</h3>
+                        <div class="grid">
+                            @for (improvement of result.improvementSuggestions; track improvement) {
+                            <div class="col-12 md:col-6">
+                                <div class="p-3 surface-50 border-round-lg border-left-3 border-primary h-full">
+                                    <span class="text-sm text-700 line-height-3">{{ improvement }}</span>
+                                </div>
+                            </div>
+                            }
+                            @if (result.improvementSuggestions.length === 0) {
+                            <div class="col-12 p-3 text-center text-gray-500 italic">No specific weaknesses identified.
+                            </div>
+                            }
+                        </div>
+                    </div>
                 </div>
+            </p-tabpanel>
 
-                <h3>Missing Skills</h3>
-                <div class="flex flex-wrap gap-2">
-                    @for (skill of result.missingSkills; track skill) {
-                    <p-tag [value]="skill" severity="warn" icon="pi pi-exclamation-triangle" />
-                    }
-                    @if (result.missingSkills.length === 0) {
-                    <span class="text-gray-500">No missing skills found. Great job!</span>
-                    }
+            <!-- RESUME STUDIO TAB -->
+            <p-tabpanel [value]="1">
+                @if (result.optimizedResume) {
+                <div class="card p-0 overflow-hidden border-none shadow-4 mt-2">
+                    <div class="bg-primary p-3 flex justify-content-between align-items-center">
+                        <h3 class="m-0 text-white"><i class="pi pi-file-pdf mr-2"></i>ATS Optimized Resume</h3>
+                        <div class="flex gap-2">
+                            <p-button label="Copy Text" icon="pi pi-copy" severity="secondary" rounded="true"
+                                size="small" (onClick)="copyResume()" />
+                            <p-button label="Download PDF" icon="pi pi-download" severity="help" rounded="true"
+                                size="small" (onClick)="exportToPDF()" />
+                        </div>
+                    </div>
+
+                    <p-tabs [(value)]="activeTab">
+                        <p-tablist>
+                            <p-tab [value]="0"><i class="pi pi-pencil mr-2"></i>Editor</p-tab>
+                            <p-tab [value]="1"><i class="pi pi-eye mr-2"></i>Live Preview</p-tab>
+                        </p-tablist>
+                        <p-tabpanels>
+                            <p-tabpanel [value]="0">
+                                <div class="p-3">
+                                    <textarea pTextarea [(ngModel)]="editableResume" rows="20"
+                                        class="w-full font-family-monospace text-sm p-4 border-round surface-50 line-height-4"
+                                        placeholder="Edit your resume content here..."></textarea>
+                                </div>
+                            </p-tabpanel>
+                            <p-tabpanel [value]="1">
+                                <div
+                                    class="p-4 bg-gray-600 min-h-30rem flex justify-content-center overflow-auto w-full">
+                                    <div id="resume-preview-content" class="bg-white border-round-sm"
+                                        [class.plain-text-mode]="!result.structuredResume">
+
+                                        @if (result.structuredResume) {
+                                        <!-- HEADER -->
+                                        <div class="resume-header">
+                                            <h1>{{ result.structuredResume.fullName }}</h1>
+                                            <div class="title">{{ result.structuredResume.title }}</div>
+                                            <div class="contact">{{ result.structuredResume.contact }}</div>
+                                        </div>
+
+                                        <!-- SUMMARY -->
+                                        @if (result.structuredResume.summary) {
+                                        <div class="resume-section">
+                                            <h2>Summary</h2>
+                                            <div class="summary-text">{{ result.structuredResume.summary }}</div>
+                                        </div>
+                                        }
+
+                                        <!-- SKILLS -->
+                                        @if (result.structuredResume.skills && result.structuredResume.skills.length >
+                                        0) {
+                                        <div class="resume-section">
+                                            <h2>Skills</h2>
+                                            <div class="skills-grid">
+                                                @for (skill of result.structuredResume.skills; track skill) {
+                                                <div class="skill-item">
+                                                    <span class="dot">•</span>
+                                                    <span>{{ skill }}</span>
+                                                </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        }
+
+                                        <!-- EXPERIENCE -->
+                                        @if (result.structuredResume.workExperience &&
+                                        result.structuredResume.workExperience.length > 0) {
+                                        <div class="resume-section">
+                                            <h2>Work Experience</h2>
+                                            @for (exp of result.structuredResume.workExperience; track exp) {
+                                            <div class="exp-item">
+                                                <div class="row-header">
+                                                    <span>{{ exp.title }} — {{ exp.company }}</span>
+                                                    <span>{{ exp.date }}</span>
+                                                </div>
+                                                @if (exp.points && exp.points.length > 0) {
+                                                <ul>
+                                                    @for (point of exp.points; track point) {
+                                                    <li>{{ point }}</li>
+                                                    }
+                                                </ul>
+                                                }
+                                            </div>
+                                            }
+                                        </div>
+                                        }
+
+                                        <!-- EDUCATION -->
+                                        @if (result.structuredResume.education &&
+                                        result.structuredResume.education.length > 0) {
+                                        <div class="resume-section">
+                                            <h2>Education</h2>
+                                            @for (edu of result.structuredResume.education; track edu) {
+                                            <div class="exp-item">
+                                                <div class="row-header">
+                                                    <span>{{ edu.title }}</span>
+                                                    <span>{{ edu.date }}</span>
+                                                </div>
+                                                <div class="row-sub">
+                                                    <span>{{ edu.college }}</span>
+                                                    <span>{{ edu.location }}</span>
+                                                </div>
+                                                @if (edu.points && edu.points.length > 0) {
+                                                <ul>
+                                                    @for (point of edu.points; track point) {
+                                                    <li>{{ point }}</li>
+                                                    }
+                                                </ul>
+                                                }
+                                            </div>
+                                            }
+                                        </div>
+                                        }
+                                        } @else {
+                                        <!-- Fallback for plain text editor content -->
+                                        {{ editableResume }}
+                                        }
+                                    </div>
+                                </div>
+                            </p-tabpanel>
+                        </p-tabpanels>
+                    </p-tabs>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>Recommended Improvements</h3>
-        <ul class="list-none p-0 m-0">
-            @for (improvement of result.improvementSuggestions; track improvement) {
-            <li class="flex align-items-start p-2 border-bottom-1 surface-border">
-                <i class="pi pi-arrow-right text-primary mr-2 mt-1"></i>
-                <span>{{ improvement }}</span>
-            </li>
-            }
-            @if (result.improvementSuggestions.length === 0) {
-            <li class="p-2">No specific improvements suggested.</li>
-            }
-        </ul>
-    </div>
+                }
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
 </div>

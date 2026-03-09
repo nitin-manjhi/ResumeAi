@@ -212,10 +212,11 @@ textarea {
     display: flex;
     align-items: center;
     padding: 1rem;
-    background: white;
+    background: var(--surface-card);
+    color: var(--text-color);
     margin-bottom: 1rem;
     border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--surface-border);
     cursor: move;
     transition: transform 0.2s, box-shadow 0.2s;
 
@@ -229,7 +230,7 @@ textarea {
     }
 
     .drag-handle {
-        color: #94a3b8;
+        color: var(--text-color-secondary);
         margin-left: auto;
     }
 }

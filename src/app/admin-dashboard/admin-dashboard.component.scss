@@ -1,9 +1,10 @@
 .admin-container {
-    height: calc(100vh - 120px);
+    min-height: calc(100vh - 80px);
+    overflow-y: auto !important;
+    padding-bottom: 2rem;
 
     @media screen and (max-width: 991px) {
         height: auto;
-        overflow: auto !important;
     }
 }
 
@@ -26,7 +27,28 @@
     }
 }
 
-:host ::v-deep {
+:host ::ng-deep {
+    .usage-input {
+        width: 100%;
+        display: flex;
+        align-items: center;
+
+        .usage-input-field {
+            width: 100% !important;
+            padding: 0.25rem !important;
+            text-align: center !important;
+            font-size: 0.75rem !important;
+            border-radius: 0 !important;
+        }
+
+        .usage-btn {
+            padding: 0.25rem 0.5rem !important;
+            width: 2.5rem !important;
+        }
+    }
+}
+
+:host ::ng-deep {
     .p-datatable {
         .p-datatable-header {
             background: #f8f9fa;
@@ -43,14 +65,216 @@
         padding: 1rem;
         display: flex;
         flex-direction: column;
-        height: 100%;
     }
 
     .p-card-content {
-        flex: 1;
-        overflow: hidden;
+        padding: 0;
+    }
+
+    .vertical-divider {
+        border-left: 1px solid #e2e8f0;
+    }
+
+    .quota-grid-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        /* Force 3 uniform columns */
+        gap: 1.5rem;
+        align-items: flex-start;
+
+        @media screen and (max-width: 1200px) {
+            gap: 1rem;
+        }
+
+        @media screen and (max-width: 991px) {
+            grid-template-columns: 1fr;
+            /* Stack vertically on small screens */
+        }
+    }
+
+    .quota-input-group {
         display: flex;
         flex-direction: column;
-        padding: 0;
+        gap: 0.5rem;
+        /* Gap between label and input */
+        padding: 0.75rem;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-sizing: border-box;
+
+        &.highlighted {
+            background: #f0f9ff;
+            border-color: #bae6fd;
+        }
+    }
+
+    .quota-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #4b5563;
+        /* Slightly darker for better visibility */
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding-left: 0;
+        /* Removed 2px padding which caused misalignment */
+    }
+
+    .modern-input {
+        width: 100%;
+        display: flex;
+        align-items: center;
+
+        .modern-field {
+            width: 100% !important;
+            padding: 0.6rem !important;
+            text-align: center !important;
+            font-size: 1.1rem !important;
+            border-radius: 0 !important;
+            border-left: none !important;
+            border-right: none !important;
+            background: #fff !important;
+            font-weight: 600 !important;
+        }
+
+        .modern-btn {
+            width: 3rem !important;
+            padding: 0.5rem !important;
+            background: #f8fafc !important;
+            color: #334155 !important;
+            border: 1px solid #cbd5e1 !important;
+
+            &:first-child {
+                border-top-right-radius: 0 !important;
+                border-bottom-right-radius: 0 !important;
+            }
+
+            &:last-child {
+                border-top-left-radius: 0 !important;
+                border-bottom-left-radius: 0 !important;
+            }
+
+            &:hover {
+                background: #f1f5f9 !important;
+                border-color: #94a3b8 !important;
+            }
+        }
+    }
+
+    .premium-panel {
+        background: #fffcf9;
+        transition: all 0.2s;
+
+        &:hover {
+            border-color: #fdba74 !important;
+            box-shadow: 0 4px 12px rgba(251, 146, 60, 0.08);
+        }
+
+        .quota-grid-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            /* 2 uniform columns for Premium */
+
+            @media screen and (max-width: 991px) {
+                grid-template-columns: 1fr;
+            }
+        }
+    }
+
+    .usage-flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: center;
+
+        @media screen and (max-width: 960px) {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+
+    .usage-block {
+        flex: 1;
+        min-width: 180px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        /* Increased gap to match quota-input-group */
+
+        &.highlight {
+            padding: 0.5rem;
+            background: rgba(var(--primary-color-rgb), 0.03);
+            border-radius: 8px;
+            border: 1px dashed var(--primary-color);
+        }
+    }
+
+    .usage-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .usage-input {
+        width: 100%;
+        display: flex;
+        align-items: center;
+
+        .usage-field {
+            width: 100% !important;
+            padding: 0.45rem !important;
+            text-align: center !important;
+            font-size: 1rem !important;
+            border-radius: 0 !important;
+            font-family: monospace;
+        }
+
+        .usage-btn {
+            width: 2.5rem !important;
+            padding: 0.5rem !important;
+            background: #fff !important;
+            color: #64748b !important;
+            border: 1px solid #d1d5db !important;
+
+            &:hover {
+                background: #f8fafc !important;
+                color: var(--primary-color) !important;
+            }
+        }
+    }
+
+    .premium-container {
+        transition: all 0.3s ease;
+
+        &:hover {
+            border-color: #fb923c !important;
+            background-color: #fffaf0 !important;
+        }
+    }
+
+    .user-row {
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: #fafafa !important;
+        }
+    }
+
+    .fadein {
+        animation: fadeIn 0.5s cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.99) translateY(4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
     }
 }

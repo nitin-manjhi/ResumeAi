@@ -588,7 +588,8 @@
 
                         @if (isLastStep()) {
                         <p-button label="Complete & Finish" icon="pi pi-check-circle" severity="success"
-                            (onClick)="downloadPDF()" styleClass="h-3rem px-5 font-bold shadow-4"></p-button>
+                            (onClick)="downloadPDF()" [disabled]="!isAllMandatoryStepsValid()"
+                            styleClass="h-3rem px-5 font-bold shadow-4"></p-button>
                         }
                     </div>
                 </div>

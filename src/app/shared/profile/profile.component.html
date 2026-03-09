@@ -26,6 +26,22 @@
                                 <span class="text-600">Username</span>
                                 <span class="font-bold text-900">{{ user()?.username }}</span>
                             </div>
+                            <div class="col-12 flex justify-content-between align-items-center py-2">
+                                <span class="text-600">Account Type</span>
+                                <p-tag [severity]="user()?.role === 'ADMIN' ? 'danger' : 'secondary'"
+                                    [value]="user()?.role" [rounded]="true"></p-tag>
+                            </div>
+                            <div class="col-12 flex justify-content-between align-items-center py-2">
+                                <span class="text-600">Model Access</span>
+                                <div class="flex align-items-center gap-2">
+                                    <p-tag [severity]="user()?.premiumActive ? 'success' : 'warn'"
+                                        [value]="user()?.premiumActive ? 'PREMIUM ACCESS' : 'STANDARD'"
+                                        [rounded]="true"></p-tag>
+                                    @if(user()?.role === 'ADMIN') {
+                                    <span class="text-xs text-secondary italic">(Always Active for Admins)</span>
+                                    }
+                                </div>
+                            </div>
                             <div class="col-12 flex justify-content-between py-2">
                                 <span class="text-600">Email Status</span>
                                 <p-tag severity="success" value="Verified" [rounded]="true"></p-tag>
@@ -71,6 +87,21 @@
                                     }}</b> generation credits.
                             </p>
                         </div>
+
+                        @if(user()?.premiumUsageLimit && user()?.premiumUsageLimit! > 0) {
+                        <div class="field mb-4">
+                            <div class="flex justify-content-between mb-2">
+                                <span class="text-orange-600 font-bold">Premium Intelligence (AI+)</span>
+                                <span class="text-orange-600 font-bold">{{ premiumPercentage | number:'1.0-0' }}%</span>
+                            </div>
+                            <p-progressBar [value]="premiumPercentage" [showValue]="false" [style]="{'height': '12px'}"
+                                [color]="premiumUsageSeverity === 'danger' ? '#f44336' : premiumUsageSeverity === 'warn' ? '#ff9800' : '#ff9800'"></p-progressBar>
+                            <p class="text-sm text-600 mt-2">
+                                You have used <b>{{ user()?.premiumUsageCount }}</b> out of <b>{{
+                                    user()?.premiumUsageLimit }}</b> premium (OpenAI/Gemini) credits.
+                            </p>
+                        </div>
+                        }
                     </section>
                 </div>
 

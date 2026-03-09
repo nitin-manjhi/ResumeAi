@@ -22,6 +22,12 @@ export class NotificationService {
     private readonly _latestResultId = signal<string | null>(null);
     readonly latestResultId = this._latestResultId.asReadonly();
 
+    private readonly _currentProgress = signal<number>(0);
+    readonly currentProgress = this._currentProgress.asReadonly();
+
+    private readonly _currentProgressMessage = signal<string>('');
+    readonly currentProgressMessage = this._currentProgressMessage.asReadonly();
+
     constructor() {
         effect(() => {
             if (this.authService.isLoggedIn()) {
@@ -74,10 +80,32 @@ export class NotificationService {
             const data = JSON.parse(message);
             console.log('Received WebSocket Notification:', data);
 
+            if (data.type === 'PROGRESS') {
+                this._currentProgress.set(data.progress);
+                this._currentProgressMessage.set(data.message);
+
+                // If we got a resultId during progress (e.g., at 40%), allow early view
+                if (data.resultId && data.resultId !== 'null') {
+                    this._latestResultId.set(data.resultId);
+
+                    // IF we are already viewing a result, or have one in memory, refresh it to show partial doc generation
+                    if (this.resumeService.currentResult()) {
+                        this.resumeService.getAnalysisResult(data.resultId).subscribe();
+                    }
+                }
+
+                if (data.progress === 100) {
+                    this.resumeService.setAnalyzing(false);
+                }
+                return;
+            }
+
             this._notifications.update(prev => [...prev, data.message]);
 
             // Clear analyzing state as we got result
             this.resumeService.setAnalyzing(false);
+            this._currentProgress.set(100);
+            this._currentProgressMessage.set('Complete');
 
             // Check if resultId is actually a valid UUID string and not "null"
             if (data.resultId && data.resultId !== 'null') {

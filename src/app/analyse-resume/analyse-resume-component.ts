@@ -16,6 +16,9 @@ import { AtsAnalysisResult } from '../shared/modal/ats-analysis-result';
 import { AuthService } from '../service/auth.service';
 import { NotificationService } from '../service/notification.service';
 
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { ProgressBarModule } from 'primeng/progressbar';
+
 @Component({
   selector: 'app-analyse-resume-component',
   imports: [
@@ -23,6 +26,8 @@ import { NotificationService } from '../service/notification.service';
     FileUploadModule,
     ToastModule,
     FormsModule,
+    SelectButtonModule,
+    ProgressBarModule,
     TextareaModule,
     FloatLabelModule,
     CardModule,
@@ -43,6 +48,18 @@ export class AnalyseResumeComponent {
   protected readyResultId = this.notificationService.latestResultId;
   protected analysisResult = this.resumeService.currentResult;
 
+  protected progress = this.notificationService.currentProgress;
+  protected progressMessage = this.notificationService.currentProgressMessage;
+
+  protected isPremium = computed(() => this.authService.currentUser()?.premiumActive || false);
+
+  protected selectedModel = signal('ollama');
+  protected modelOptions = computed(() => [
+    { label: 'Standard Intelligence', value: 'ollama', icon: 'pi pi-server' },
+    { label: 'Advanced AI (Pro)', value: 'openai', icon: 'pi pi-bolt', disabled: !this.isPremium() },
+    { label: 'Elite AI (Deep)', value: 'gemini', icon: 'pi pi-sparkles', disabled: !this.isPremium() }
+  ]);
+
   async onUpload(fileUpload: any) {
     if (fileUpload.files && fileUpload.files.length > 0) {
       const file = fileUpload.files[0];
@@ -51,7 +68,7 @@ export class AnalyseResumeComponent {
       this.isLoading.set(true);
       try {
         const response = await firstValueFrom(
-          this.resumeService.analyzeResume(file, this.jobDescription()),
+          this.resumeService.analyzeResume(file, this.jobDescription(), this.selectedModel()),
         );
         console.log(response);
         this.messageService.add({

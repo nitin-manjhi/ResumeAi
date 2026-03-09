@@ -11,6 +11,9 @@ export interface UserProfile {
     analysisCount: number;
     generationCount: number;
     role: string;
+    premiumActive: boolean;
+    premiumUsageLimit: number;
+    premiumUsageCount: number;
 }
 
 interface AuthResponse {

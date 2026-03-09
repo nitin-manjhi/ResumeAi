@@ -272,8 +272,8 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   goToStep(index: number) {
-    if (index === 0 || index === 6) {
-      // General Info and Layout are always accessible
+    if (index === 0) {
+      // General Info is always accessible
       this.activeStep = index;
       return;
     }
@@ -291,6 +291,13 @@ export class GenerateResumeComponent implements OnInit {
       }
     }
     this.activeStep = index;
+  }
+
+  isAllMandatoryStepsValid(): boolean {
+    for (let i = 0; i <= 3; i++) {
+      if (!this.isStepValid(i)) return false;
+    }
+    return true;
   }
 
   // Education Helpers
@@ -717,137 +724,277 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   async downloadPDF() {
-    const originalElement = document.getElementById('resumePreview');
-    if (!originalElement) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Could not find resume preview.',
-      });
-      return;
-    }
-
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Generating PDF',
-      detail: 'Optimizing for high quality...',
-    });
-
-    // Create a clone to avoid capturing browser scaling/transforms
-    const clone = originalElement.cloneNode(true) as HTMLElement;
-
-    // Style the clone for perfect capture
-    Object.assign(clone.style, {
-      position: 'absolute',
-      left: '-9999px',
-      top: '0',
-      transform: 'none',
-      width: '210mm',
-      height: 'auto',
-      margin: '0',
-      padding: '15mm 20mm',
-      boxSizing: 'border-box',
-    });
-
-    document.body.appendChild(clone);
-
-    // Wait for a few frames to ensure layout is stable
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
     try {
-      // Use higher scale and fix letter rendering issues
-      const canvas = await html2canvas(clone, {
-        scale: 3, // Increased scale for better resolution
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: 794, // Standard A4 width in pixels at 96 DPI
-        onclone: (document) => {
-          // Additional fixes during capture
-          const elements = document.getElementsByClassName(
-            'resume-preview-container',
-          );
-          if (elements.length > 0) {
-            (elements[0] as HTMLElement).style.transform = 'none';
-          }
-        },
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Generating PDF',
+        detail: 'Creating ATS-readable document...',
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
       const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
 
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      // Density-based configuration
+      const densityConfig = {
+        compact: { title: 20, section: 10, item: 9, line: 4, spacing: 3 },
+        normal: { title: 22, section: 11, item: 10, line: 4.5, spacing: 4.5 },
+        spacious: { title: 24, section: 12, item: 11, line: 5.5, spacing: 6 }
+      }[this.density] || { title: 22, section: 11, item: 10, line: 4.5, spacing: 4.5 };
 
-      pdf.addImage(
-        imgData,
-        'JPEG',
-        0,
-        0,
-        pdfWidth,
-        pdfHeight,
-        undefined,
-        'FAST',
-      );
+      let y = margin;
 
-      // --- NEW LINK HANDLING LOGIC ---
-      const links = clone.querySelectorAll('a');
-      links.forEach((link: HTMLAnchorElement) => {
-        const rect = link.getBoundingClientRect();
-        const cloneRect = clone.getBoundingClientRect();
+      // Helper to check page overflow
+      const checkPage = (heightNeeded: number) => {
+        if (y + heightNeeded > pageHeight - margin) {
+          pdf.addPage();
+          y = margin;
+          return true;
+        }
+        return false;
+      };
 
-        // Calculate position relative to the clone container
-        const left = rect.left - cloneRect.left;
-        const top = rect.top - cloneRect.top;
+      // 1. HEADER
+      const gInfo = this.generalInfo.value;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(densityConfig.title);
+      pdf.text(gInfo.fullName.toUpperCase(), pageWidth / 2, y, { align: 'center' });
+      y += densityConfig.spacing;
 
-        // Convert pixels to PDF millimeters
-        // (A4 width is 210mm, clone width is set to 210mm in your styles)
-        const x = (left * pdfWidth) / clone.offsetWidth;
-        const y = (top * pdfHeight) / clone.offsetHeight;
-        const w = (rect.width * pdfWidth) / clone.offsetWidth;
-        const h = (rect.height * pdfHeight) / clone.offsetHeight;
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(9);
+      pdf.setTextColor(80);
 
-        pdf.link(x, y, w, h, { url: link.href });
+      const contactParts = [
+        gInfo.email,
+        gInfo.mobileNumber,
+        gInfo.linkedinUrl ? 'LinkedIn' : null,
+        gInfo.githubUrl ? 'GitHub' : null,
+        gInfo.portfolioUrl ? 'Portfolio' : null
+      ].filter(p => !!p);
+
+      const contactText = contactParts.join('  |  ');
+      pdf.text(contactText, pageWidth / 2, y, { align: 'center' });
+
+      // Add links for social profiles
+      const textWidth = pdf.getTextWidth(contactText);
+      let currentX = (pageWidth - textWidth) / 2;
+
+      contactParts.forEach((part: any, i: number) => {
+        const partWidth = pdf.getTextWidth(part);
+        if (part === 'LinkedIn' && gInfo.linkedinUrl) {
+          pdf.link(currentX, y - 3, partWidth, 5, { url: gInfo.linkedinUrl });
+        } else if (part === 'GitHub' && gInfo.githubUrl) {
+          pdf.link(currentX, y - 3, partWidth, 5, { url: gInfo.githubUrl });
+        } else if (part === 'Portfolio' && gInfo.portfolioUrl) {
+          pdf.link(currentX, y - 3, partWidth, 5, { url: gInfo.portfolioUrl });
+        }
+        currentX += partWidth + pdf.getTextWidth('  |  ');
       });
-      // --- END LINK HANDLING ---
+
+      y += densityConfig.spacing;
+
+      // Summary (if enabled)
+      if (gInfo.addSummary && gInfo.summary) {
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(densityConfig.item);
+        pdf.setTextColor(0);
+        const summaryLines = pdf.splitTextToSize(gInfo.summary, contentWidth);
+        pdf.text(summaryLines, margin, y);
+        y += (summaryLines.length * densityConfig.line) + densityConfig.spacing;
+      }
+
+      // SECTIONS (Respecting Order)
+      this.sectionOrder.forEach((section: any) => {
+        switch (section.id) {
+          case 'education':
+            if (this.education.length > 0) {
+              this.addSectionTitle(pdf, 'Education', margin, y, contentWidth, densityConfig);
+              y += densityConfig.spacing;
+              this.education.value.forEach((edu: any) => {
+                if (!edu.institute) return;
+                checkPage(15);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(densityConfig.item);
+                const instName = edu.institute === 'Other' ? (edu.otherInstitute || 'Institute') : edu.institute;
+                pdf.text(instName, margin, y);
+                pdf.text(edu.location || '', pageWidth - margin, y, { align: 'right' });
+                y += densityConfig.line;
+
+                pdf.setFont('helvetica', 'italic');
+                const degreeText = `${edu.degree}${edu.fieldOfStudy ? ' in ' + edu.fieldOfStudy : ''}`;
+                pdf.text(degreeText, margin, y);
+                const dateText = `${this.formatDate(edu.startDate)} - ${edu.current ? 'Present' : this.formatDate(edu.endDate)}`;
+                pdf.text(dateText, pageWidth - margin, y, { align: 'right' });
+                y += densityConfig.line;
+
+                if (edu.grade) {
+                  pdf.setFont('helvetica', 'normal');
+                  pdf.setFontSize(densityConfig.item - 1);
+                  pdf.text(`${edu.gradeType}: ${edu.grade}`, margin, y);
+                  y += densityConfig.line;
+                }
+                y += densityConfig.spacing / 2;
+              });
+            }
+            break;
+
+          case 'skills':
+            if (this.addedSuggestionsCount > 0) {
+              this.addSectionTitle(pdf, 'Skills', margin, y, contentWidth, densityConfig);
+              y += densityConfig.spacing;
+              pdf.setFont('helvetica', 'normal');
+              pdf.setFontSize(densityConfig.item);
+
+              if (this.skillGroup.value.layout === 'categorized') {
+                this.skillCategories.value.forEach((cat: any) => {
+                  if (cat.skills?.length > 0) {
+                    checkPage(densityConfig.line);
+                    const catTitle = cat.category ? `${cat.category}: ` : '';
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text(catTitle, margin, y);
+                    const titleWidth = pdf.getTextWidth(catTitle);
+                    pdf.setFont('helvetica', 'normal');
+                    const skillsText = cat.skills.join(', ');
+                    const lines = pdf.splitTextToSize(skillsText, contentWidth - titleWidth);
+                    pdf.text(lines, margin + titleWidth, y);
+                    y += (lines.length * densityConfig.line) + 1;
+                  }
+                });
+              } else {
+                const skills = this.getBulletSkillsArray().join('  •  ');
+                const lines = pdf.splitTextToSize(skills, contentWidth);
+                pdf.text(lines, margin, y);
+                y += (lines.length * densityConfig.line);
+              }
+              y += densityConfig.spacing;
+            }
+            break;
+
+          case 'workExperience':
+            if (this.workExperience.length > 0) {
+              this.addSectionTitle(pdf, 'Professional Experience', margin, y, contentWidth, densityConfig);
+              y += densityConfig.spacing;
+              this.workExperience.value.forEach((work: any) => {
+                if (!work.jobTitle) return;
+                checkPage(15);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(densityConfig.item);
+                pdf.text(work.jobTitle, margin, y);
+                const dateText = `${this.formatDate(work.startDate)} - ${work.current ? 'Present' : this.formatDate(work.endDate)}`;
+                pdf.text(dateText, pageWidth - margin, y, { align: 'right' });
+                y += densityConfig.line;
+
+                pdf.setFont('helvetica', 'bolditalic');
+                pdf.text(work.company, margin, y);
+                pdf.setFont('helvetica', 'italic');
+                pdf.text(work.location || '', pageWidth - margin, y, { align: 'right' });
+                y += densityConfig.line;
+
+                if (work.description) {
+                  pdf.setFont('helvetica', 'normal');
+                  work.description.split('\n').forEach((point: string) => {
+                    if (!point.trim()) return;
+                    const lines = pdf.splitTextToSize('• ' + point.trim(), contentWidth - 5);
+                    checkPage(lines.length * densityConfig.line);
+                    pdf.text(lines, margin + 2, y);
+                    y += (lines.length * densityConfig.line);
+                  });
+                }
+                y += densityConfig.spacing / 2;
+              });
+            }
+            break;
+
+          case 'projects':
+            if (this.projects.length > 0) {
+              this.addSectionTitle(pdf, 'Projects', margin, y, contentWidth, densityConfig);
+              y += densityConfig.spacing;
+              this.projects.value.forEach((proj: any) => {
+                if (!proj.title) return;
+                checkPage(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(densityConfig.item);
+                pdf.text(proj.title, margin, y);
+                if (proj.technologies) {
+                  pdf.setFont('helvetica', 'italic');
+                  pdf.setFontSize(densityConfig.item - 1);
+                  pdf.text(proj.technologies, pageWidth - margin, y, { align: 'right' });
+                }
+                y += densityConfig.line;
+
+                if (proj.description) {
+                  pdf.setFont('helvetica', 'normal');
+                  pdf.setFontSize(densityConfig.item);
+                  proj.description.split('\n').forEach((point: string) => {
+                    if (!point.trim()) return;
+                    const lines = pdf.splitTextToSize('• ' + point.trim(), contentWidth - 5);
+                    checkPage(lines.length * densityConfig.line);
+                    pdf.text(lines, margin + 2, y);
+                    y += (lines.length * densityConfig.line);
+                  });
+                }
+                y += densityConfig.spacing / 2;
+              });
+            }
+            break;
+
+          case 'other':
+            if (this.other.length > 0) {
+              this.addSectionTitle(pdf, 'Certifications & Activities', margin, y, contentWidth, densityConfig);
+              y += densityConfig.spacing;
+              this.other.value.forEach((item: any) => {
+                if (!item.title) return;
+                checkPage(10);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setFontSize(densityConfig.item);
+                pdf.text(item.title, margin, y);
+                y += densityConfig.line;
+                if (item.description) {
+                  pdf.setFont('helvetica', 'italic');
+                  const lines = pdf.splitTextToSize(item.description, contentWidth);
+                  pdf.text(lines, margin, y);
+                  y += (lines.length * densityConfig.line);
+                }
+                y += densityConfig.spacing / 2;
+              });
+            }
+            break;
+        }
+      });
+
       const fileName = `${this.generalInfo.get('fullName')?.value || 'Resume'}_${new Date().getTime()}.pdf`;
       pdf.save(fileName);
 
-      // Track usage and refresh profile
+      // Track usage
       this.resumeService.trackGeneration().subscribe({
         next: () => this.authService.getUserProfile().subscribe(),
-        error: (err) => {
-          console.error('Failed to track generation', err);
-          const errorMessage = err.error?.message || err.message || '';
-          if (errorMessage.includes('limit reached')) {
-            this.messageService.add({
-              severity: 'warn',
-              summary: 'Limit Reached',
-              detail:
-                'You have reached your generation limit. This PDF was downloaded, but future generations will be restricted until you upgrade.',
-              life: 5000,
-            });
-          }
-        },
+        error: (err) => console.error('Failed to track', err)
       });
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'PDF downloaded successfully!',
-      });
+      this.messageService.add({ severity: 'success', summary: 'Success', detail: 'ATS-Readable Resume Downloaded!' });
     } catch (error) {
-      console.error('PDF Generation Error:', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to generate PDF.',
-      });
-    } finally {
-      // Cleanup the clone
-      document.body.removeChild(clone);
+      console.error('PDF Error:', error);
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to generate text-based PDF.' });
     }
+  }
+
+  private addSectionTitle(pdf: any, title: string, x: number, y: number, width: number, config: any) {
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(config.section);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(title.toUpperCase(), x, y);
+    pdf.setDrawColor(0);
+    pdf.setLineWidth(0.4);
+    pdf.line(x, y + 1.5, x + width, y + 1.5);
+  }
+
+  private formatDate(date: any): string {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   }
 
   next() {

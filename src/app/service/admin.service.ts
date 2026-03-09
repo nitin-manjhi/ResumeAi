@@ -23,12 +23,15 @@ export class AdminService {
         return this.http.get<UserProfile[]>(`${this.baseUrl}/users`);
     }
 
-    updateUserUsage(userId: number, analysisCount: number, generationCount: number, usageLimit: number, role: string) {
+    updateUserUsage(userId: number, analysisCount: number, generationCount: number, usageLimit: number, role: string, premiumActive: boolean, premiumUsageLimit: number, premiumUsageCount: number) {
         let params = new HttpParams();
         if (analysisCount !== null) params = params.set('analysisCount', analysisCount.toString());
         if (generationCount !== null) params = params.set('generationCount', generationCount.toString());
         if (usageLimit !== null) params = params.set('usageLimit', usageLimit.toString());
         if (role !== null) params = params.set('role', role);
+        if (premiumActive !== null) params = params.set('premiumActive', premiumActive.toString());
+        if (premiumUsageLimit !== null) params = params.set('premiumUsageLimit', premiumUsageLimit.toString());
+        if (premiumUsageCount !== null) params = params.set('premiumUsageCount', premiumUsageCount.toString());
 
         return this.http.put<any>(`${this.baseUrl}/users/${userId}/usage`, null, { params });
     }

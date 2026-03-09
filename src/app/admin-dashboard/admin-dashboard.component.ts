@@ -12,6 +12,9 @@ import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { TagModule } from 'primeng/tag';
+import { SelectButtonModule } from 'primeng/selectbutton';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -26,7 +29,10 @@ import { TooltipModule } from 'primeng/tooltip';
         CardModule,
         DialogModule,
         SelectModule,
-        TooltipModule
+        TooltipModule,
+        ToggleSwitchModule,
+        SelectButtonModule,
+        TagModule
     ],
     providers: [MessageService],
     templateUrl: './admin-dashboard.component.html',
@@ -47,6 +53,12 @@ export class AdminDashboardComponent implements OnInit {
     currentRequestUsername = signal('');
     newUsageLimit = signal(50); // Default or proposed limit
 
+    activeView = signal('users'); // 'users' or 'requests'
+    viewOptions = [
+        { label: 'Manage Users', value: 'users', icon: 'pi pi-users' },
+        { label: 'Upgrade Requests', value: 'requests', icon: 'pi pi-envelope' }
+    ];
+
     roles = [
         { label: 'User', value: 'USER' },
         { label: 'Admin', value: 'ADMIN' }
@@ -61,10 +73,21 @@ export class AdminDashboardComponent implements OnInit {
         this.loadingUsers.set(true);
         this.adminService.getAllUsers().subscribe({
             next: (users) => {
-                this.users.set(users);
+                // Ensure all fields are initialized to avoid blank p-inputNumber boxes
+                const sanitizedUsers = users.map(u => ({
+                    ...u,
+                    analysisCount: u.analysisCount ?? 0,
+                    generationCount: u.generationCount ?? 0,
+                    usageLimit: u.usageLimit ?? 0,
+                    premiumUsageLimit: u.premiumUsageLimit ?? 0,
+                    premiumUsageCount: u.premiumUsageCount ?? 0,
+                    premiumActive: !!u.premiumActive
+                }));
+                this.users.set(sanitizedUsers);
                 this.loadingUsers.set(false);
             },
             error: (err) => {
+                console.error('Failed to load users', err);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to load users' });
                 this.loadingUsers.set(false);
             }
@@ -86,16 +109,17 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     saveUsage(user: UserProfile) {
-        this.adminService.updateUserUsage(user.id, user.analysisCount, user.generationCount, user.usageLimit, user.role).subscribe({
-            next: (updatedUser) => {
-                this.messageService.add({ severity: 'success', summary: 'Success', detail: `Updated usage for ${user.username}` });
-                // Update local state by merging the updated fields
-                this.users.update(users => users.map(u => u.id === updatedUser.id ? { ...u, ...updatedUser } : u));
-            },
-            error: (err) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update usage' });
-            }
-        });
+        this.adminService.updateUserUsage(user.id, user.analysisCount, user.generationCount, user.usageLimit, user.role,
+            user.premiumActive, user.premiumUsageLimit, user.premiumUsageCount).subscribe({
+                next: (updatedUser) => {
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Updated usage for ${user.username}` });
+                    // Update local state by merging the updated fields
+                    this.users.update(users => users.map(u => u.id === updatedUser.id ? { ...u, ...updatedUser } : u));
+                },
+                error: (err) => {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update usage' });
+                }
+            });
     }
 
     processRequest(requestId: number, status: 'APPROVED' | 'REJECTED') {
