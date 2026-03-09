@@ -51,13 +51,41 @@ export class AnalyseResumeComponent {
   protected progress = this.notificationService.currentProgress;
   protected progressMessage = this.notificationService.currentProgressMessage;
 
-  protected isPremium = computed(() => this.authService.currentUser()?.premiumActive || false);
+  protected isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
+  protected isPremium = computed(() => this.isAdmin() || this.authService.currentUser()?.premiumActive || false);
+  protected isPremiumQuotaReached = computed(() => {
+    if (this.isAdmin()) return false;
+    const profile = this.authService.currentUser();
+    if (!profile) return true;
+    return profile.premiumUsageCount >= profile.premiumUsageLimit;
+  });
+  protected isStandardQuotaReached = computed(() => {
+    if (this.isAdmin()) return false;
+    const profile = this.authService.currentUser();
+    if (!profile) return true;
+    return profile.analysisCount >= profile.usageLimit;
+  });
 
   protected selectedModel = signal('ollama');
   protected modelOptions = computed(() => [
-    { label: 'Standard Intelligence', value: 'ollama', icon: 'pi pi-server' },
-    { label: 'Advanced AI (Pro)', value: 'openai', icon: 'pi pi-bolt', disabled: !this.isPremium() },
-    { label: 'Elite AI (Deep)', value: 'gemini', icon: 'pi pi-sparkles', disabled: !this.isPremium() }
+    {
+      label: 'Standard Intelligence',
+      value: 'ollama',
+      icon: 'pi pi-server',
+      disabled: this.isStandardQuotaReached()
+    },
+    {
+      label: 'Advanced AI (Pro)',
+      value: 'openai',
+      icon: 'pi pi-bolt',
+      disabled: !this.isPremium() || this.isPremiumQuotaReached()
+    },
+    {
+      label: 'Elite AI (Deep)',
+      value: 'gemini',
+      icon: 'pi pi-sparkles',
+      disabled: !this.isPremium() || this.isPremiumQuotaReached()
+    }
   ]);
 
   async onUpload(fileUpload: any) {

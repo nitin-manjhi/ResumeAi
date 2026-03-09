@@ -580,17 +580,28 @@
                     <div></div> <!-- Spacer -->
                     }
 
-                    <div class="flex gap-3">
-                        @if (!isLastStep()) {
-                        <p-button label="Continue" (onClick)="next()" icon="pi pi-chevron-right" iconPos="right"
-                            styleClass="h-3rem px-5 font-bold p-button-raised"></p-button>
+                    <div class="flex flex-column align-items-end gap-3">
+                        @if (isLastStep() && isGenerationQuotaReached()) {
+                        <div
+                            class="p-2 border-round-lg bg-orange-100 text-orange-800 flex align-items-center gap-2 mb-2 text-sm max-w-20rem">
+                            <i class="pi pi-exclamation-circle"></i>
+                            <span>Generation quota exceeded. Contact admin to increase limit.</span>
+                        </div>
                         }
 
-                        @if (isLastStep()) {
-                        <p-button label="Complete & Finish" icon="pi pi-check-circle" severity="success"
-                            (onClick)="downloadPDF()" [disabled]="!isAllMandatoryStepsValid()"
-                            styleClass="h-3rem px-5 font-bold shadow-4"></p-button>
-                        }
+                        <div class="flex gap-3">
+                            @if (!isLastStep()) {
+                            <p-button label="Continue" (onClick)="next()" icon="pi pi-chevron-right" iconPos="right"
+                                styleClass="h-3rem px-5 font-bold p-button-raised"></p-button>
+                            }
+
+                            @if (isLastStep()) {
+                            <p-button label="Complete & Finish" icon="pi pi-check-circle" severity="success"
+                                (onClick)="downloadPDF()"
+                                [disabled]="!isAllMandatoryStepsValid() || isGenerationQuotaReached()"
+                                styleClass="h-3rem px-5 font-bold shadow-4"></p-button>
+                            }
+                        </div>
                     </div>
                 </div>
             </form>

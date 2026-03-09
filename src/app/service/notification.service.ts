@@ -100,6 +100,17 @@ export class NotificationService {
                 return;
             }
 
+            if (data.type === 'QUOTA_UPDATE') {
+                this.authService.getUserProfile().subscribe();
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'Account Updated',
+                    detail: data.message || 'Your account limits or premium status have been updated.',
+                    life: 5000
+                });
+                return;
+            }
+
             this._notifications.update(prev => [...prev, data.message]);
 
             // Clear analyzing state as we got result
