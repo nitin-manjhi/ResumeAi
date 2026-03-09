@@ -55,9 +55,9 @@ export class AnalyseResumeComponent {
 
   protected selectedModel = signal('ollama');
   protected modelOptions = computed(() => [
-    { label: 'Ollama (Local)', value: 'ollama', icon: 'pi pi-server' },
-    { label: 'OpenAI (Premium)', value: 'openai', icon: 'pi pi-bolt', disabled: !this.isPremium() },
-    { label: 'Gemini (Premium)', value: 'gemini', icon: 'pi pi-sparkles', disabled: !this.isPremium() }
+    { label: 'Standard Intelligence', value: 'ollama', icon: 'pi pi-server' },
+    { label: 'Advanced AI (Pro)', value: 'openai', icon: 'pi pi-bolt', disabled: !this.isPremium() },
+    { label: 'Elite AI (Deep)', value: 'gemini', icon: 'pi pi-sparkles', disabled: !this.isPremium() }
   ]);
 
   async onUpload(fileUpload: any) {

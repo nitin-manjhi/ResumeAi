@@ -272,8 +272,8 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   goToStep(index: number) {
-    if (index === 0 || index === 6) {
-      // General Info and Layout are always accessible
+    if (index === 0) {
+      // General Info is always accessible
       this.activeStep = index;
       return;
     }
@@ -291,6 +291,13 @@ export class GenerateResumeComponent implements OnInit {
       }
     }
     this.activeStep = index;
+  }
+
+  isAllMandatoryStepsValid(): boolean {
+    for (let i = 0; i <= 3; i++) {
+      if (!this.isStepValid(i)) return false;
+    }
+    return true;
   }
 
   // Education Helpers

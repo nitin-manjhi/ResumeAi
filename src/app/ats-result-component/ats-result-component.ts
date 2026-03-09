@@ -13,11 +13,11 @@ import { ResumeAnalysisService } from "../service/resume-analysis-service";
 import { ButtonModule } from "primeng/button";
 import { KnobModule } from "primeng/knob";
 import { TagModule } from "primeng/tag";
+import { TabsModule } from "primeng/tabs";
+import { TextareaModule } from "primeng/textarea";
 import { AccordionModule } from "primeng/accordion";
 import { PanelModule } from "primeng/panel";
 import { FormsModule } from "@angular/forms";
-import { TabsModule } from "primeng/tabs";
-import { TextareaModule } from "primeng/textarea";
 import { AtsAnalysisResult } from "../shared/modal/ats-analysis-result";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
@@ -63,14 +63,14 @@ export class AtsResultComponent implements OnInit {
     if (!explanation) return [];
 
     if (Array.isArray(explanation)) {
-      return explanation.map((line) => line.replace(/^[•\-\*]\s*/, "").trim());
+      return explanation.map((line: string) => line.replace(/^[•\-\*]\s*/, "").trim());
     }
 
     // Fallback for string split
     return explanation
       .split(/\n|•/)
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
+      .map((line: string) => line.trim())
+      .filter((line: string) => line.length > 0);
   }
 
   get scoreColor(): string {
@@ -111,6 +111,19 @@ export class AtsResultComponent implements OnInit {
 
   reviewCoverLetter() {
     this.router.navigate(["/review-cover-letter"]);
+  }
+
+  getImportanceLabel(skill: string): string {
+    return this.result.skillImportance?.[skill] || 'OPTIONAL';
+  }
+
+  getImportanceSeverity(skill: string): "info" | "secondary" | "success" | "warn" | "danger" | "contrast" | undefined {
+    const importance = this.getImportanceLabel(skill);
+    switch (importance) {
+      case 'REQUIRED': return 'danger';
+      case 'PREFERRED': return 'info';
+      default: return 'secondary';
+    }
   }
 
   copyResume() {

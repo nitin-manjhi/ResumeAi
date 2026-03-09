@@ -55,9 +55,16 @@
                         <h3 class="text-900 mb-3 flex align-items-center"><i
                                 class="pi pi-tags mr-2 text-green-500 text-xl"></i>Extracted ATS Keywords
                         </h3>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-wrap gap-3">
                             @for (skill of result.matchedSkills; track skill) {
-                            <p-tag [value]="skill" severity="success" [rounded]="true" styleClass="px-3" />
+                            <div
+                                class="flex align-items-center gap-1 p-2 surface-50 border-round border-1 surface-border shadow-1">
+                                <span class="font-bold text-900">{{ skill }}</span>
+                                @if (getImportanceLabel(skill) !== 'OPTIONAL') {
+                                <p-tag [value]="getImportanceLabel(skill)" [severity]="getImportanceSeverity(skill)"
+                                    styleClass="text-xs px-2"></p-tag>
+                                }
+                            </div>
                             }
                             @if (result.matchedSkills.length === 0) {
                             <span class="text-gray-500 italic">No specific keywords extracted.</span>
@@ -70,9 +77,16 @@
                         <h3 class="text-900 mb-3 flex align-items-center"><i
                                 class="pi pi-exclamation-triangle mr-2 text-orange-500 text-xl"></i>Missing
                             Skills Alignment</h3>
-                        <div class="flex flex-wrap gap-2">
+                        <div class="flex flex-wrap gap-3">
                             @for (skill of result.missingSkills; track skill) {
-                            <p-tag [value]="skill" severity="warn" [rounded]="true" styleClass="px-3" />
+                            <div
+                                class="flex align-items-center gap-2 p-2 px-3 surface-50 border-round border-1 surface-border shadow-1 border-left-3 border-orange-500">
+                                <span class="font-bold text-700">{{ skill }}</span>
+                                @if (getImportanceLabel(skill) !== 'OPTIONAL') {
+                                <p-tag [value]="getImportanceLabel(skill)" [severity]="getImportanceSeverity(skill)"
+                                    styleClass="text-xs px-2"></p-tag>
+                                }
+                            </div>
                             }
                             @if (result.missingSkills.length === 0) {
                             <span class="text-gray-500 italic">Excellent alignment! No major gaps found.</span>
