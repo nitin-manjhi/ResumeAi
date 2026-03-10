@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { JobApplicationService } from '../service/job-application.service';
-import { JobApplication, ApplicationStatus } from '../shared/modal/job-application';
+import { JobApplication, ApplicationStatus, PaginatedResponse } from '../shared/modal/job-application';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
@@ -58,8 +58,8 @@ export class JobApplicationFormComponent implements OnInit {
             if (app) {
                 this.patchForm(app);
             } else {
-                this.appService.getAllApplications().subscribe(apps => {
-                    const found = apps.find(a => a.id === this.applicationId);
+                this.appService.getAllApplications().subscribe((res: PaginatedResponse<JobApplication>) => {
+                    const found = res.content.find((a: JobApplication) => a.id === this.applicationId);
                     if (found) this.patchForm(found);
                     else this.router.navigate(['/job-tracker']);
                 });

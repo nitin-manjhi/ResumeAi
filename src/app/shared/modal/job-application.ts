@@ -20,3 +20,10 @@ export interface JobApplication {
     createdAt?: string;
     updatedAt?: string;
 }
+export interface PaginatedResponse<T> {
+    content: T[];
+    totalElements: number;
+    totalPages: number;
+    pageNumber: number;
+    pageSize: number;
+}
