@@ -13,4 +13,5 @@ export interface AtsAnalysisResult {
     };
     structuredResume?: any;
     skillImportance?: { [key: string]: string };
+    companyName?: string;
 }

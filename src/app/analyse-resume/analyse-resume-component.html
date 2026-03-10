@@ -78,6 +78,13 @@
       }
     </div>
 
+    <!-- Company Name Section -->
+    <div class="w-full md:w-10 flex flex-column gap-2 mb-3" style="max-width: 1200px;">
+      <label class="font-semibold text-xl" for="companyName">Target Company Name</label>
+      <input pInputText id="companyName" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)"
+        class="w-full" placeholder="e.g. Google, Microsoft, Startup Inc." />
+    </div>
+
     <!-- Job Description Section (80% Width) -->
     <div class="w-full md:w-10 flex flex-column gap-2" style="max-width: 1200px;">
       <label class="font-semibold text-xl" for="jobDescription">Job Description</label>

@@ -20,6 +20,12 @@ export class ResumeAnalysisService {
   private readonly _lastJobId = signal<string | null>(null);
   readonly lastJobId = this._lastJobId.asReadonly();
 
+  private readonly _isGeneratingCL = signal<boolean>(false);
+  readonly isGeneratingCL = this._isGeneratingCL.asReadonly();
+
+  private readonly _isGeneratingEmail = signal<boolean>(false);
+  readonly isGeneratingEmail = this._isGeneratingEmail.asReadonly();
+
   setResult(result: AtsAnalysisResult) {
     this._currentResult.set(result);
   }
@@ -28,6 +34,8 @@ export class ResumeAnalysisService {
     this._currentResult.set(null);
     this._isAnalyzing.set(false);
     this._lastJobId.set(null);
+    this._isGeneratingCL.set(false);
+    this._isGeneratingEmail.set(false);
   }
 
   setAnalyzing(status: boolean, jobId: string | null = null) {
@@ -35,11 +43,20 @@ export class ResumeAnalysisService {
     if (jobId) this._lastJobId.set(jobId);
   }
 
-  analyzeResume(file: File, jdText: string, model: string = 'ollama') {
+  setGeneratingCL(status: boolean) {
+    this._isGeneratingCL.set(status);
+  }
+
+  setGeneratingEmail(status: boolean) {
+    this._isGeneratingEmail.set(status);
+  }
+
+  analyzeResume(file: File, jdText: string, model: string = 'ollama', companyName: string = '') {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('jdText', jdText);
     formData.append('model', model);
+    formData.append('companyName', companyName);
     return this.http.post<AtsAnalysisResult>(`${this.baseUrl}/analyze`, formData);
   }
 
@@ -102,5 +119,13 @@ export class ResumeAnalysisService {
 
   categorizeSkills(skills: string[]) {
     return this.http.post<any>(`${this.baseUrl}/categorize-skills`, skills);
+  }
+
+  generateCoverLetter(resultId: string, model: string = 'ollama') {
+    return this.http.post<string>(`${this.baseUrl}/generate-cover-letter/${resultId}`, null, { params: { model } });
+  }
+
+  generateEmail(resultId: string, model: string = 'ollama') {
+    return this.http.post<string>(`${this.baseUrl}/generate-email/${resultId}`, null, { params: { model } });
   }
 }

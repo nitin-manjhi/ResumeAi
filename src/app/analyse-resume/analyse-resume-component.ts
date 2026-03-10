@@ -18,6 +18,7 @@ import { NotificationService } from '../service/notification.service';
 
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-analyse-resume-component',
@@ -32,6 +33,7 @@ import { ProgressBarModule } from 'primeng/progressbar';
     FloatLabelModule,
     CardModule,
     ProgressSpinnerModule,
+    InputTextModule,
     AtsResultComponent,
   ],
   templateUrl: './analyse-resume-component.html',
@@ -43,6 +45,7 @@ export class AnalyseResumeComponent {
   private readonly notificationService = inject(NotificationService);
   private messageService = inject(MessageService);
   protected jobDescription = signal('');
+  protected companyName = signal('');
   protected isLoading = signal(false);
   protected jobSubmitted = computed(() => this.resumeService.isAnalyzing() || !!this.readyResultId());
   protected readyResultId = this.notificationService.latestResultId;
@@ -96,7 +99,7 @@ export class AnalyseResumeComponent {
       this.isLoading.set(true);
       try {
         const response = await firstValueFrom(
-          this.resumeService.analyzeResume(file, this.jobDescription(), this.selectedModel()),
+          this.resumeService.analyzeResume(file, this.jobDescription(), this.selectedModel(), this.companyName()),
         );
         console.log(response);
         this.messageService.add({
@@ -145,6 +148,7 @@ export class AnalyseResumeComponent {
   onReset() {
     this.resumeService.clearResult();
     this.jobDescription.set('');
+    this.companyName.set('');
     this.notificationService.clearLatestResultId();
   }
 

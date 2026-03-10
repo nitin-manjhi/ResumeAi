@@ -96,6 +96,9 @@ export class NotificationService {
 
                 if (data.progress === 100) {
                     this.resumeService.setAnalyzing(false);
+                    // Reset document generation flags if they were active
+                    if (data.message?.includes('Cover Letter')) this.resumeService.setGeneratingCL(false);
+                    if (data.message?.includes('Email Draft')) this.resumeService.setGeneratingEmail(false);
                 }
                 return;
             }
@@ -108,6 +111,17 @@ export class NotificationService {
                     detail: data.message || 'Your account limits or premium status have been updated.',
                     life: 5000
                 });
+                return;
+            }
+
+            if (data.type === 'ERROR') {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Operation Failed',
+                    detail: data.message,
+                    life: 10000
+                });
+                this.resumeService.setAnalyzing(false);
                 return;
             }
 
