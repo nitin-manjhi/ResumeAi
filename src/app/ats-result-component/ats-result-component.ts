@@ -128,6 +128,10 @@ export class AtsResultComponent implements OnInit {
     this.router.navigate(["/send-mail"], { state: { data: this.result } });
   }
 
+  goToTracker() {
+    this.router.navigate(["/job-tracker"]);
+  }
+
   reviewCoverLetter() {
     if (this.result.coverLetter) {
       this.router.navigate(["/review-cover-letter"]);

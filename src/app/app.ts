@@ -69,6 +69,11 @@ export class AppComponent {
         icon: 'pi pi-bolt',
         routerLink: '/analyse-resume',
       },
+      {
+        label: 'Job Tracker',
+        icon: 'pi pi-list',
+        routerLink: '/job-tracker',
+      },
     ];
 
     if (this.currentUser()?.role === 'ADMIN') {

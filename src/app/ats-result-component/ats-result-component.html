@@ -18,6 +18,7 @@
                 [icon]="result.email ? 'pi pi-envelope' : 'pi pi-sparkles'"
                 (onClick)="result.email ? sendMail() : generateEmail()" [loading]="isGeneratingEmail()"
                 severity="success" />
+            <p-button label="Track App" icon="pi pi-list" (onClick)="goToTracker()" severity="warn" />
             <p-button label="Analyze New" icon="pi pi-refresh" (onClick)="reset()" severity="secondary" />
         </div>
     </div>

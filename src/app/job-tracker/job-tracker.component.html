@@ -1,0 +1,103 @@
+<div class="p-4">
+    <div class="flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0 text-primary">Job Search Tracker</h2>
+        <p-button label="Add New Application" icon="pi pi-plus" (onClick)="addNew()" />
+    </div>
+
+    <p-tabs [value]="activeTab()">
+        <p-tablist>
+            <p-tab [value]="0"><i class="pi pi-list mr-2"></i>Tracker Table</p-tab>
+            <p-tab [value]="1"><i class="pi pi-chart-line mr-2"></i>Interview Stats</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+            <!-- TRACKER TABLE TAB -->
+            <p-tabpanel [value]="0">
+                <div class="card shadow-2 border-round">
+                    <p-table #dt [value]="applications()" [rows]="10" [paginator]="true" [responsiveLayout]="'scroll'"
+                        styleClass="p-datatable-sm" [globalFilterFields]="['companyName', 'hrName', 'phone']"
+                        [rowsPerPageOptions]="[10, 25, 50]">
+                        <ng-template pTemplate="caption">
+                            <div
+                                class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
+                                <span class="text-xl font-bold text-900">Applications</span>
+                                <div class="flex flex-column md:flex-row gap-2">
+                                    <p-select [options]="statusOptions" placeholder="Filter by Status"
+                                        (onChange)="dt.filter($event.value, 'status', 'equals')"
+                                        styleClass="w-full md:w-12rem" />
+                                    <p-iconfield iconPosition="left">
+                                        <p-inputicon class="pi pi-search" />
+                                        <input pInputText type="text"
+                                            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                                            placeholder="Search Keyword" class="w-full md:w-15rem" />
+                                    </p-iconfield>
+                                </div>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Company Name</th>
+                                <th>Status</th>
+                                <th>HR Contact</th>
+                                <th>Applied On</th>
+                                <th>Closing Date</th>
+                                <th>JD</th>
+                                <th style="width: 8rem">Actions</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-app>
+                            <tr>
+                                <td class="font-bold">{{ app.companyName }}</td>
+                                <td>
+                                    <p-tag [value]="app.status" [severity]="getStatusSeverity(app.status)"
+                                        [rounded]="true" />
+                                </td>
+                                <td>
+                                    <div class="flex flex-column gap-1">
+                                        <span class="font-medium text-900">{{ app.hrName || 'N/A' }}</span>
+                                        <small class="text-600">{{ app.hrEmail || 'N/A' }}</small>
+                                    </div>
+                                </td>
+                                <td>{{ app.appliedDate | date:'mediumDate' }}</td>
+                                <td [class.text-red-500]="isExpired(app.closingDate)">
+                                    {{ (app.closingDate | date:'mediumDate') || 'N/A' }}
+                                </td>
+                                <td>
+                                    <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="secondary"
+                                        pTooltip="View Job Description"
+                                        (onClick)="viewJd(app.jobDescription, app.companyName)" />
+                                </td>
+                                <td>
+                                    <div class="flex gap-2">
+                                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
+                                            (onClick)="editApplication(app)" />
+                                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                                            (onClick)="deleteApplication(app)" />
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="6" class="text-center p-4 text-500">
+                                    No job applications tracked yet. Click "Add New Application" to start.
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </p-tabpanel>
+
+            <!-- STATS TAB -->
+            <p-tabpanel [value]="1">
+                <div class="card p-6 text-center shadow-1 border-round surface-50">
+                    <i class="pi pi-calendar-plus text-4xl mb-3 text-400"></i>
+                    <h3 class="text-900 m-0">Future Feature: Interview Stats</h3>
+                    <p class="text-600">This section will visualize your interview success rates and upcoming dates.</p>
+                </div>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+</div>
+
+<p-toast />
