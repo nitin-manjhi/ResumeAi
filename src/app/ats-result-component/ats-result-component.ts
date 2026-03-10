@@ -5,6 +5,8 @@ import {
   EventEmitter,
   inject,
   OnInit,
+  signal,
+  effect
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { Router } from "@angular/router";
@@ -51,6 +53,23 @@ export class AtsResultComponent implements OnInit {
   activeMainTab = 0;
   activeTab = 0;
   editableResume = "";
+
+  isGeneratingCL = this.resumeService.isGeneratingCL;
+  isGeneratingEmail = this.resumeService.isGeneratingEmail;
+
+  constructor() {
+    effect(() => {
+      const res = this.resumeService.currentResult();
+      if (res?.coverLetter && this.isGeneratingCL()) {
+        this.resumeService.setGeneratingCL(false);
+        this.messageService.add({ severity: 'success', summary: 'Ready', detail: 'Cover letter is ready!' });
+      }
+      if (res?.email && this.isGeneratingEmail()) {
+        this.resumeService.setGeneratingEmail(false);
+        this.messageService.add({ severity: 'success', summary: 'Ready', detail: 'Email draft is ready!' });
+      }
+    });
+  }
 
   ngOnInit() {
     if (this.result?.optimizedResume) {
@@ -110,7 +129,37 @@ export class AtsResultComponent implements OnInit {
   }
 
   reviewCoverLetter() {
-    this.router.navigate(["/review-cover-letter"]);
+    if (this.result.coverLetter) {
+      this.router.navigate(["/review-cover-letter"]);
+    } else {
+      this.generateCL();
+    }
+  }
+
+  generateCL() {
+    this.resumeService.setGeneratingCL(true);
+    this.resumeService.generateCoverLetter(this.result.uuid!).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'info', summary: 'Processing', detail: 'Cover letter generation started...' });
+      },
+      error: () => {
+        this.resumeService.setGeneratingCL(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to start generation.' });
+      }
+    });
+  }
+
+  generateEmail() {
+    this.resumeService.setGeneratingEmail(true);
+    this.resumeService.generateEmail(this.result.uuid!).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'info', summary: 'Processing', detail: 'Email draft generation started...' });
+      },
+      error: () => {
+        this.resumeService.setGeneratingEmail(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to start generation.' });
+      }
+    });
   }
 
   getImportanceLabel(skill: string): string {
