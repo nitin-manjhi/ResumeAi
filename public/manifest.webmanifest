@@ -1,0 +1,23 @@
+{
+    "name": "ResumeAi - Professional Resume Builder",
+    "short_name": "ResumeAi",
+    "theme_color": "#0ea5e9",
+    "background_color": "#ffffff",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "icons": [
+        {
+            "src": "pwa-icon.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable any"
+        },
+        {
+            "src": "pwa-icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable any"
+        }
+    ]
+}

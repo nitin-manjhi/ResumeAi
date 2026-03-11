@@ -56,8 +56,12 @@ export class AtsResultComponent implements OnInit {
 
   isGeneratingCL = this.resumeService.isGeneratingCL;
   isGeneratingEmail = this.resumeService.isGeneratingEmail;
+  isMobile = signal(window.innerWidth < 768);
 
   constructor() {
+    window.addEventListener('resize', () => {
+      this.isMobile.set(window.innerWidth < 768);
+    });
     effect(() => {
       const res = this.resumeService.currentResult();
       if (res?.coverLetter && this.isGeneratingCL()) {

@@ -83,8 +83,32 @@ export class GenerateResumeComponent implements OnInit {
   activeStep: number = 0;
   resumeForm!: FormGroup;
   showPreview: boolean = true;
+  isMobile = signal(window.innerWidth < 768);
   showCategorizationDialog: boolean = false;
   isCategorizing: boolean = false;
+
+  constructor() {
+    window.addEventListener('resize', () => {
+      this.isMobile.set(window.innerWidth < 768);
+      this.updateSteps();
+    });
+  }
+
+  updateSteps() {
+    const isMobile = this.isMobile();
+    this.steps = [
+      {
+        label: isMobile ? 'Info' : 'General Info',
+        command: (event: any) => this.goToStep(0),
+      },
+      { label: isMobile ? 'Edu' : 'Education', command: (event: any) => this.goToStep(1) },
+      { label: isMobile ? 'Skills' : 'Skills', command: (event: any) => this.goToStep(2) },
+      { label: isMobile ? 'Work' : 'Work Experience', command: (event: any) => this.goToStep(3) },
+      { label: isMobile ? 'Proj' : 'Projects', command: (event: any) => this.goToStep(4) },
+      { label: isMobile ? 'Other' : 'Other', command: (event: any) => this.goToStep(5) },
+      { label: isMobile ? 'Layout' : 'Layout', command: (event: any) => this.goToStep(6) },
+    ];
+  }
 
   states: string[] = [];
   degrees: string[] = [];
@@ -149,18 +173,7 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.steps = [
-      {
-        label: 'General Information',
-        command: (event: any) => this.goToStep(0),
-      },
-      { label: 'Education', command: (event: any) => this.goToStep(1) },
-      { label: 'Skills', command: (event: any) => this.goToStep(2) },
-      { label: 'Work Experience', command: (event: any) => this.goToStep(3) },
-      { label: 'Projects', command: (event: any) => this.goToStep(4) },
-      { label: 'Other', command: (event: any) => this.goToStep(5) },
-      { label: 'Layout', command: (event: any) => this.goToStep(6) },
-    ];
+    this.updateSteps();
 
     this.resumeForm = this.fb.group({
       generalInfo: this.fb.group({

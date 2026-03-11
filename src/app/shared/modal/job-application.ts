@@ -19,6 +19,7 @@ export interface JobApplication {
     closingDate?: string;
     createdAt?: string;
     updatedAt?: string;
+    analysisId?: string;
 }
 export interface PaginatedResponse<T> {
     content: T[];

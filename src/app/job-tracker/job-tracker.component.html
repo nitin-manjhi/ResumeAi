@@ -1,30 +1,39 @@
 <div class="p-4">
-    <div class="flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
         <h2 class="m-0 text-primary">Job Search Tracker</h2>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2 justify-content-center">
+            <p-button label="Export" icon="pi pi-file-excel" [rounded]="true" [text]="true" severity="success"
+                (onClick)="exportData()" pTooltip="Download Backup" class="md:hidden" />
             <p-button label="Export to Excel" icon="pi pi-file-excel" [rounded]="true" [text]="true" severity="success"
-                (onClick)="exportData()" pTooltip="Download Backup (CSV/Excel)" />
+                (onClick)="exportData()" pTooltip="Download Backup (CSV/Excel)" class="hidden md:inline-flex" />
+
+            <p-button label="Import" icon="pi pi-upload" [rounded]="true" [text]="true" severity="secondary"
+                (onClick)="fileInput.click()" pTooltip="Restore Data" class="md:hidden" />
             <p-button label="Import from Backup" icon="pi pi-upload" [rounded]="true" [text]="true" severity="secondary"
-                (onClick)="fileInput.click()" pTooltip="Restore Data from CSV" />
+                (onClick)="fileInput.click()" pTooltip="Restore Data from CSV" class="hidden md:inline-flex" />
+
             <input #fileInput type="file" (change)="onImport($event)" style="display: none" accept=".csv" />
-            <p-button label="Add New Application" icon="pi pi-plus" (onClick)="addNew()" />
+            <p-button label="Add New" icon="pi pi-plus" (onClick)="addNew()" class="md:hidden" />
+            <p-button label="Add New Application" icon="pi pi-plus" (onClick)="addNew()"
+                class="hidden md:inline-flex" />
         </div>
     </div>
 
     <p-tabs [value]="activeTab()">
         <p-tablist>
-            <p-tab [value]="0"><i class="pi pi-list mr-2"></i>Tracker Table</p-tab>
-            <p-tab [value]="1"><i class="pi pi-chart-line mr-2"></i>Interview Stats</p-tab>
+            <p-tab [value]="0"><i class="pi pi-list mr-2"></i>Tracker</p-tab>
+            <p-tab [value]="1"><i class="pi pi-chart-line mr-2"></i>Stats</p-tab>
         </p-tablist>
 
         <p-tabpanels>
             <!-- TRACKER TABLE TAB -->
             <p-tabpanel [value]="0">
                 <div class="card shadow-2 border-round">
-                    <p-table #dt [value]="applications()" [rows]="10" [paginator]="true" [responsiveLayout]="'scroll'"
-                        styleClass="p-datatable-sm" [globalFilterFields]="['companyName', 'hrName', 'phone']"
-                        [rowsPerPageOptions]="[10, 25, 50]" [lazy]="true" (onLazyLoad)="loadApplications($event)"
-                        [totalRecords]="totalRecords()" [loading]="loading()">
+                    <p-table #dt [value]="applications()" [rows]="10" [paginator]="true" [responsiveLayout]="'stack'"
+                        [breakpoint]="'960px'" styleClass="p-datatable-sm"
+                        [globalFilterFields]="['companyName', 'hrName', 'phone']" [rowsPerPageOptions]="[10, 25, 50]"
+                        [lazy]="true" (onLazyLoad)="loadApplications($event)" [totalRecords]="totalRecords()"
+                        [loading]="loading()">
                         <ng-template pTemplate="caption">
                             <div
                                 class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
@@ -77,6 +86,9 @@
                                 </td>
                                 <td>
                                     <div class="flex gap-2">
+                                        <p-button icon="pi pi-chart-bar" [rounded]="true" [text]="true"
+                                            severity="success" pTooltip="See Resume Analysis"
+                                            [disabled]="!app.analysisId" (onClick)="viewAnalysis(app.analysisId)" />
                                         <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
                                             (onClick)="editApplication(app)" />
                                         <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"

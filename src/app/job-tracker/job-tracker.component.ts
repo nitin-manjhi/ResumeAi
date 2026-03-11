@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { JobApplicationService } from '../service/job-application.service';
+import { ResumeAnalysisService } from '../service/resume-analysis-service';
 import { JobApplication, ApplicationStatus } from '../shared/modal/job-application';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -44,6 +45,7 @@ export class JobTrackerComponent implements OnInit {
     private readonly dialogService = inject(DialogService);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
+    private readonly resumeService = inject(ResumeAnalysisService);
 
     applications = signal<JobApplication[]>([]);
     totalRecords = signal(0);
@@ -140,6 +142,26 @@ export class JobTrackerComponent implements OnInit {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         return closing < today;
+    }
+
+    viewAnalysis(resultId: string) {
+        if (!resultId) return;
+        this.loading.set(true);
+        this.resumeService.getAnalysisResult(resultId).subscribe({
+            next: () => {
+                this.loading.set(false);
+                this.router.navigate(['/analyse-resume']);
+            },
+            error: (err) => {
+                this.loading.set(false);
+                console.error('Failed to fetch result', err);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Could not fetch analysis result. It might have been cleared.'
+                });
+            }
+        });
     }
 
     addNew() {

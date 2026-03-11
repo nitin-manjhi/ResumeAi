@@ -3,21 +3,23 @@
     <div class="flex flex-column gap-5 max-w-85rem mx-auto">
 
         <!-- Header & View Switcher -->
-        <div class="flex align-items-center justify-content-between flex-wrap gap-4 pb-4 border-bottom-1 border-200">
+        <div
+            class="flex flex-column md:flex-row align-items-center justify-content-between flex-wrap gap-4 pb-4 border-bottom-1 border-200">
             <div class="flex align-items-center gap-3">
                 <div class="p-3 bg-primary border-round-xl shadow-2">
                     <i class="pi pi-shield text-white text-3xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold text-900 m-0">Admin Management</h1>
-                    <p class="text-500 m-0 mt-1">Configure user permissions and resource allocations</p>
+                    <h1 class="text-2xl md:text-3xl font-bold text-900 m-0">Admin Management</h1>
+                    <p class="text-500 m-0 mt-1">Configure user permissions and quotas</p>
                 </div>
             </div>
             <p-selectButton [options]="viewOptions" [ngModel]="activeView()" (ngModelChange)="activeView.set($event)"
-                optionLabel="label" optionValue="value" styleClass="view-selector shadow-1">
+                optionLabel="label" optionValue="value" styleClass="view-selector shadow-1 w-full md:w-auto">
                 <ng-template let-item pTemplate="item">
                     <i [class]="item.icon + ' mr-2'"></i>
-                    <span>{{item.label}}</span>
+                    <span>{{isMobile() ? (item.label === 'Upgrade Requests' ? 'Requests' : 'Users') :
+                        item.label}}</span>
                 </ng-template>
             </p-selectButton>
         </div>
@@ -26,7 +28,7 @@
         <!-- View 1: Upgrade Requests -->
         <p-card styleClass="shadow-3 border-round-xl overflow-hidden fadein border-none">
             <p-table [value]="upgradeRequests()" [loading]="loadingRequests()" [paginator]="true" [rows]="10"
-                styleClass="p-datatable-sm p-datatable-striped">
+                styleClass="p-datatable-sm p-datatable-striped" responsiveLayout="stack" breakpoint="960px">
                 <ng-template pTemplate="header">
                     <tr>
                         <th class="pl-4">Request Date</th>
@@ -37,20 +39,26 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-req>
                     <tr>
-                        <td class="pl-4">{{req.createdAt | date:'mediumDate'}}</td>
+                        <td class="pl-4">
+                            <span class="p-column-title font-bold">Request Date</span>
+                            {{req.createdAt | date:'mediumDate'}}
+                        </td>
                         <td>
+                            <span class="p-column-title font-bold">User Profile</span>
                             <div class="flex flex-column">
                                 <span class="font-bold text-900">{{req.username}}</span>
                                 <span class="text-xs text-600">{{req.email}}</span>
                             </div>
                         </td>
                         <td>
+                            <span class="p-column-title font-bold">Reason</span>
                             <div class="p-2 surface-50 border-round text-xs line-height-3 text-700 max-w-30rem">
                                 {{req.reason}}
                             </div>
                         </td>
-                        <td>
-                            <div class="flex justify-content-center gap-3">
+                        <td class="text-center">
+                            <span class="p-column-title font-bold">Action</span>
+                            <div class="flex justify-content-center gap-3 py-2">
                                 <p-button icon="pi pi-check" (onClick)="processRequest(req.id, 'APPROVED')"
                                     severity="success" rounded="true" raised="true" pTooltip="Approve & Set Limit" />
                                 <p-button icon="pi pi-times" (onClick)="processRequest(req.id, 'REJECTED')"
@@ -65,7 +73,7 @@
         <!-- View 2: User Access Management -->
         <p-card styleClass="shadow-3 border-round-xl overflow-hidden fadein border-none">
             <p-table [value]="users()" [loading]="loadingUsers()" [paginator]="true" [rows]="10"
-                styleClass="p-datatable-sm standard-table" responsiveLayout="scroll">
+                styleClass="p-datatable-sm standard-table" responsiveLayout="stack" breakpoint="960px">
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 25%" class="pl-4">ACCOUNT IDENTITY</th>
@@ -75,7 +83,8 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-user>
                     <tr class="user-row border-bottom-1 border-100">
-                        <td class="align-top py-5 pl-4">
+                        <td class="align-top py-4 pl-4">
+                            <span class="p-column-title font-bold mb-3">User Profile</span>
                             <div class="flex flex-column gap-4">
                                 <div class="flex align-items-center gap-3">
                                     <div class="p-3 bg-blue-50 border-circle">
@@ -95,7 +104,8 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="py-5 px-4 vertical-divider">
+                        <td class="py-4 px-4 vertical-divider-responsive">
+                            <span class="p-column-title font-bold mb-3">Quotas & Permissions</span>
                             <div class="flex flex-column gap-6">
 
                                 <!-- STANDARD QUOTA SECTION -->
@@ -146,9 +156,8 @@
                                                 <i class="pi pi-bolt text-orange-600 text-xl"></i>
                                             </div>
                                             <div>
-                                                <span class="block font-bold text-orange-900">Advanced AI
-                                                    Capabilities</span>
-                                                <span class="text-xs text-600">OpenAI & Gemini Model Access</span>
+                                                <span class="block font-bold text-orange-900">Advanced AI</span>
+                                                <span class="text-xs text-600">OpenAI & Gemini</span>
                                             </div>
                                         </div>
                                         <div class="flex align-items-center gap-2">
@@ -161,7 +170,7 @@
                                     @if(user.role !== 'ADMIN') {
                                     <div class="quota-grid-row">
                                         <div class="quota-input-group">
-                                            <label class="quota-label">Premium Credit Quota</label>
+                                            <label class="quota-label">Quota</label>
                                             <p-inputNumber [(ngModel)]="user.premiumUsageLimit" [showButtons]="true"
                                                 buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
                                                 decrementButtonIcon="pi pi-minus" [min]="0" styleClass="modern-input"
@@ -170,7 +179,7 @@
                                         </div>
 
                                         <div class="quota-input-group">
-                                            <label class="quota-label">Current Premium Usage</label>
+                                            <label class="quota-label">Used</label>
                                             <p-inputNumber [(ngModel)]="user.premiumUsageCount" [showButtons]="true"
                                                 buttonLayout="horizontal" incrementButtonIcon="pi pi-plus"
                                                 decrementButtonIcon="pi pi-minus" [min]="0" styleClass="modern-input"
@@ -181,16 +190,16 @@
                                     } @else {
                                     <div class="p-3 bg-white border-round-lg text-center border-1 border-200">
                                         <span class="text-orange-600 font-bold text-sm tracking-widest"><i
-                                                class="pi pi-verified mr-2"></i>ADMIN ACCOUNTS HAVE FULL PREMIUM
-                                            UNLIMITED ACCESS</span>
+                                                class="pi pi-verified mr-2"></i>ADMIN UNLIMITED ACCESS</span>
                                     </div>
                                     }
                                 </div>
                             </div>
                         </td>
-                        <td class="text-center align-middle">
+                        <td class="text-center py-4">
+                            <span class="p-column-title font-bold mb-3">Save Change</span>
                             <p-button icon="pi pi-save" (onClick)="saveUsage(user)" severity="success" rounded="true"
-                                raised="true" size="large" pTooltip="Save Configuration" />
+                                raised="true" [size]="isMobile() ? 'small' : 'large'" pTooltip="Save Configuration" />
                         </td>
                     </tr>
                 </ng-template>

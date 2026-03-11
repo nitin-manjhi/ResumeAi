@@ -30,14 +30,16 @@
     height: 100%;
     max-height: calc(100vh - 200px);
     overflow-y: auto;
-    
+
     /* Smooth scrollbar for preview */
     &::-webkit-scrollbar {
         width: 8px;
     }
+
     &::-webkit-scrollbar-track {
         background: #f1f3f5;
     }
+
     &::-webkit-scrollbar-thumb {
         background: #ced4da;
         border-radius: 4px;
@@ -54,7 +56,7 @@
     .p-card {
         display: flex;
         flex-direction: column;
-        
+
         .p-card-header {
             padding: 1.5rem 1.5rem 0.5rem 1.5rem;
         }
@@ -66,7 +68,7 @@
             padding: 1rem;
             overflow: hidden;
         }
-        
+
         .p-card-content {
             flex: 1;
             padding: 0;
@@ -81,8 +83,23 @@
         padding: 1rem;
         margin-top: 1rem;
     }
-    
+
     .cover-letter-preview {
         padding: 10mm 15mm !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .cover-letter-preview {
+        transform: scale(0.65);
+        transform-origin: top center;
+        margin-bottom: -40%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .cover-letter-preview {
+        transform: scale(0.45);
+        margin-bottom: -120%;
     }
 }

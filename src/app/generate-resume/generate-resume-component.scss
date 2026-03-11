@@ -313,21 +313,34 @@ textarea {
 @media screen and (max-width: 768px) {
     #resumePreview {
         transform: scale(0.65);
+        margin-bottom: -150px; // Offset scale shrinkage
+    }
+
+    :host ::ng-deep {
+        .p-steps .p-steps-label {
+            display: none !important;
+        }
+
+        .p-steps .p-steps-item:before {
+            top: 50% !important;
+        }
     }
 }
 
 @media screen and (max-width: 576px) {
     #resumePreview {
-        transform: scale(0.45);
-        margin-left: -50%;
-        margin-right: -50%;
+        transform: scale(0.40);
+        margin-bottom: -340px;
     }
 }
 
 a {
-  color: inherit; /* Keeps the link the same color as your text */
-  text-decoration: none;
+    color: inherit;
+    /* Keeps the link the same color as your text */
+    text-decoration: none;
 }
+
 a:hover {
-  text-decoration: underline; /* Shows it's clickable only when hovering */
+    text-decoration: underline;
+    /* Shows it's clickable only when hovering */
 }

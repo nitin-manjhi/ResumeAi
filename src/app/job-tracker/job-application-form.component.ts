@@ -84,7 +84,8 @@ export class JobApplicationFormComponent implements OnInit {
             phone: [''],
             resumePath: [''],
             closingDate: [null],
-            appliedDate: [new Date(), [Validators.required]]
+            appliedDate: [new Date(), [Validators.required]],
+            analysisId: [null]
         });
     }
 
