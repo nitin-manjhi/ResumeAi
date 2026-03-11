@@ -35,11 +35,15 @@ export class AppComponent {
   isLoggedIn = this.authService.isLoggedIn;
   currentUser = this.authService.currentUser;
   isDarkMode = signal(false);
+  isMobile = signal(window.innerWidth < 768);
   readonly lightSeverity: ButtonSeverity = 'secondary';
   readonly darkSeverity: ButtonSeverity = 'primary';
 
   constructor() {
     this.initTheme();
+    window.addEventListener('resize', () => {
+      this.isMobile.set(window.innerWidth < 768);
+    });
     this.authService.usageUpgraded$.subscribe(() => {
       this.messageService.add({
         severity: 'success',
@@ -68,6 +72,11 @@ export class AppComponent {
         label: 'Analyse Resume',
         icon: 'pi pi-bolt',
         routerLink: '/analyse-resume',
+      },
+      {
+        label: 'Job Tracker',
+        icon: 'pi pi-list',
+        routerLink: '/job-tracker',
       },
     ];
 

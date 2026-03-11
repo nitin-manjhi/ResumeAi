@@ -46,7 +46,14 @@ export class AnalyseResumeComponent {
   private messageService = inject(MessageService);
   protected jobDescription = signal('');
   protected companyName = signal('');
+  protected isMobile = signal(window.innerWidth < 768);
   protected isLoading = signal(false);
+
+  constructor() {
+    window.addEventListener('resize', () => {
+      this.isMobile.set(window.innerWidth < 768);
+    });
+  }
   protected jobSubmitted = computed(() => this.resumeService.isAnalyzing() || !!this.readyResultId());
   protected readyResultId = this.notificationService.latestResultId;
   protected analysisResult = this.resumeService.currentResult;

@@ -1,0 +1,99 @@
+<div class="p-4 flex justify-content-center">
+    <div class="card shadow-4 p-5 border-round-xl surface-card w-full" style="max-width: 600px;">
+        <h2 class="text-primary mt-0 mb-4 flex align-items-center gap-2">
+            <i class="pi" [ngClass]="isEditMode() ? 'pi-pencil' : 'pi-plus-circle'"></i>
+            {{ isEditMode() ? 'Update' : 'Track New' }} Job Application
+        </h2>
+
+        <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
+            <!-- Company Name -->
+            <div class="flex flex-column gap-2">
+                <label for="companyName" class="font-bold text-900">Company Name *</label>
+                <input pInputText id="companyName" formControlName="companyName" placeholder="e.g. Google, Microsoft"
+                    class="w-full" />
+                @if (applicationForm.get('companyName')?.touched && applicationForm.get('companyName')?.invalid) {
+                <small class="text-red-500 font-medium">Company name is required.</small>
+                }
+            </div>
+
+            <!-- Status -->
+            <div class="flex flex-column gap-2">
+                <label for="status" class="font-bold text-900">Application Status *</label>
+                <p-select id="status" [options]="statusOptions" formControlName="status" optionLabel="label"
+                    optionValue="value" class="w-full" />
+            </div>
+
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <!-- HR Name -->
+                    <div class="flex flex-column gap-2">
+                        <label for="hrName" class="font-bold text-900">HR Name</label>
+                        <input pInputText id="hrName" formControlName="hrName" placeholder="e.g. Alice Smith"
+                            class="w-full" />
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <!-- HR Email -->
+                    <div class="flex flex-column gap-2">
+                        <label for="hrEmail" class="font-bold text-900">HR Email</label>
+                        <input pInputText id="hrEmail" formControlName="hrEmail" placeholder="e.g. alice@company.com"
+                            class="w-full" />
+                        @if (applicationForm.get('hrEmail')?.touched && applicationForm.get('hrEmail')?.invalid) {
+                        <small class="text-red-500 font-medium">Please enter a valid email.</small>
+                        }
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <!-- Phone -->
+                    <div class="flex flex-column gap-2">
+                        <label for="phone" class="font-bold text-900">Phone</label>
+                        <input pInputText id="phone" formControlName="phone" placeholder="e.g. +1 555-0123"
+                            class="w-full" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column gap-2">
+                        <label for="appliedDate" class="font-bold text-900">Applied Date *</label>
+                        <p-datepicker id="appliedDate" formControlName="appliedDate" [showIcon]="true"
+                            styleClass="w-full" />
+                    </div>
+                </div>
+                <div class="col-12 md:col-6">
+                    <div class="flex flex-column gap-2">
+                        <label for="closingDate" class="font-bold text-900">Closing Date</label>
+                        <p-datepicker id="closingDate" formControlName="closingDate" [showIcon]="true"
+                            styleClass="w-full" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Description -->
+            <div class="flex flex-column gap-2">
+                <div class="flex justify-content-between align-items-center">
+                    <label for="jobDescription" class="font-bold text-900">Job Description</label>
+                    <span class="text-xs font-medium"
+                        [class.text-red-500]="(applicationForm.get('jobDescription')?.value?.length || 0) > 1900"
+                        [class.text-600]="(applicationForm.get('jobDescription')?.value?.length || 0) <= 1900">
+                        {{ applicationForm.get('jobDescription')?.value?.length || 0 }} / 2000
+                    </span>
+                </div>
+                <textarea pTextarea id="jobDescription" formControlName="jobDescription" rows="10"
+                    class="w-full line-height-3" placeholder="Paste the job requirements or posting here..."></textarea>
+                @if (applicationForm.get('jobDescription')?.invalid) {
+                <small class="text-red-500 font-medium">Description exceeds the 2000 character limit.</small>
+                }
+            </div>
+
+            <div class="flex gap-3 justify-content-end mt-4 pt-3 border-top-1 border-100">
+                <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="cancel()" />
+                <p-button [label]="isEditMode() ? 'Save Changes' : 'Create Record'" icon="pi pi-check" type="submit"
+                    [disabled]="applicationForm.invalid" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<p-toast />

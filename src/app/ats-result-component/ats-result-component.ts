@@ -56,8 +56,12 @@ export class AtsResultComponent implements OnInit {
 
   isGeneratingCL = this.resumeService.isGeneratingCL;
   isGeneratingEmail = this.resumeService.isGeneratingEmail;
+  isMobile = signal(window.innerWidth < 768);
 
   constructor() {
+    window.addEventListener('resize', () => {
+      this.isMobile.set(window.innerWidth < 768);
+    });
     effect(() => {
       const res = this.resumeService.currentResult();
       if (res?.coverLetter && this.isGeneratingCL()) {
@@ -126,6 +130,10 @@ export class AtsResultComponent implements OnInit {
 
   sendMail() {
     this.router.navigate(["/send-mail"], { state: { data: this.result } });
+  }
+
+  goToTracker() {
+    this.router.navigate(["/job-tracker"]);
   }
 
   reviewCoverLetter() {

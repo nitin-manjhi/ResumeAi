@@ -57,9 +57,10 @@
       }
 
       <p-selectButton [options]="modelOptions()" [ngModel]="selectedModel()" (ngModelChange)="selectedModel.set($event)"
-        optionLabel="label" optionValue="value" [optionDisabled]="'disabled'">
+        optionLabel="label" optionValue="value" [optionDisabled]="'disabled'"
+        [styleClass]="isMobile() ? 'w-full flex-column' : ''">
         <ng-template let-item pTemplate="item">
-          <div class="flex flex-column align-items-center gap-1 px-3 py-2">
+          <div class="flex flex-column align-items-center gap-1 px-3 py-2" [class.w-full]="isMobile()">
             <i [class]="item.icon" [style.color]="item.disabled ? '#ccc' : 'inherit'"></i>
             <span [class.text-400]="item.disabled">{{ item.label }}</span>
 
@@ -95,12 +96,12 @@
 
     <!-- Upload Resume Section -->
     <div class="w-full flex flex-column align-items-center gap-3 mt-4">
-      <label class="font-semibold text-xl">Upload Resume</label>
-      <div class="flex gap-4 align-items-center flex-wrap justify-content-center">
+      <label class="font-semibold text-xl text-center">Upload Resume</label>
+      <div class="flex flex-column md:flex-row gap-4 align-items-center justify-content-center w-full max-w-25rem">
         <p-fileupload #fu mode="basic" chooseLabel="Choose File" chooseIcon="pi pi-upload" name="demo[]"
-          accept=".pdf,.doc,.docx" maxFileSize="1000000" />
+          accept=".pdf,.doc,.docx" maxFileSize="1000000" styleClass="w-full" />
         <p-button label="Analyze Resume" (onClick)="onUpload(fu)" [raised]=true severity="primary" icon="pi pi-bolt"
-          [disabled]="!jobDescription() || !jobDescription().trim() || !fu.files.length" />
+          styleClass="w-full" [disabled]="!jobDescription() || !jobDescription().trim() || !fu.files.length" />
       </div>
     </div>
     }

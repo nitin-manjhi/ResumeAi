@@ -53,6 +53,14 @@ export class AdminDashboardComponent implements OnInit {
     currentRequestUsername = signal('');
     newUsageLimit = signal(50); // Default or proposed limit
 
+    isMobile = signal(window.innerWidth < 768);
+
+    constructor() {
+        window.addEventListener('resize', () => {
+            this.isMobile.set(window.innerWidth < 768);
+        });
+    }
+
     activeView = signal('users'); // 'users' or 'requests'
     viewOptions = [
         { label: 'Manage Users', value: 'users', icon: 'pi pi-users' },

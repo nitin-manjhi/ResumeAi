@@ -22,5 +22,8 @@ export const routes: Routes = [
   { path: 'generate-resume', component: GenerateResumeComponent, canActivate: [authGuard] },
   { path: 'admin', loadComponent: () => import('./admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent), canActivate: [authGuard] },
   { path: 'review-cover-letter', loadComponent: () => import('./review-cover-letter/review-cover-letter-component').then(m => m.ReviewCoverLetterComponent), canActivate: [authGuard] },
+  { path: 'job-tracker', loadComponent: () => import('./job-tracker/job-tracker.component').then(m => m.JobTrackerComponent), canActivate: [authGuard] },
+  { path: 'job-tracker/add', loadComponent: () => import('./job-tracker/job-application-form.component').then(m => m.JobApplicationFormComponent), canActivate: [authGuard] },
+  { path: 'job-tracker/edit/:id', loadComponent: () => import('./job-tracker/job-application-form.component').then(m => m.JobApplicationFormComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

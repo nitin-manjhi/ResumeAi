@@ -1,0 +1,28 @@
+:host ::ng-deep {
+    .p-selectbutton {
+        display: flex;
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 0.5rem;
+
+        .p-button {
+            flex: 1 1 auto;
+            min-width: 140px;
+            border: 1px solid #ddd !important;
+            border-radius: 8px !important;
+            background: var(--p-surface-0);
+            transition: all 0.2s;
+
+            &.p-highlight {
+                background: var(--p-primary-50) !important;
+                border-color: var(--p-primary-color) !important;
+                color: var(--p-primary-color) !important;
+                font-weight: bold;
+            }
+
+            &:hover:not(.p-highlight) {
+                background: var(--p-surface-100);
+            }
+        }
+    }
+}

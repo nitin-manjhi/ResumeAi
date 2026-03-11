@@ -6,9 +6,18 @@
   <title>ResumeAi</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0ea5e9">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="manifest" href="manifest.webmanifest">
   <script>
     var global = global || window;
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => console.log('SW registered'))
+          .catch(err => console.log('SW reg failed', err));
+      });
+    }
   </script>
 </head>
 

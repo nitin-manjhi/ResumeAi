@@ -25,6 +25,13 @@ export class ReviewCoverLetterComponent implements OnInit {
 
     coverLetter = signal<string>('');
     fullName = signal<string>('Professional');
+    isMobile = signal<boolean>(window.innerWidth < 768);
+
+    constructor() {
+        window.addEventListener('resize', () => {
+            this.isMobile.set(window.innerWidth < 768);
+        });
+    }
 
     ngOnInit() {
         const result = this.resumeService.currentResult();
