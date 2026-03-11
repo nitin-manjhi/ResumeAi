@@ -1,0 +1,243 @@
+<div class="job-search-container p-4">
+    <!-- Header -->
+    <div class="header mb-5 flex justify-content-between align-items-center">
+        <div class="flex flex-column gap-2">
+            <h1 class="text-3xl font-bold m-0 text-900 flex align-items-center gap-2">
+                <i class="pi pi-search text-primary text-4xl"></i>
+                LinkedIn Job Finder
+            </h1>
+            <p class="text-secondary m-0 text-lg">Search LinkedIn for jobs and find matching opportunities</p>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card p-4 shadow-2 border-round-xl mb-5 bg-white">
+        <form [formGroup]="searchForm" (ngSubmit)="onSearch()" class="grid">
+            <!-- Keyword -->
+            <div class="col-12 md:col-6 lg:col-3 mb-3">
+                <label class="block font-bold mb-2 text-900">Keyword <span class="text-red-500">*</span></label>
+                <p-iconfield iconPosition="left" class="w-full">
+                    <p-inputicon class="pi pi-briefcase"></p-inputicon>
+                    <input type="text" pInputText formControlName="keyword" placeholder="e.g. Java Developer" class="w-full" />
+                </p-iconfield>
+            </div>
+
+            <!-- Location -->
+            <div class="col-12 md:col-6 lg:col-3 mb-3">
+                <label class="block font-bold mb-2 text-900">Location <span class="text-red-500">*</span></label>
+                <p-iconfield iconPosition="left" class="w-full">
+                    <p-inputicon class="pi pi-map-marker"></p-inputicon>
+                    <input type="text" pInputText formControlName="location" placeholder="e.g. Bangalore, India" class="w-full" />
+                </p-iconfield>
+            </div>
+
+            <!-- Experience Level -->
+            <div class="col-12 md:col-4 lg:col-2 mb-3">
+                <label class="block font-bold mb-2 text-900">Experience</label>
+                <p-select [options]="experienceLevels" formControlName="experienceLevel" class="w-full" styleClass="w-full" 
+                          optionLabel="label" optionValue="value" placeholder="Any Level"></p-select>
+            </div>
+
+            <!-- Job Type -->
+            <div class="col-12 md:col-4 lg:col-2 mb-3">
+                <label class="block font-bold mb-2 text-900">Job Type</label>
+                <p-select [options]="jobTypes" formControlName="jobType" class="w-full" styleClass="w-full" 
+                          optionLabel="label" optionValue="value" placeholder="Any Type"></p-select>
+            </div>
+
+            <!-- Date Posted -->
+            <div class="col-12 md:col-4 lg:col-2 mb-3">
+                <label class="block font-bold mb-2 text-900">Posted Within</label>
+                <p-select [options]="datePostedOptions" formControlName="datePosted" class="w-full" styleClass="w-full"
+                          optionLabel="label" optionValue="value" placeholder="Any Time"></p-select>
+            </div>
+
+            <!-- Remote and Max Results Row -->
+            <div class="col-12 grid align-items-center mt-2">
+                <div class="col-12 md:col-4 flex align-items-center gap-3">
+                    <div class="flex align-items-center gap-2">
+                         <p-checkbox formControlName="remote" [binary]="true" inputId="remote"></p-checkbox>
+                         <label for="remote" class="font-bold cursor-pointer text-900">Remote Only</label>
+                    </div>
+                </div>
+
+                <div class="col-12 md:col-4 flex align-items-center gap-2">
+                    <label class="font-bold text-900 mr-2">Max Results:</label>
+                    <p-inputNumber formControlName="limit" [min]="1" [max]="50" showButtons="true" 
+                                  buttonLayout="horizontal" spinnerMode="horizontal" 
+                                  inputStyleClass="w-3rem text-center" 
+                                  incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus">
+                    </p-inputNumber>
+                </div>
+
+                <div class="col-12 md:col-4 flex justify-content-end">
+                    <p-button type="submit" label="Find Matching Jobs" icon="pi pi-search" 
+                             [loading]="loading()" [rounded]="true" styleClass="search-btn px-5 h-3rem">
+                    </p-button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Table -->
+    <div class="job-results-card card shadow-2 border-round-xl bg-white overflow-hidden border-1 border-gray-100">
+        <p-table [value]="jobs()" [loading]="loading()" [paginator]="true" [rows]="10" 
+                 [globalFilterFields]="['title', 'company', 'location']" #dt
+                 responsiveLayout="stack" breakpoint="960px" styleClass="p-datatable-gridlines p-datatable-striped p-datatable-sm">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="flex align-items-center gap-3">
+                        <h2 class="text-2xl font-bold m-0 text-900">
+                            @if (jobs().length > 0) {
+                                {{ jobs().length }} Matches Found
+                            } @else {
+                                Results
+                            }
+                        </h2>
+                        @if (loading() && progress() > 0) {
+                            <p-tag [value]="progress() + '%'" severity="info" [rounded]="true" icon="pi pi-spin pi-spinner"></p-tag>
+                        }
+                    </div>
+                    <p-iconfield iconPosition="left">
+                        <p-inputicon class="pi pi-search"></p-inputicon>
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" 
+                               placeholder="Search company, job title..." class="w-15rem md:w-20rem" />
+                    </p-iconfield>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="title" style="width: 25%">Title <p-sortIcon field="title"></p-sortIcon></th>
+                    <th pSortableColumn="company" style="width: 15%">Company <p-sortIcon field="company"></p-sortIcon></th>
+                    <th pSortableColumn="location" style="width: 15%">Location <p-sortIcon field="location"></p-sortIcon></th>
+                    <th pSortableColumn="postedDateSortValue" style="width: 10%">Posted <p-sortIcon field="postedDateSortValue"></p-sortIcon></th>
+                    <th style="width: 20%">Top Skills</th>
+                    <th style="width: 15%" class="text-center">Action</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-job>
+                <tr>
+                    <td>
+                        <span class="p-column-title font-bold">Title</span>
+                        <div class="font-bold text-primary">{{ job.title }}</div>
+                    </td>
+                    <td>
+                        <span class="p-column-title font-bold">Company</span>
+                        <div class="text-900">{{ job.company }}</div>
+                    </td>
+                    <td>
+                        <span class="p-column-title font-bold">Location</span>
+                        <div class="flex align-items-center gap-1">
+                            <i class="pi pi-map-marker text-xs text-secondary text-pink-500"></i>
+                            {{ job.location }}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="p-column-title font-bold">Posted</span>
+                        {{ job.postedDate }}
+                    </td>
+                    <td>
+                        <span class="p-column-title font-bold">Skills</span>
+                        <div class="flex flex-wrap gap-1">
+                            @for (skill of job.skills.slice(0, 3); track skill) {
+                                <p-tag [value]="skill" severity="secondary" [style]="{'font-size': '10px'}"></p-tag>
+                            }
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="p-column-title font-bold">Action</span>
+                        <div class="flex justify-content-center gap-2">
+                            <p-button icon="pi pi-file-o" [rounded]="true" severity="secondary" [text]="true" 
+                                     pTooltip="View Description" (onClick)="showDescription(job.description)"></p-button>
+                            <p-button icon="pi pi-plus-circle" [rounded]="true" severity="success" [text]="true" 
+                                     pTooltip="Add to Tracker" (onClick)="openAddTracker(job)"></p-button>
+                            <a [href]="job.applyLink" target="_blank">
+                                <p-button icon="pi pi-external-link" [rounded]="true" severity="info" [text]="true" 
+                                         pTooltip="Apply on LinkedIn"></p-button>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center p-8">
+                        <div class="flex flex-column align-items-center gap-3">
+                            <i class="pi pi-search text-6xl text-200"></i>
+                            <span class="text-secondary text-xl">Search for jobs to populate your list</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Description Dialog -->
+<p-dialog [visible]="displayDescription()" (visibleChange)="displayDescription.set($event)" 
+          header="Job Opportunity Details" [modal]="true" 
+          [breakpoints]="{'960px': '85vw', '640px': '100vw'}" 
+          [style]="{width: '50vw'}" [maximizable]="true" styleClass="jd-dialog shadow-8">
+    <div class="description-content p-4 border-round-lg surface-50 text-700 white-space-pre-wrap font-sans line-height-4 max-h-30rem overflow-y-auto border-1 border-gray-200">
+        {{ selectedJobDescription() }}
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-between w-full pt-3">
+            <p-button icon="pi pi-copy" label="Copy Description" (onClick)="copyToClipboard()" [rounded]="true" severity="primary"></p-button>
+            <p-button icon="pi pi-times" label="Close" (onClick)="displayDescription.set(false)" [text]="true" severity="secondary" [rounded]="true"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Add to Tracker Review Dialog -->
+<p-dialog [visible]="displayAddTracker()" (visibleChange)="displayAddTracker.set($event)" 
+          header="Review Job for Tracker" [modal]="true" 
+          [breakpoints]="{'960px': '85vw', '640px': '100vw'}" 
+          [style]="{width: '50vw'}" styleClass="tracker-dialog shadow-8">
+    
+    <form [formGroup]="trackForm" class="flex flex-column gap-3 mt-2">
+        <div class="field">
+            <label class="block font-bold mb-2">Company Name</label>
+            <input pInputText formControlName="companyName" class="w-full" />
+        </div>
+        
+        <div class="field">
+            <label class="block font-bold mb-2">Job Title</label>
+            <input pInputText formControlName="jobTitle" class="w-full" />
+        </div>
+
+        <div class="field">
+            <label class="block font-bold mb-2">Location</label>
+            <p-iconfield iconPosition="left" class="w-full">
+                <p-inputicon class="pi pi-map-marker"></p-inputicon>
+                <input pInputText formControlName="location" class="w-full" />
+            </p-iconfield>
+        </div>
+
+        <div class="field">
+            <label class="block font-bold mb-2">Job Description (Edit to highlight key points)</label>
+            <textarea pTextarea formControlName="jobDescription" rows="8" class="w-full border-1 border-gray-200 border-round p-3" style="resize: vertical"></textarea>
+        </div>
+
+        <div class="grid">
+            <div class="col-6">
+                <label class="block font-bold mb-2">Date Applied</label>
+                <p-datepicker formControlName="appliedDate" class="w-full" [showIcon]="true" appendTo="body"></p-datepicker>
+            </div>
+            <div class="col-6">
+                <label class="block font-bold mb-2">Status</label>
+                <p-tag [value]="trackForm.get('status')?.value" severity="info" [rounded]="true" class="mt-2 block w-fit"></p-tag>
+            </div>
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-between w-full pt-3">
+             <p-button icon="pi pi-times" label="Cancel" (onClick)="displayAddTracker.set(false)" [text]="true" severity="secondary" [rounded]="true"></p-button>
+             <p-button icon="pi pi-save" label="Add to Job Tracker" (onClick)="saveToTracker()" 
+                      [loading]="isSaving()" [disabled]="trackForm.invalid" [rounded]="true" severity="success"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<p-toast></p-toast>
