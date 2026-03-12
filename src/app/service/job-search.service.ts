@@ -34,6 +34,10 @@ export class JobSearchService {
     return this.http.get<LinkedInJobStatusResponse>(`${this.apiUrl}/job/${jobId}`);
   }
 
+  getJobDetails(url: string): Observable<LinkedInJobDTO> {
+    return this.http.post<LinkedInJobDTO>(`${this.apiUrl}/details`, { url });
+  }
+
   setJobs(jobs: LinkedInJobDTO[]) {
     this._jobs.set(jobs);
   }

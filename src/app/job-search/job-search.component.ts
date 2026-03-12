@@ -175,9 +175,34 @@ export class JobSearchComponent implements OnInit {
     }, 3000); // Poll every 3 seconds
   }
 
-  showDescription(description: string) {
-    this.selectedJobDescription.set(description);
-    this.displayDescription.set(true);
+  showDescription(job: LinkedInJobDTO) {
+    // If we already have a substantial description, just show it
+    if (job.description && job.description.length > 200) {
+      this.selectedJobDescription.set(job.description);
+      this.displayDescription.set(true);
+      return;
+    }
+
+    // Otherwise fetch the full details
+    this.messageService.add({ severity: 'info', summary: 'Loading', detail: 'Fetching full job description...' });
+    
+    this.jobSearchService.getJobDetails(job.applyLink).subscribe({
+      next: (fullJob) => {
+        // Update the job in the list so we don't fetch it again
+        job.description = fullJob.description;
+        if (fullJob.skills) job.skills = fullJob.skills;
+        
+        this.selectedJobDescription.set(fullJob.description);
+        this.displayDescription.set(true);
+      },
+      error: (error) => {
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: 'Failed to fetch job details from scraper.' 
+        });
+      }
+    });
   }
 
   copyToClipboard() {
@@ -186,15 +211,46 @@ export class JobSearchComponent implements OnInit {
   }
 
   openAddTracker(job: LinkedInJobDTO) {
-    this.trackForm.patchValue({
-      companyName: job.company,
-      jobTitle: job.title,
-      location: job.location,
-      jobDescription: job.description,
-      appliedDate: new Date(),
-      status: ApplicationStatus.INITIALIZED
+    // Helper to open the dialog once we have the data
+    const showDialog = (jobData: LinkedInJobDTO) => {
+      this.trackForm.patchValue({
+        companyName: jobData.company,
+        jobTitle: jobData.title,
+        location: jobData.location,
+        jobDescription: jobData.description,
+        appliedDate: new Date(),
+        status: ApplicationStatus.INITIALIZED
+      });
+      this.displayAddTracker.set(true);
+    };
+
+    // If we already have the description, show it immediately
+    if (job.description && job.description.length > 200) {
+      showDialog(job);
+      return;
+    }
+
+    // Otherwise fetch the description first
+    this.messageService.add({ severity: 'info', summary: 'Fetching Details', detail: 'Getting full job description for tracker...' });
+    
+    this.jobSearchService.getJobDetails(job.applyLink).subscribe({
+      next: (fullJob) => {
+        // Update the job reference so it's cached in the table too
+        job.description = fullJob.description;
+        if (fullJob.skills) job.skills = fullJob.skills;
+        
+        showDialog(job);
+      },
+      error: (error) => {
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: 'Failed to fetch job description. You can still fill it manually.' 
+        });
+        // Open anyway so user can manually type if they want
+        showDialog(job);
+      }
     });
-    this.displayAddTracker.set(true);
   }
 
   saveToTracker() {

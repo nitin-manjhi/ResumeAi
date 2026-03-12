@@ -75,15 +75,15 @@
                 <div class="flex justify-content-between align-items-center">
                     <label for="jobDescription" class="font-bold text-900">Job Description</label>
                     <span class="text-xs font-medium"
-                        [class.text-red-500]="(applicationForm.get('jobDescription')?.value?.length || 0) > 1900"
-                        [class.text-600]="(applicationForm.get('jobDescription')?.value?.length || 0) <= 1900">
-                        {{ applicationForm.get('jobDescription')?.value?.length || 0 }} / 2000
+                        [class.text-red-500]="(applicationForm.get('jobDescription')?.value?.length || 0) > 65000"
+                        [class.text-600]="(applicationForm.get('jobDescription')?.value?.length || 0) <= 65000">
+                        {{ applicationForm.get('jobDescription')?.value?.length || 0 }} / 65535
                     </span>
                 </div>
                 <textarea pTextarea id="jobDescription" formControlName="jobDescription" rows="10"
                     class="w-full line-height-3" placeholder="Paste the job requirements or posting here..."></textarea>
                 @if (applicationForm.get('jobDescription')?.invalid) {
-                <small class="text-red-500 font-medium">Description exceeds the 2000 character limit.</small>
+                <small class="text-red-500 font-medium">Description exceeds the master storage limit.</small>
                 }
             </div>
 

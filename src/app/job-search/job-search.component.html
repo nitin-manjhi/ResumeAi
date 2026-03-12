@@ -139,7 +139,7 @@
                     <td>
                         <span class="p-column-title font-bold">Skills</span>
                         <div class="flex flex-wrap gap-1">
-                            @for (skill of job.skills.slice(0, 3); track skill) {
+                            @for (skill of (job.skills || []).slice(0, 3); track skill) {
                                 <p-tag [value]="skill" severity="secondary" [style]="{'font-size': '10px'}"></p-tag>
                             }
                         </div>
@@ -148,7 +148,7 @@
                         <span class="p-column-title font-bold">Action</span>
                         <div class="flex justify-content-center gap-2">
                             <p-button icon="pi pi-file-o" [rounded]="true" severity="secondary" [text]="true" 
-                                     pTooltip="View Description" (onClick)="showDescription(job.description)"></p-button>
+                                     pTooltip="View Description" (onClick)="showDescription(job)"></p-button>
                             <p-button icon="pi pi-plus-circle" [rounded]="true" severity="success" [text]="true" 
                                      pTooltip="Add to Tracker" (onClick)="openAddTracker(job)"></p-button>
                             <a [href]="job.applyLink" target="_blank">

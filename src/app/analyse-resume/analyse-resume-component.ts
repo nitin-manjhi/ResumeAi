@@ -46,6 +46,7 @@ export class AnalyseResumeComponent {
   private messageService = inject(MessageService);
   protected jobDescription = signal('');
   protected companyName = signal('');
+  protected applicationId = signal<number | undefined>(undefined);
   protected isMobile = signal(window.innerWidth < 768);
   protected isLoading = signal(false);
 
@@ -53,6 +54,16 @@ export class AnalyseResumeComponent {
     window.addEventListener('resize', () => {
       this.isMobile.set(window.innerWidth < 768);
     });
+
+    // Auto-hydration logic
+    const preFilled = this.resumeService.preFilledData();
+    if (preFilled) {
+      this.companyName.set(preFilled.companyName);
+      this.jobDescription.set(preFilled.jdText);
+      this.applicationId.set(preFilled.applicationId);
+      // Clear after hydration
+      this.resumeService.setPreFilledData(null);
+    }
   }
   protected jobSubmitted = computed(() => this.resumeService.isAnalyzing() || !!this.readyResultId());
   protected readyResultId = this.notificationService.latestResultId;
@@ -106,7 +117,7 @@ export class AnalyseResumeComponent {
       this.isLoading.set(true);
       try {
         const response = await firstValueFrom(
-          this.resumeService.analyzeResume(file, this.jobDescription(), this.selectedModel(), this.companyName()),
+          this.resumeService.analyzeResume(file, this.jobDescription(), this.selectedModel(), this.companyName(), this.applicationId()),
         );
         console.log(response);
         this.messageService.add({
@@ -156,6 +167,7 @@ export class AnalyseResumeComponent {
     this.resumeService.clearResult();
     this.jobDescription.set('');
     this.companyName.set('');
+    this.applicationId.set(undefined);
     this.notificationService.clearLatestResultId();
   }
 

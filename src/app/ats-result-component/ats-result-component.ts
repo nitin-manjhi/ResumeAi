@@ -13,13 +13,15 @@ import { Router } from "@angular/router";
 import { MessageService } from "primeng/api";
 import { ResumeAnalysisService } from "../service/resume-analysis-service";
 import { ButtonModule } from "primeng/button";
-import { KnobModule } from "primeng/knob";
 import { TagModule } from "primeng/tag";
 import { TabsModule } from "primeng/tabs";
 import { TextareaModule } from "primeng/textarea";
 import { AccordionModule } from "primeng/accordion";
 import { PanelModule } from "primeng/panel";
 import { FormsModule } from "@angular/forms";
+import { InputTextModule } from "primeng/inputtext";
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { AtsAnalysisResult } from "../shared/modal/ats-analysis-result";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
@@ -30,13 +32,15 @@ import html2canvas from "html2canvas";
   imports: [
     CommonModule,
     ButtonModule,
-    KnobModule,
     TagModule,
     AccordionModule,
     PanelModule,
     FormsModule,
     TabsModule,
     TextareaModule,
+    InputTextModule,
+    IconFieldModule,
+    InputIconModule
   ],
   templateUrl: "./ats-result-component.html",
   styleUrl: "./ats-result-component.scss",
@@ -56,6 +60,7 @@ export class AtsResultComponent implements OnInit {
 
   isGeneratingCL = this.resumeService.isGeneratingCL;
   isGeneratingEmail = this.resumeService.isGeneratingEmail;
+  isRewritingSummary = signal(false);
   isMobile = signal(window.innerWidth < 768);
 
   constructor() {
@@ -98,9 +103,9 @@ export class AtsResultComponent implements OnInit {
 
   get scoreColor(): string {
     const score = this.result?.score || 0;
-    if (score >= 80) return "var(--green-500)";
-    if (score >= 50) return "var(--yellow-500)";
-    return "var(--red-500)";
+    if (score >= 80) return "#22c55e"; // Emerald-500
+    if (score >= 50) return "#f59e0b"; // Amber-500
+    return "#ef4444"; // Red-500
   }
 
   get scoreSeverity():
@@ -205,9 +210,9 @@ export class AtsResultComponent implements OnInit {
 
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
-      const margin = 20;
+      const margin = 10;
       const contentWidth = pageWidth - margin * 2;
-      let y = 20;
+      let y = 15;
 
       const sr = this.result.structuredResume;
       if (!sr) {
@@ -234,28 +239,25 @@ export class AtsResultComponent implements OnInit {
 
       y += 6;
       pdf.setFontSize(9);
-      pdf.setTextColor(80, 80, 80);
+      pdf.setTextColor(0, 0, 0);
       pdf.text(sr.contact, pageWidth / 2, y, { align: "center" });
 
-      y += 8;
-      pdf.setDrawColor(0);
-      pdf.setLineWidth(0.5);
-      pdf.line(margin, y, pageWidth - margin, y);
       y += 10;
+
 
       // Helper for headers
       const addSectionHeader = (title: string) => {
-        if (y > 270) {
+        if (y > 280) {
           pdf.addPage();
-          y = 20;
+          y = 15;
         }
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(11);
-        pdf.setTextColor(26, 86, 219); // Tech Blue
+        pdf.setTextColor(0, 0, 0); 
         pdf.text(title.toUpperCase(), margin, y);
-        y += 2;
-        pdf.setDrawColor(200, 200, 200);
-        pdf.setLineWidth(0.2);
+        y += 1.5;
+        pdf.setDrawColor(0, 0, 0); // Black line to match preview
+        pdf.setLineWidth(0.4);
         pdf.line(margin, y, pageWidth - margin, y);
         y += 7;
       };
@@ -264,23 +266,44 @@ export class AtsResultComponent implements OnInit {
       if (sr.summary) {
         addSectionHeader("Professional Summary");
         pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(10);
-        pdf.setTextColor(40, 40, 40);
+        pdf.setFontSize(9.5);
+        pdf.setTextColor(30, 30, 30);
         const lines = pdf.splitTextToSize(sr.summary, contentWidth);
         pdf.text(lines, margin, y);
-        y += lines.length * 5 + 8;
+        y += lines.length * 4.8 + 2;
       }
 
-      // Skills
+      // Skills (3-Column Grid)
       if (sr.skills?.length) {
-        addSectionHeader("Technical Skills");
+        addSectionHeader("Skills"); // Changed to match "SKILLS" in preview image
         pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(10);
-        pdf.setTextColor(40, 40, 40);
-        const skillsText = sr.skills.join("  •  ");
-        const skillLines = pdf.splitTextToSize(skillsText, contentWidth);
-        pdf.text(skillLines, margin, y);
-        y += skillLines.length * 5 + 8;
+        pdf.setFontSize(9);
+        pdf.setTextColor(30, 30, 30);
+        
+        const columnWidth = contentWidth / 3;
+        let colCount = 0;
+        let startY = y;
+        let maxRowY = y;
+
+        sr.skills.forEach((skill: string, index: number) => {
+          const colX = margin + (colCount * columnWidth);
+          pdf.text("•  " + skill, colX, y);
+          
+          colCount++;
+          if (colCount >= 3) {
+            colCount = 0;
+            y += 5;
+            if (y > 285) {
+              pdf.addPage();
+              y = 15;
+              startY = y;
+            }
+          }
+        });
+        
+        // If the last row was incomplete, move y down
+        if (colCount !== 0) y += 5;
+        y += 5; 
       }
 
       // Work Experience
@@ -303,9 +326,9 @@ export class AtsResultComponent implements OnInit {
           pdf.setFontSize(9.5);
           exp.points.forEach((point: any) => {
             const lines = pdf.splitTextToSize("•  " + point, contentWidth - 5);
-            if (y + lines.length * 5 > 280) {
+            if (y + lines.length * 5 > 285) {
               pdf.addPage();
-              y = 20;
+              y = 15;
             }
             pdf.text(lines, margin + 2, y);
             y += lines.length * 4.8;
@@ -318,9 +341,9 @@ export class AtsResultComponent implements OnInit {
       if (sr.education?.length) {
         addSectionHeader("Education");
         sr.education.forEach((edu: any) => {
-          if (y > 260) {
+          if (y > 275) {
             pdf.addPage();
-            y = 20;
+            y = 15;
           }
           pdf.setFont("helvetica", "bold");
           pdf.setFontSize(10);
@@ -360,19 +383,80 @@ export class AtsResultComponent implements OnInit {
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const contentHeight = (canvas.height * pageWidth) / canvas.width;
-      pdf.addImage(
-        imgData,
-        "JPEG",
-        0,
-        0,
-        pageWidth,
-        contentHeight,
-        undefined,
-        "FAST",
-      );
+      pdf.addImage(imgData, "JPEG", 0, 0, pageWidth, contentHeight, undefined, "FAST");
       pdf.save("resume_image.pdf");
     } catch (e) {
       console.error(e);
     }
+  }
+
+  // Structured Editor Helpers
+  addSkill() {
+    if (!this.result.structuredResume.skills) this.result.structuredResume.skills = [];
+    this.result.structuredResume.skills.push("New Skill");
+  }
+
+  removeSkill(index: number) {
+    this.result.structuredResume.skills.splice(index, 1);
+  }
+
+  addExperience() {
+    if (!this.result.structuredResume.workExperience) this.result.structuredResume.workExperience = [];
+    this.result.structuredResume.workExperience.unshift({
+      title: "Title",
+      company: "Company",
+      date: "Date Range",
+      points: ["Core Responsibilities/Achievements"]
+    });
+  }
+
+  removeExperience(index: number) {
+    this.result.structuredResume.workExperience.splice(index, 1);
+  }
+
+  addExpPoint(expIndex: number) {
+    this.result.structuredResume.workExperience[expIndex].points.push("New bullet point");
+  }
+
+  removeExpPoint(expIndex: number, pointIndex: number) {
+    this.result.structuredResume.workExperience[expIndex].points.splice(pointIndex, 1);
+  }
+
+  addEducation() {
+    if (!this.result.structuredResume.education) this.result.structuredResume.education = [];
+    this.result.structuredResume.education.push({
+      title: "Degree",
+      college: "University",
+      date: "Year",
+      location: "City, Country",
+      points: []
+    });
+  }
+
+  removeEducation(index: number) {
+    this.result.structuredResume.education.splice(index, 1);
+  }
+
+  rewriteProfessionalSummary() {
+    if (!this.result.structuredResume?.summary) {
+      this.messageService.add({ severity: 'warn', summary: 'Empty', detail: 'Please provide some text in the summary to rewrite.' });
+      return;
+    }
+
+    this.isRewritingSummary.set(true);
+    this.messageService.add({ severity: 'info', summary: 'AI Rewriting', detail: 'Enhancing your summary for ATS compliance...' });
+
+    this.resumeService.rewriteSummary(this.result.structuredResume.summary).subscribe({
+      next: (rewritten: string) => {
+        this.result.structuredResume.summary = rewritten;
+        this.isRewritingSummary.set(false);
+        this.messageService.add({ severity: 'success', summary: 'Done', detail: 'Summary enhanced successfully!' });
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.isRewritingSummary.set(false);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to rewrite summary. Please try again.' });
+      }
+    });
   }
 }
