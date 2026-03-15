@@ -20,8 +20,8 @@
             <ng-template let-item pTemplate="item">
                 <i [class]="item.icon + ' mr-2'"></i>
                 <span class="font-bold">{{item.label}}</span>
-                @if (item.value === 1 && savedJobs().length > 0) {
-                    <p-tag [value]="savedJobs().length.toString()" severity="info" class="ml-2" [rounded]="true"></p-tag>
+                @if (item.value === 1 && filteredSavedJobs().length > 0) {
+                    <p-tag [value]="filteredSavedJobs().length.toString()" severity="info" class="ml-2" [rounded]="true"></p-tag>
                 }
             </ng-template>
         </p-selectButton>

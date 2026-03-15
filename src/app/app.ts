@@ -52,6 +52,15 @@ export class AppComponent {
         life: 5000,
       });
     });
+
+    // Cleanup lingering service workers after PWA removal
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
   }
 
   protected items = computed<MenuItem[] | undefined>(() => {
