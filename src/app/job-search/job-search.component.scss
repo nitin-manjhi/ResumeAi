@@ -9,9 +9,9 @@
 }
 
 .card {
-  border: 1px solid var(--surface-border);
+  border: 1px solid var(--p-content-border-color);
   border-radius: 12px;
-  background-color: var(--surface-card);
+  background-color: var(--p-content-background);
   transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
   
   &:hover {
@@ -147,7 +147,7 @@ label {
     .p-column-title {
       display: block !important;
       margin-bottom: 0.5rem;
-      color: var(--text-color-secondary);
+      color: var(--p-text-muted-color);
       font-size: 0.8rem;
     }
     
@@ -158,10 +158,53 @@ label {
       padding: 0.75rem 1rem !important;
       
       &:last-child {
-        border-bottom: 1px solid var(--surface-border) !important;
+        border-bottom: 1px solid var(--p-content-border-color) !important;
       }
     }
   }
+}
+
+.custom-selector {
+  &::ng-deep .p-selectbutton {
+    background: var(--p-content-background);
+    border-radius: 2rem;
+    padding: 0.4rem;
+    border: 1px solid var(--p-content-border-color);
+
+    .p-button {
+      border: none;
+      border-radius: 1.5rem !important;
+      padding: 0.6rem 2rem;
+      background: transparent;
+      color: var(--p-text-muted-color);
+      font-weight: 500;
+      transition: all 0.3s;
+
+      &.p-highlight {
+        background: var(--p-primary-color);
+        color: var(--p-primary-contrast-color);
+        box-shadow: 0 4px 12px rgba(var(--p-primary-color-rgb), 0.2);
+        
+        .p-tag {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+        }
+      }
+      
+      &:hover:not(.p-highlight) {
+         background: var(--p-surface-100);
+      }
+    }
+  }
+}
+
+.fadein {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .description-content {

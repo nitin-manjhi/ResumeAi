@@ -47,6 +47,17 @@ export class AuthService {
                 this.stopTokenRefresh();
             }
         });
+
+        // Verify token validity on startup if token exists
+        if (this.checkAuth()) {
+            this.getUserProfile().subscribe({
+                error: (err) => {
+                    console.error('Initial token validation failed', err);
+                    // The interceptor will handle 401 and redirect, 
+                    // but we can also ensure local state is cleared here if needed.
+                }
+            });
+        }
     }
 
     private checkAuth(): boolean {
@@ -82,13 +93,17 @@ export class AuthService {
     logout() {
         return this.http.post(`${this.baseUrl}/logout`, {}).pipe(
             finalize(() => {
-                this.stopTokenRefresh();
-                localStorage.removeItem('auth_token');
-                localStorage.removeItem('user_profile');
-                this._currentUser.set(null);
-                this._isLoggedIn.set(false);
+                this.clearAuthData();
             })
         );
+    }
+
+    clearAuthData() {
+        this.stopTokenRefresh();
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_profile');
+        this._currentUser.set(null);
+        this._isLoggedIn.set(false);
     }
 
     refresh() {

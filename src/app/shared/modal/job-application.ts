@@ -20,6 +20,12 @@ export interface JobApplication {
     createdAt?: string;
     updatedAt?: string;
     analysisId?: string;
+    jobTitle?: string;
+    location?: string;
+    salary?: string;
+    skills?: string;
+    applyLink?: string;
+    originalPostedDate?: string;
 }
 export interface PaginatedResponse<T> {
     content: T[];

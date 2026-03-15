@@ -51,7 +51,7 @@
 :host ::ng-deep {
     .p-datatable {
         .p-datatable-header {
-            background: #f8f9fa;
+            background: var(--p-content-background);
         }
     }
 
@@ -72,11 +72,11 @@
     }
 
     .vertical-divider-responsive {
-        border-left: 1px solid #e2e8f0;
+        border-left: 1px solid var(--p-content-border-color);
 
         @media screen and (max-width: 960px) {
             border-left: none;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid var(--p-content-border-color);
         }
     }
 
@@ -117,16 +117,21 @@
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        /* Gap between label and input */
         padding: 0.75rem;
-        background: #ffffff;
+        background: color-mix(in srgb, var(--p-content-background), transparent 20%);
         border-radius: 12px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--p-content-border-color);
         box-sizing: border-box;
+        transition: all 0.2s ease;
 
         &.highlighted {
-            background: #f0f9ff;
-            border-color: #bae6fd;
+            background: color-mix(in srgb, var(--p-primary-color), transparent 96%);
+            border: 1px solid color-mix(in srgb, var(--p-primary-color), transparent 60%);
+            box-shadow: 0 0 0 1px color-mix(in srgb, var(--p-primary-color), transparent 80%);
+        }
+
+        &:hover {
+            border-color: var(--p-primary-color);
         }
     }
 
@@ -134,7 +139,7 @@
         display: block;
         font-size: 0.75rem;
         font-weight: 700;
-        color: #4b5563;
+        color: var(--p-text-muted-color);
         /* Slightly darker for better visibility */
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -146,50 +151,61 @@
         width: 100%;
         display: flex;
         align-items: center;
+        background: var(--p-content-background);
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--p-content-border-color);
 
         .modern-field {
             width: 100% !important;
             padding: 0.6rem !important;
             text-align: center !important;
             font-size: 1.1rem !important;
-            border-radius: 0 !important;
-            border-left: none !important;
-            border-right: none !important;
-            background: #fff !important;
+            border: none !important;
+            background: transparent !important;
+            color: var(--p-text-color) !important;
             font-weight: 600 !important;
+            font-family: 'Inter', sans-serif;
+            
+            &:focus {
+                box-shadow: none !important;
+            }
         }
 
         .modern-btn {
             width: 3rem !important;
             padding: 0.5rem !important;
-            background: #f8fafc !important;
-            color: #334155 !important;
-            border: 1px solid #cbd5e1 !important;
+            background: transparent !important;
+            color: var(--p-text-muted-color) !important;
+            border: none !important;
+            transition: all 0.2s;
+
+            &:hover {
+                background: var(--p-primary-color) !important;
+                color: var(--p-primary-contrast-color) !important;
+            }
+
+            &:active {
+                opacity: 0.8;
+            }
 
             &:first-child {
-                border-top-right-radius: 0 !important;
-                border-bottom-right-radius: 0 !important;
+                border-right: 1px solid var(--p-content-border-color) !important;
             }
 
             &:last-child {
-                border-top-left-radius: 0 !important;
-                border-bottom-left-radius: 0 !important;
-            }
-
-            &:hover {
-                background: #f1f5f9 !important;
-                border-color: #94a3b8 !important;
+                border-left: 1px solid var(--p-content-border-color) !important;
             }
         }
     }
 
     .premium-panel {
-        background: #fffcf9;
+        background: var(--p-surface-50);
         transition: all 0.2s;
 
         &:hover {
-            border-color: #fdba74 !important;
-            box-shadow: 0 4px 12px rgba(251, 146, 60, 0.08);
+            border-color: var(--p-primary-color) !important;
+            box-shadow: 0 4px 12px rgba(var(--p-primary-color), 0.08);
         }
 
         .quota-grid-row {
@@ -233,7 +249,7 @@
     .usage-label {
         font-size: 0.8rem;
         font-weight: 600;
-        color: #64748b;
+        color: var(--p-text-muted-color);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -250,18 +266,20 @@
             font-size: 1rem !important;
             border-radius: 0 !important;
             font-family: monospace;
+            background: var(--p-content-background) !important;
+            color: var(--p-text-color) !important;
         }
 
         .usage-btn {
             width: 2.5rem !important;
             padding: 0.5rem !important;
-            background: #fff !important;
-            color: #64748b !important;
-            border: 1px solid #d1d5db !important;
+            background: var(--p-surface-50) !important;
+            color: var(--p-text-muted-color) !important;
+            border: 1px solid var(--p-content-border-color) !important;
 
             &:hover {
-                background: #f8fafc !important;
-                color: var(--primary-color) !important;
+                background: var(--p-surface-100) !important;
+                color: var(--p-primary-color) !important;
             }
         }
     }
@@ -270,16 +288,17 @@
         transition: all 0.3s ease;
 
         &:hover {
-            border-color: #fb923c !important;
-            background-color: #fffaf0 !important;
+            border-color: var(--p-primary-color) !important;
+            background-color: var(--p-surface-50) !important;
         }
     }
 
     .user-row {
-        transition: background-color 0.2s;
+        transition: all 0.3s ease;
 
         &:hover {
-            background-color: #fafafa !important;
+            background-color: color-mix(in srgb, var(--p-primary-color), transparent 98%) !important;
+            box-shadow: inset 4px 0 0 0 var(--p-primary-color);
         }
     }
 

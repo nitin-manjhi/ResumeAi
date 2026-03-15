@@ -10,8 +10,8 @@
                     <i class="pi pi-shield text-white text-3xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-900 m-0">Admin Management</h1>
-                    <p class="text-500 m-0 mt-1">Configure user permissions and quotas</p>
+                    <h1 class="text-2xl md:text-3xl font-bold text-color m-0">Admin Management</h1>
+                    <p class="text-muted-color m-0 mt-1">Configure user permissions and quotas</p>
                 </div>
             </div>
             <p-selectButton [options]="viewOptions" [ngModel]="activeView()" (ngModelChange)="activeView.set($event)"
@@ -46,13 +46,13 @@
                         <td>
                             <span class="p-column-title font-bold">User Profile</span>
                             <div class="flex flex-column">
-                                <span class="font-bold text-900">{{req.username}}</span>
-                                <span class="text-xs text-600">{{req.email}}</span>
+                                <span class="font-bold text-color">{{req.username}}</span>
+                                <span class="text-xs text-muted-color">{{req.email}}</span>
                             </div>
                         </td>
                         <td>
                             <span class="p-column-title font-bold">Reason</span>
-                            <div class="p-2 surface-50 border-round text-xs line-height-3 text-700 max-w-30rem">
+                            <div class="p-2 surface-100 border-round text-xs line-height-3 text-color max-w-30rem">
                                 {{req.reason}}
                             </div>
                         </td>
@@ -87,12 +87,12 @@
                             <span class="p-column-title font-bold mb-3">User Profile</span>
                             <div class="flex flex-column gap-4">
                                 <div class="flex align-items-center gap-3">
-                                    <div class="p-3 bg-blue-50 border-circle">
-                                        <i class="pi pi-user text-blue-600 text-xl"></i>
+                                    <div class="p-3 surface-100 border-circle">
+                                        <i class="pi pi-user text-blue-500 text-xl"></i>
                                     </div>
                                     <div class="flex flex-column">
-                                        <span class="font-bold text-xl text-900">{{user.username}}</span>
-                                        <span class="text-sm text-500">{{user.email}}</span>
+                                        <span class="font-bold text-xl text-color">{{user.username}}</span>
+                                        <span class="text-sm text-muted-color">{{user.email}}</span>
                                     </div>
                                 </div>
 
@@ -112,7 +112,7 @@
                                 <div class="quota-container">
                                     <div class="flex align-items-center gap-2 mb-4">
                                         <div class="w-1rem h-1rem bg-blue-500 border-round-sm"></div>
-                                        <h3 class="text-sm font-bold text-800 m-0 uppercase tracking-widest">Standard
+                                        <h3 class="text-sm font-bold text-color m-0 uppercase tracking-widest">Standard
                                             Usage Quotas</h3>
                                     </div>
 
@@ -152,16 +152,16 @@
                                         class="flex align-items-center justify-content-between mb-4 border-bottom-1 border-100 pb-3">
                                         <div class="flex align-items-center gap-3">
                                             <div
-                                                class="flex align-items-center justify-content-center p-2 bg-orange-100 border-round-md">
-                                                <i class="pi pi-bolt text-orange-600 text-xl"></i>
+                                                class="flex align-items-center justify-content-center p-2 surface-200 border-round-md">
+                                                <i class="pi pi-bolt text-orange-500 text-xl"></i>
                                             </div>
                                             <div>
-                                                <span class="block font-bold text-orange-900">Advanced AI</span>
-                                                <span class="text-xs text-600">OpenAI & Gemini</span>
+                                                <span class="block font-bold text-orange-500">Advanced AI</span>
+                                                <span class="text-xs text-muted-color">OpenAI & Gemini</span>
                                             </div>
                                         </div>
                                         <div class="flex align-items-center gap-2">
-                                            <span class="text-xs font-bold text-700 uppercase pr-2">Enabled:</span>
+                                            <span class="text-xs font-bold text-muted-color uppercase pr-2">Enabled:</span>
                                             <p-toggleSwitch [(ngModel)]="user.premiumActive"
                                                 [disabled]="user.role === 'ADMIN'" />
                                         </div>
@@ -188,8 +188,8 @@
                                         </div>
                                     </div>
                                     } @else {
-                                    <div class="p-3 bg-white border-round-lg text-center border-1 border-200">
-                                        <span class="text-orange-600 font-bold text-sm tracking-widest"><i
+                                    <div class="p-3 surface-card border-round-lg text-center border-1 border-200">
+                                        <span class="text-orange-500 font-bold text-sm tracking-widest"><i
                                                 class="pi pi-verified mr-2"></i>ADMIN UNLIMITED ACCESS</span>
                                     </div>
                                     }
@@ -212,7 +212,7 @@
     <p-dialog header="Update Quota Limit" [(visible)]="showApproveDialog" [modal]="true" [style]="{width: '450px'}"
         styleClass="premium-dialog shadow-5">
         <div class="flex flex-column gap-4 py-3">
-            <div class="flex align-items-center gap-3 p-4 bg-primary-50 border-round-xl border-left-3 border-primary">
+            <div class="flex align-items-center gap-3 p-4 surface-100 border-round-xl border-left-3 border-primary">
                 <i class="pi pi-info-circle text-2xl text-primary"></i>
                 <div class="flex flex-column">
                     <span class="text-sm font-bold text-primary uppercase">Quota Update</span>

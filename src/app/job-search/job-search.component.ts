@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { JobSearchService } from '../service/job-search.service';
@@ -22,6 +22,10 @@ import { JobApplicationService } from '../service/job-application.service';
 import { ApplicationStatus, JobApplication } from '../shared/modal/job-application';
 import { TextareaModule } from 'primeng/textarea';
 import { DatePickerModule } from 'primeng/datepicker';
+import { TabsModule } from 'primeng/tabs';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { SavedJobService } from '../service/saved-job.service';
+import { SavedJob } from '../shared/modal/saved-job';
 
 @Component({
   selector: 'app-job-search',
@@ -44,7 +48,9 @@ import { DatePickerModule } from 'primeng/datepicker';
     IconFieldModule,
     InputIconModule,
     TextareaModule,
-    DatePickerModule
+    DatePickerModule,
+    TabsModule,
+    SelectButtonModule
   ],
   providers: [MessageService],
   templateUrl: './job-search.component.html',
@@ -54,6 +60,7 @@ export class JobSearchComponent implements OnInit {
   private fb = inject(FormBuilder);
   private jobSearchService = inject(JobSearchService);
   private jobApplicationService = inject(JobApplicationService);
+  private savedJobService = inject(SavedJobService);
   private messageService = inject(MessageService);
   private clipboard = inject(Clipboard);
 
@@ -61,6 +68,24 @@ export class JobSearchComponent implements OnInit {
   jobs = this.jobSearchService.jobs;
   loading = this.jobSearchService.loading;
   progress = this.jobSearchService.progress;
+  
+  filteredJobs = computed(() => {
+    const allJobs = this.jobs();
+    const saved = this.savedJobs();
+    const tracked = this.trackedJobs();
+    
+    return allJobs.filter(job => {
+      const isSaved = saved.some(s => s.companyName === job.company && s.jobTitle === job.title);
+      const isTracked = tracked.some(t => t.companyName === job.company && t.jobTitle === job.title);
+      return !isSaved && !isTracked;
+    });
+  });
+
+  filteredSavedJobs = computed(() => {
+    const saved = this.savedJobs();
+    const tracked = this.trackedJobs();
+    return saved.filter(s => !tracked.some(t => t.companyName === s.companyName && t.jobTitle === s.jobTitle));
+  });
 
   searchForm = this.fb.group({
     keyword: ['', Validators.required],
@@ -78,6 +103,12 @@ export class JobSearchComponent implements OnInit {
   displayAddTracker = signal(false);
   trackForm!: FormGroup;
   isSaving = signal(false);
+
+  // New features for tabs and saved jobs
+  activeViewIndex = signal(0);
+  savedJobs = signal<SavedJob[]>([]);
+  trackedJobs = signal<JobApplication[]>([]);
+  loadingSaved = signal(false);
 
   experienceLevels = [
     { label: 'Any', value: '' },
@@ -106,6 +137,14 @@ export class JobSearchComponent implements OnInit {
     }
 
     this.initTrackForm();
+    this.loadSavedJobs();
+    this.loadTrackedJobs();
+  }
+
+  loadTrackedJobs() {
+    this.jobApplicationService.getAllApplications().subscribe({
+      next: (res) => this.trackedJobs.set(res.content)
+    });
   }
 
   private initTrackForm() {
@@ -231,6 +270,11 @@ export class JobSearchComponent implements OnInit {
     }
 
     // Otherwise fetch the description first
+    if (!job.applyLink) {
+       showDialog(job);
+       return;
+    }
+
     this.messageService.add({ severity: 'info', summary: 'Fetching Details', detail: 'Getting full job description for tracker...' });
     
     this.jobSearchService.getJobDetails(job.applyLink).subscribe({
@@ -261,23 +305,98 @@ export class JobSearchComponent implements OnInit {
     
     const application: JobApplication = {
       companyName: formValue.companyName,
-      jobDescription: `Job Title: ${formValue.jobTitle}\n\n${formValue.jobDescription}`,
+      jobTitle: formValue.jobTitle,
+      jobDescription: formValue.jobDescription,
       status: formValue.status,
       appliedDate: formValue.appliedDate.toISOString(),
       location: formValue.location
-    } as any; // Using location if backend supports it, else it will be ignored
+    } as any;
 
     this.jobApplicationService.createApplication(application).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Sent to Tracker', detail: 'Job successfully added to your application list.' });
+        this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Sent to Tracker', 
+            detail: 'Job successfully added to your application list.' 
+        });
         this.displayAddTracker.set(false);
         this.isSaving.set(false);
+        this.loadSavedJobs();
+        this.loadTrackedJobs();
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to add job to tracker.' });
         this.isSaving.set(false);
       }
     });
+  }
+
+  loadSavedJobs() {
+    this.loadingSaved.set(true);
+    this.savedJobService.getSavedJobs().subscribe({
+      next: (res) => {
+        this.savedJobs.set(res);
+        this.loadingSaved.set(false);
+      },
+      error: () => {
+        this.loadingSaved.set(false);
+      }
+    });
+  }
+
+  toggleSaveJob(job: LinkedInJobDTO) {
+    const existing = this.savedJobs().find(s => s.companyName === job.company && s.jobTitle === job.title);
+    if (existing) {
+       this.removeSavedJob(existing.id!);
+       return;
+    }
+
+    // Must fetch details first if not present
+    if (!job.description || job.description.length < 200) {
+      this.messageService.add({ severity: 'info', summary: 'Fetching Details', detail: 'Getting full description before saving...' });
+      this.jobSearchService.getJobDetails(job.applyLink).subscribe({
+        next: (full) => {
+          job.description = full.description;
+          this.executeSave(job);
+        },
+        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not fetch job details to save.' })
+      });
+    } else {
+      this.executeSave(job);
+    }
+  }
+
+  private executeSave(job: LinkedInJobDTO) {
+    const savedJob: Partial<SavedJob> = {
+      companyName: job.company,
+      jobTitle: job.title,
+      jobDescription: job.description,
+      location: job.location,
+      salary: job.salary,
+      skills: (job.skills || []).join(','),
+      applyLink: job.applyLink,
+      originalPostedDate: job.postedDate
+    };
+
+    this.savedJobService.saveJob(savedJob).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Job saved to your list.' });
+        this.loadSavedJobs();
+      }
+    });
+  }
+
+  removeSavedJob(id: number) {
+    this.savedJobService.deleteSavedJob(id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'info', summary: 'Removed', detail: 'Job removed from saved list.' });
+        this.loadSavedJobs();
+      }
+    });
+  }
+
+  isJobSaved(job: LinkedInJobDTO): boolean {
+    return this.savedJobs().some(s => s.companyName === job.company && s.jobTitle === job.title);
   }
 
   private parsePostedDate(dateStr: string): number {
