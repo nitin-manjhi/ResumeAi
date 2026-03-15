@@ -125,6 +125,10 @@ export class NotificationService {
                 return;
             }
 
+            if (data.type === 'JOB_SEARCH_SUCCESS') {
+                return; // Polling in JobSearchComponent handles this
+            }
+
             this._notifications.update(prev => [...prev, data.message]);
 
             // Clear analyzing state as we got result

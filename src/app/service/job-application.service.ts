@@ -67,4 +67,8 @@ export class JobApplicationService {
     importApplications(apps: JobApplication[]) {
         return this.http.post<void>(`${this.baseUrl}/import`, apps);
     }
+
+    getAnalysisResult(jobId: number) {
+        return this.http.get<any>(`${this.baseUrl}/${jobId}/analysis-result`);
+    }
 }

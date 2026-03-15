@@ -18,6 +18,8 @@ import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { DialogModule } from 'primeng/dialog';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
     selector: 'app-job-tracker',
@@ -35,7 +37,9 @@ import { InputIconModule } from 'primeng/inputicon';
         SelectModule,
         FormsModule,
         IconFieldModule,
-        InputIconModule
+        InputIconModule,
+        DialogModule,
+        TextareaModule
     ],
     providers: [DialogService, MessageService],
     templateUrl: './job-tracker.component.html'
@@ -54,6 +58,12 @@ export class JobTrackerComponent implements OnInit {
     lastLazyLoadEvent: any;
     ref: DynamicDialogRef | undefined | null;
     today = new Date();
+    
+    // Review Popup signals
+    displayReviewPopup = signal(false);
+    reviewJd = signal('');
+    reviewCompanyName = signal('');
+    charLimit = 2000;
 
     statusOptions = [
         { label: 'All Statuses', value: null },
@@ -144,24 +154,60 @@ export class JobTrackerComponent implements OnInit {
         return closing < today;
     }
 
-    viewAnalysis(resultId: string) {
-        if (!resultId) return;
+    viewAnalysis(app: JobApplication) {
+        // Clear old result first to prevent "caching" old job data in the UI
+        this.resumeService.clearResult();
         this.loading.set(true);
-        this.resumeService.getAnalysisResult(resultId).subscribe({
-            next: () => {
+
+        // Always check backend for the latest analysis state for this job
+        this.appService.getAnalysisResult(app.id!).subscribe({
+            next: (result) => {
                 this.loading.set(false);
-                this.router.navigate(['/analyse-resume']);
+                if (result && result.uuid) {
+                    // Result found in DB - set it to signal and navigate
+                    this.resumeService.setResult(result);
+                    this.router.navigate(['/analyse-resume']);
+                } else {
+                    // No result found - proceed to start new analysis
+                    this.startAnalysis(app);
+                }
             },
             error: (err) => {
                 this.loading.set(false);
-                console.error('Failed to fetch result', err);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Could not fetch analysis result. It might have been cleared.'
-                });
+                console.error('Error checking analysis', err);
+                // Fallback to normal behavior on error
+                this.startAnalysis(app);
             }
         });
+    }
+
+    private startAnalysis(app: JobApplication) {
+        const jd = app.jobDescription || '';
+        if (jd.length <= this.charLimit) {
+            // Under limit - capture and redirect
+            this.resumeService.setPreFilledData({
+                companyName: app.companyName,
+                jdText: jd,
+                applicationId: app.id
+            });
+            this.router.navigate(['/analyse-resume']);
+        } else {
+            // Over limit - launch review popup
+            this.reviewJd.set(jd);
+            this.reviewCompanyName.set(app.companyName);
+            this.displayReviewPopup.set(true);
+            (this.displayReviewPopup as any).applicationId = app.id;
+        }
+    }
+
+    proceedToAnalysis() {
+        this.resumeService.setPreFilledData({
+            companyName: this.reviewCompanyName(),
+            jdText: this.reviewJd(),
+            applicationId: (this.displayReviewPopup as any).applicationId
+        });
+        this.displayReviewPopup.set(false);
+        this.router.navigate(['/analyse-resume']);
     }
 
     addNew() {

@@ -36,14 +36,25 @@
             <!-- TOP REPORTS TAB -->
             <p-tabpanel [value]="0">
                 <div class="flex flex-column gap-4 mt-2">
-                    <!-- SCORE SECTION -->
-                    <div class="card flex flex-column align-items-center justify-content-center p-3 text-center border-top-3"
+                    <div class="card flex flex-column align-items-center justify-content-center p-4 text-center border-top-3 shadow-2 border-round-xl"
                         [style.border-color]="scoreColor">
-                        <h3 class="mb-2 text-900 text-xl font-bold">ATS Match Score</h3>
-                        <p-knob [(ngModel)]="result.score" [readonly]="true" [size]="140" [strokeWidth]="12"
-                            valueTemplate="{value}%" [valueColor]="scoreColor" />
+                        <h3 class="mb-4 text-900 text-xl font-bold">ATS Match Score</h3>
+                        
+                        <div class="circular-container mb-3">
+                            <svg viewBox="0 0 100 100" class="progress-circle">
+                                <circle cx="50" cy="50" r="45" class="bg"></circle>
+                                <circle cx="50" cy="50" r="45" class="progress" 
+                                    [style.stroke-dashoffset]="283 - (283 * (result.score || 0) / 100)"
+                                    [style.stroke]="scoreColor"></circle>
+                            </svg>
+                            <div class="score-value" [style.color]="scoreColor">
+                                <span>{{ result.score || 0 }}</span>
+                                <span class="percent">%</span>
+                            </div>
+                        </div>
+
                         <p-tag [value]="scoreLabel" [severity]="scoreSeverity" [rounded]="true"
-                            styleClass="mt-2 px-3 font-bold" />
+                            styleClass="px-4 py-2 font-bold text-base shadow-1" />
                     </div>
 
                     <!-- SCORE INSIGHTS -->
@@ -149,10 +160,156 @@
                         </p-tablist>
                         <p-tabpanels>
                             <p-tabpanel [value]="0">
-                                <div class="p-3">
-                                    <textarea pTextarea [(ngModel)]="editableResume" rows="20"
-                                        class="w-full font-family-monospace text-sm p-4 border-round surface-50 line-height-4"
-                                        placeholder="Edit your resume content here..."></textarea>
+                                <div class="p-3 flex flex-column gap-4">
+                                    @if (result.structuredResume) {
+                                        <!-- Structured Form Editor -->
+                                        <div class="flex flex-column gap-3">
+                                            <div class="grid">
+                                                <div class="col-12 md:col-4">
+                                                    <label class="block font-bold mb-1">Full Name</label>
+                                                    <input pInputText [(ngModel)]="result.structuredResume.fullName" class="w-full" />
+                                                </div>
+                                                <div class="col-12 md:col-4">
+                                                    <label class="block font-bold mb-1">Professional Title</label>
+                                                    <input pInputText [(ngModel)]="result.structuredResume.title" class="w-full" />
+                                                </div>
+                                                <div class="col-12 md:col-4">
+                                                    <label class="block font-bold mb-1">Contact Info</label>
+                                                    <input pInputText [(ngModel)]="result.structuredResume.contact" class="w-full" />
+                                                </div>
+                                            </div>
+
+                                            <p-accordion [multiple]="true">
+                                                <p-accordion-panel [value]="0">
+                                                    <p-accordion-header>Summary & Skills</p-accordion-header>
+                                                    <p-accordion-content>
+                                                        <div class="flex flex-column gap-3">
+                                                            <div>
+                                                                <div class="flex justify-content-between align-items-center mb-1">
+                                                                    <label class="block font-bold">Professional Summary</label>
+                                                                    <p-button icon="pi pi-sparkles" label="AI Rewrite" [text]="true" size="small" 
+                                                                              severity="info" [loading]="isRewritingSummary()"
+                                                                              (onClick)="rewriteProfessionalSummary()" pTooltip="Rewrite with AI to be more impactful" />
+                                                                </div>
+                                                                <textarea pTextarea [(ngModel)]="result.structuredResume.summary" rows="4" class="w-full"></textarea>
+                                                            </div>
+                                                            <div>
+                                                                <div class="flex justify-content-between align-items-center mb-2">
+                                                                    <label class="block font-bold">Skills</label>
+                                                                    <p-button icon="pi pi-plus" label="Add Skill" [text]="true" size="small" (onClick)="addSkill()" />
+                                                                </div>
+                                                                <div class="flex flex-wrap gap-2">
+                                                                    @for (skill of result.structuredResume.skills; track $index) {
+                                                                        <div class="flex align-items-center gap-1 p-1 surface-100 border-round">
+                                                                            <input pInputText [(ngModel)]="result.structuredResume.skills[$index]" 
+                                                                                   class="p-inputtext-sm border-none bg-transparent w-8rem font-medium" />
+                                                                            <p-button icon="pi pi-times" severity="danger" [rounded]="true" [text]="true" 
+                                                                                      size="small" (onClick)="removeSkill($index)" pTooltip="Remove Skill" />
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </p-accordion-content>
+                                                </p-accordion-panel>
+
+                                                <p-accordion-panel [value]="1">
+                                                    <p-accordion-header>Work Experience</p-accordion-header>
+                                                    <p-accordion-content>
+                                                        <div class="flex flex-column gap-4">
+                                                            <div class="flex justify-content-end">
+                                                                <p-button icon="pi pi-plus" label="Add Experience" severity="success" (onClick)="addExperience()" />
+                                                            </div>
+                                                            @for (exp of result.structuredResume.workExperience; track $index; let expIdx = $index) {
+                                                                <div class="p-3 border-1 surface-border border-round surface-50">
+                                                                    <div class="grid mb-2">
+                                                                        <div class="col-12 md:col-4">
+                                                                            <p-iconfield>
+                                                                                <p-inputicon class="pi pi-briefcase"></p-inputicon>
+                                                                                <input pInputText [(ngModel)]="exp.title" placeholder="Job Title" class="w-full font-bold" />
+                                                                            </p-iconfield>
+                                                                        </div>
+                                                                        <div class="col-12 md:col-4">
+                                                                            <input pInputText [(ngModel)]="exp.company" placeholder="Company" class="w-full" />
+                                                                        </div>
+                                                                        <div class="col-12 md:col-3">
+                                                                            <input pInputText [(ngModel)]="exp.date" placeholder="Date Range" class="w-full" />
+                                                                        </div>
+                                                                        <div class="col-12 md:col-1 flex justify-content-end">
+                                                                            <p-button icon="pi pi-trash" severity="danger" [text]="true" pTooltip="Delete Experience" (onClick)="removeExperience(expIdx)" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="flex flex-column gap-2 mt-2">
+                                                                        <div class="flex justify-content-between align-items-center">
+                                                                            <label class="text-xs font-bold text-600 uppercase tracking-wider">Achievements & Responsibilities</label>
+                                                                            <p-button icon="pi pi-plus" label="Add Point" [text]="true" size="small" (onClick)="addExpPoint(expIdx)" />
+                                                                        </div>
+                                                                        @for (point of exp.points; track $index; let ptIdx = $index) {
+                                                                            <div class="flex gap-2">
+                                                                                <textarea pTextarea [(ngModel)]="exp.points[ptIdx]" class="w-full font-serif" rows="1" autoResize="true"></textarea>
+                                                                                <p-button icon="p-0 pi pi-times" severity="danger" [text]="true" (onClick)="removeExpPoint(expIdx, ptIdx)" />
+                                                                            </div>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </p-accordion-content>
+                                                </p-accordion-panel>
+
+                                                <p-accordion-panel [value]="2">
+                                                    <p-accordion-header>Education</p-accordion-header>
+                                                    <p-accordion-content>
+                                                        <div class="flex flex-column gap-4">
+                                                            <div class="flex justify-content-end">
+                                                                <p-button icon="pi pi-plus" label="Add Education" severity="success" (onClick)="addEducation()" />
+                                                            </div>
+                                                            @for (edu of result.structuredResume.education; track $index; let eduIdx = $index) {
+                                                                <div class="p-3 border-1 surface-border border-round surface-50">
+                                                                    <div class="grid">
+                                                                        <div class="col-12 md:col-5">
+                                                                             <input pInputText [(ngModel)]="edu.title" placeholder="Degree/Certification" class="w-full font-bold" />
+                                                                        </div>
+                                                                        <div class="col-12 md:col-4">
+                                                                             <input pInputText [(ngModel)]="edu.college" placeholder="Institution" class="w-full" />
+                                                                        </div>
+                                                                        <div class="col-12 md:col-2">
+                                                                             <input pInputText [(ngModel)]="edu.date" placeholder="Year" class="w-full" />
+                                                                        </div>
+                                                                        <div class="col-12 md:col-1 flex justify-content-end">
+                                                                             <p-button icon="pi pi-trash" severity="danger" [text]="true" pTooltip="Delete Education" (onClick)="removeEducation(eduIdx)" />
+                                                                        </div>
+                                                                        <div class="col-12 mt-2">
+                                                                             <input pInputText [(ngModel)]="edu.location" placeholder="Location" class="w-full text-sm" />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </p-accordion-content>
+                                                </p-accordion-panel>
+                                            </p-accordion>
+                                            
+                                            <div class="text-xs text-500 mt-2">
+                                                <i class="pi pi-info-circle mr-1"></i>
+                                                Editing the structured fields above will instantly update the <b>Live Preview</b> and <b>PDF Output</b>.
+                                            </div>
+                                        </div>
+                                    }
+
+                                    <!-- Raw Text Fallback/Secondary Editor -->
+                                    <div class="mt-4 pt-4 border-top-1 border-100">
+                                        <label class="block font-bold mb-2">
+                                            @if (result.structuredResume) { 
+                                                Raw Resume Text <small class="font-normal">(Secondary Backup)</small>
+                                            } @else {
+                                                Main Resume Text
+                                            }
+                                        </label>
+                                        <textarea pTextarea [(ngModel)]="editableResume" rows="12"
+                                            class="w-full font-family-monospace text-sm p-4 border-round surface-50 line-height-4"
+                                            placeholder="Edit your resume content here..."></textarea>
+                                    </div>
                                 </div>
                             </p-tabpanel>
                             <p-tabpanel [value]="1">

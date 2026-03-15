@@ -1,0 +1,418 @@
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { JobSearchService } from '../service/job-search.service';
+import { LinkedInJobDTO, LinkedInJobSearchRequest } from '../shared/modal/linkedin-job';
+import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { CardModule } from 'primeng/card';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
+import { TagModule } from 'primeng/tag';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { JobApplicationService } from '../service/job-application.service';
+import { ApplicationStatus, JobApplication } from '../shared/modal/job-application';
+import { TextareaModule } from 'primeng/textarea';
+import { DatePickerModule } from 'primeng/datepicker';
+import { TabsModule } from 'primeng/tabs';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { SavedJobService } from '../service/saved-job.service';
+import { SavedJob } from '../shared/modal/saved-job';
+
+@Component({
+  selector: 'app-job-search',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    CheckboxModule,
+    InputNumberModule,
+    CardModule,
+    DialogModule,
+    TooltipModule,
+    TagModule,
+    ToastModule,
+    IconFieldModule,
+    InputIconModule,
+    TextareaModule,
+    DatePickerModule,
+    TabsModule,
+    SelectButtonModule
+  ],
+  providers: [MessageService],
+  templateUrl: './job-search.component.html',
+  styleUrl: './job-search.component.scss'
+})
+export class JobSearchComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private jobSearchService = inject(JobSearchService);
+  private jobApplicationService = inject(JobApplicationService);
+  private savedJobService = inject(SavedJobService);
+  private messageService = inject(MessageService);
+  private clipboard = inject(Clipboard);
+
+  // Use signals from service for persistence
+  jobs = this.jobSearchService.jobs;
+  loading = this.jobSearchService.loading;
+  progress = this.jobSearchService.progress;
+  
+  filteredJobs = computed(() => {
+    const allJobs = this.jobs();
+    const saved = this.savedJobs();
+    const tracked = this.trackedJobs();
+    
+    return allJobs.filter(job => {
+      const isSaved = saved.some(s => s.companyName === job.company && s.jobTitle === job.title);
+      const isTracked = tracked.some(t => t.companyName === job.company && t.jobTitle === job.title);
+      return !isSaved && !isTracked;
+    });
+  });
+
+  filteredSavedJobs = computed(() => {
+    const saved = this.savedJobs();
+    const tracked = this.trackedJobs();
+    return saved.filter(s => !tracked.some(t => t.companyName === s.companyName && t.jobTitle === s.jobTitle));
+  });
+
+  searchForm = this.fb.group({
+    keyword: ['', Validators.required],
+    location: ['', Validators.required],
+    experienceLevel: [''],
+    jobType: [''],
+    datePosted: [''],
+    remote: [false],
+    limit: [10, [Validators.min(1), Validators.max(50)]]
+  });
+
+  displayDescription = signal(false);
+  selectedJobDescription = signal('');
+
+  displayAddTracker = signal(false);
+  trackForm!: FormGroup;
+  isSaving = signal(false);
+
+  // New features for tabs and saved jobs
+  activeViewIndex = signal(0);
+  savedJobs = signal<SavedJob[]>([]);
+  trackedJobs = signal<JobApplication[]>([]);
+  loadingSaved = signal(false);
+
+  experienceLevels = [
+    { label: 'Any', value: '' },
+    { label: 'Entry Level', value: 'entry' },
+    { label: 'Mid Level', value: 'mid' },
+    { label: 'Senior Level', value: 'senior' }
+  ];
+
+  jobTypes = [
+    { label: 'Any', value: '' },
+    { label: 'Full-time', value: 'full-time' },
+    { label: 'Contract', value: 'contract' }
+  ];
+
+  datePostedOptions = [
+    { label: 'Any Time', value: '' },
+    { label: 'Past 24 Hours', value: 'past_24h' },
+    { label: 'Past Week', value: 'past_week' }
+  ];
+
+  ngOnInit() {
+    // Restore last criteria if available
+    const lastCriteria = this.jobSearchService.lastCriteria();
+    if (lastCriteria) {
+      this.searchForm.patchValue(lastCriteria);
+    }
+
+    this.initTrackForm();
+    this.loadSavedJobs();
+    this.loadTrackedJobs();
+  }
+
+  loadTrackedJobs() {
+    this.jobApplicationService.getAllApplications().subscribe({
+      next: (res) => this.trackedJobs.set(res.content)
+    });
+  }
+
+  private initTrackForm() {
+    this.trackForm = this.fb.group({
+      companyName: ['', Validators.required],
+      jobTitle: ['', Validators.required],
+      location: [''],
+      jobDescription: ['', Validators.required],
+      appliedDate: [new Date(), Validators.required],
+      status: [ApplicationStatus.INITIALIZED]
+    });
+  }
+
+  onSearch() {
+    if (this.searchForm.invalid) {
+      this.messageService.add({ severity: 'error', summary: 'Validation Error', detail: 'Keyword and Location are required.' });
+      return;
+    }
+
+    this.jobSearchService.setJobs([]);
+    const criteria = this.searchForm.value as LinkedInJobSearchRequest;
+
+    this.jobSearchService.searchJobs(criteria).subscribe({
+      next: (response) => {
+        this.pollJobStatus(response.jobId);
+      },
+      error: (error) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to start search. ' + (error.error?.error || error.message) });
+        this.jobSearchService.setLoading(false);
+      }
+    });
+  }
+
+  private pollJobStatus(jobId: string) {
+    const pollInterval = setInterval(() => {
+      this.jobSearchService.getJobStatus(jobId).subscribe({
+        next: (response) => {
+          if (response.progress) this.jobSearchService.setProgress(response.progress);
+          
+          if (response.status === 'DONE' || response.jobs) {
+            clearInterval(pollInterval);
+            const enrichedJobs = (response.jobs || []).map(job => ({
+              ...job,
+              postedDateSortValue: this.parsePostedDate(job.postedDate)
+            }));
+            this.jobSearchService.setJobs(enrichedJobs);
+            this.jobSearchService.setLoading(false);
+            
+            if (!enrichedJobs || enrichedJobs.length === 0) {
+              this.messageService.add({ severity: 'info', summary: 'No Results', detail: 'No jobs found for these criteria.' });
+            } else {
+               this.messageService.add({ severity: 'success', summary: 'Success', detail: `Found ${enrichedJobs.length} jobs.` });
+            }
+          } else if (response.status === 'FAILED') {
+            clearInterval(pollInterval);
+            this.jobSearchService.setLoading(false);
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: response.errorMessage || 'Search failed.' });
+          }
+          // Continue polling if still PENDING or PROCESSING
+        },
+        error: (error) => {
+          clearInterval(pollInterval);
+          this.jobSearchService.setLoading(false);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Polling failed.' });
+        }
+      });
+    }, 3000); // Poll every 3 seconds
+  }
+
+  showDescription(job: LinkedInJobDTO) {
+    // If we already have a substantial description, just show it
+    if (job.description && job.description.length > 200) {
+      this.selectedJobDescription.set(job.description);
+      this.displayDescription.set(true);
+      return;
+    }
+
+    // Otherwise fetch the full details
+    this.messageService.add({ severity: 'info', summary: 'Loading', detail: 'Fetching full job description...' });
+    
+    this.jobSearchService.getJobDetails(job.applyLink).subscribe({
+      next: (fullJob) => {
+        // Update the job in the list so we don't fetch it again
+        job.description = fullJob.description;
+        if (fullJob.skills) job.skills = fullJob.skills;
+        
+        this.selectedJobDescription.set(fullJob.description);
+        this.displayDescription.set(true);
+      },
+      error: (error) => {
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: 'Failed to fetch job details from scraper.' 
+        });
+      }
+    });
+  }
+
+  copyToClipboard() {
+    this.clipboard.copy(this.selectedJobDescription());
+    this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Description copied to clipboard.' });
+  }
+
+  openAddTracker(job: LinkedInJobDTO) {
+    // Helper to open the dialog once we have the data
+    const showDialog = (jobData: LinkedInJobDTO) => {
+      this.trackForm.patchValue({
+        companyName: jobData.company,
+        jobTitle: jobData.title,
+        location: jobData.location,
+        jobDescription: jobData.description,
+        appliedDate: new Date(),
+        status: ApplicationStatus.INITIALIZED
+      });
+      this.displayAddTracker.set(true);
+    };
+
+    // If we already have the description, show it immediately
+    if (job.description && job.description.length > 200) {
+      showDialog(job);
+      return;
+    }
+
+    // Otherwise fetch the description first
+    if (!job.applyLink) {
+       showDialog(job);
+       return;
+    }
+
+    this.messageService.add({ severity: 'info', summary: 'Fetching Details', detail: 'Getting full job description for tracker...' });
+    
+    this.jobSearchService.getJobDetails(job.applyLink).subscribe({
+      next: (fullJob) => {
+        // Update the job reference so it's cached in the table too
+        job.description = fullJob.description;
+        if (fullJob.skills) job.skills = fullJob.skills;
+        
+        showDialog(job);
+      },
+      error: (error) => {
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: 'Failed to fetch job description. You can still fill it manually.' 
+        });
+        // Open anyway so user can manually type if they want
+        showDialog(job);
+      }
+    });
+  }
+
+  saveToTracker() {
+    if (this.trackForm.invalid) return;
+
+    this.isSaving.set(true);
+    const formValue = this.trackForm.value;
+    
+    const application: JobApplication = {
+      companyName: formValue.companyName,
+      jobTitle: formValue.jobTitle,
+      jobDescription: formValue.jobDescription,
+      status: formValue.status,
+      appliedDate: formValue.appliedDate.toISOString(),
+      location: formValue.location
+    } as any;
+
+    this.jobApplicationService.createApplication(application).subscribe({
+      next: () => {
+        this.messageService.add({ 
+            severity: 'success', 
+            summary: 'Sent to Tracker', 
+            detail: 'Job successfully added to your application list.' 
+        });
+        this.displayAddTracker.set(false);
+        this.isSaving.set(false);
+        this.loadSavedJobs();
+        this.loadTrackedJobs();
+      },
+      error: (err) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to add job to tracker.' });
+        this.isSaving.set(false);
+      }
+    });
+  }
+
+  loadSavedJobs() {
+    this.loadingSaved.set(true);
+    this.savedJobService.getSavedJobs().subscribe({
+      next: (res) => {
+        this.savedJobs.set(res);
+        this.loadingSaved.set(false);
+      },
+      error: () => {
+        this.loadingSaved.set(false);
+      }
+    });
+  }
+
+  toggleSaveJob(job: LinkedInJobDTO) {
+    const existing = this.savedJobs().find(s => s.companyName === job.company && s.jobTitle === job.title);
+    if (existing) {
+       this.removeSavedJob(existing.id!);
+       return;
+    }
+
+    // Must fetch details first if not present
+    if (!job.description || job.description.length < 200) {
+      this.messageService.add({ severity: 'info', summary: 'Fetching Details', detail: 'Getting full description before saving...' });
+      this.jobSearchService.getJobDetails(job.applyLink).subscribe({
+        next: (full) => {
+          job.description = full.description;
+          this.executeSave(job);
+        },
+        error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not fetch job details to save.' })
+      });
+    } else {
+      this.executeSave(job);
+    }
+  }
+
+  private executeSave(job: LinkedInJobDTO) {
+    const savedJob: Partial<SavedJob> = {
+      companyName: job.company,
+      jobTitle: job.title,
+      jobDescription: job.description,
+      location: job.location,
+      salary: job.salary,
+      skills: (job.skills || []).join(','),
+      applyLink: job.applyLink,
+      originalPostedDate: job.postedDate
+    };
+
+    this.savedJobService.saveJob(savedJob).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Saved', detail: 'Job saved to your list.' });
+        this.loadSavedJobs();
+      }
+    });
+  }
+
+  removeSavedJob(id: number) {
+    this.savedJobService.deleteSavedJob(id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'info', summary: 'Removed', detail: 'Job removed from saved list.' });
+        this.loadSavedJobs();
+      }
+    });
+  }
+
+  isJobSaved(job: LinkedInJobDTO): boolean {
+    return this.savedJobs().some(s => s.companyName === job.company && s.jobTitle === job.title);
+  }
+
+  private parsePostedDate(dateStr: string): number {
+    if (!dateStr) return 999999;
+    const lowerStr = dateStr.toLowerCase();
+    const match = lowerStr.match(/(\d+)/);
+    if (!match) return 999999;
+
+    const value = parseInt(match[1]);
+    
+    if (lowerStr.includes('minute')) return value;
+    if (lowerStr.includes('hour')) return value * 60;
+    if (lowerStr.includes('day')) return value * 1440;
+    if (lowerStr.includes('week')) return value * 10080;
+    if (lowerStr.includes('month')) return value * 43200;
+    
+    return 999999;
+  }
+}

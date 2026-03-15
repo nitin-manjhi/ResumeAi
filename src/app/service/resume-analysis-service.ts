@@ -26,6 +26,13 @@ export class ResumeAnalysisService {
   private readonly _isGeneratingEmail = signal<boolean>(false);
   readonly isGeneratingEmail = this._isGeneratingEmail.asReadonly();
 
+  private readonly _preFilledData = signal<{ companyName: string, jdText: string, applicationId?: number } | null>(null);
+  readonly preFilledData = this._preFilledData.asReadonly();
+
+  setPreFilledData(data: { companyName: string, jdText: string, applicationId?: number } | null) {
+    this._preFilledData.set(data);
+  }
+
   setResult(result: AtsAnalysisResult) {
     this._currentResult.set(result);
   }
@@ -51,12 +58,15 @@ export class ResumeAnalysisService {
     this._isGeneratingEmail.set(status);
   }
 
-  analyzeResume(file: File, jdText: string, model: string = 'ollama', companyName: string = '') {
+  analyzeResume(file: File, jdText: string, model: string = 'ollama', companyName: string = '', applicationId?: number) {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('jdText', jdText);
     formData.append('model', model);
     formData.append('companyName', companyName);
+    if (applicationId) {
+      formData.append('applicationId', applicationId.toString());
+    }
     return this.http.post<AtsAnalysisResult>(`${this.baseUrl}/analyze`, formData);
   }
 
@@ -127,5 +137,9 @@ export class ResumeAnalysisService {
 
   generateEmail(resultId: string, model: string = 'ollama') {
     return this.http.post<string>(`${this.baseUrl}/generate-email/${resultId}`, null, { params: { model } });
+  }
+
+  rewriteSummary(summary: string, model: string = 'ollama') {
+    return this.http.post(`${this.baseUrl}/rewrite-summary`, { summary, model }, { responseType: 'text' });
   }
 }
