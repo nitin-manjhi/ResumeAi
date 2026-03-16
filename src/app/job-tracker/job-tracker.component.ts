@@ -8,18 +8,28 @@ import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
 import { DialogService, DynamicDialogModule, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { MessageService } from 'primeng/api';
 import { JdModalComponent } from './jd-modal.component';
 import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
-import { TooltipModule } from 'primeng/tooltip';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
+import { ToastModule } from 'primeng/toast';
+
+interface JobApplicationStats {
+    totalApplications: number;
+    statusDistribution: { [key: string]: number };
+    applicationsLast7Days: number;
+    applicationsLast30Days: number;
+    withAnalysisCount: number;
+}
 
 @Component({
     selector: 'app-job-tracker',
@@ -39,7 +49,9 @@ import { TextareaModule } from 'primeng/textarea';
         IconFieldModule,
         InputIconModule,
         DialogModule,
-        TextareaModule
+        TextareaModule,
+        ProgressBarModule,
+        ProgressSpinnerModule
     ],
     providers: [DialogService, MessageService],
     templateUrl: './job-tracker.component.html'
@@ -52,6 +64,7 @@ export class JobTrackerComponent implements OnInit {
     private readonly resumeService = inject(ResumeAnalysisService);
 
     applications = signal<JobApplication[]>([]);
+    stats = signal<JobApplicationStats | null>(null);
     totalRecords = signal(0);
     loading = signal(false);
     activeTab = signal(0);
@@ -75,7 +88,21 @@ export class JobTrackerComponent implements OnInit {
     ];
 
     ngOnInit() {
-        // Handled by lazy load
+        this.loadStats();
+    }
+
+    onTabChange(event: any) {
+        this.activeTab.set(event.index);
+        if (event.index === 1) {
+            this.loadStats();
+        }
+    }
+
+    loadStats() {
+        this.appService.getStats().subscribe({
+            next: (res) => this.stats.set(res),
+            error: (err) => console.error('Error loading stats', err)
+        });
     }
 
     loadApplications(event: any) {

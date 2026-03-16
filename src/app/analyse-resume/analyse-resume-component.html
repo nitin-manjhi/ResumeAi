@@ -1,112 +1,169 @@
-<div>
-  @if (isLoading()) {
-  <div class="fixed top-0 left-0 w-full h-full flex align-items-center justify-content-center bg-black-alpha-50"
-    style="z-index: 9999;">
-    <p-progressSpinner ariaLabel="loading" />
-  </div>
-  }
-
-  @if (!analysisResult()) {
-  <div class="flex flex-column align-items-center mt-4 gap-4 px-4">
-    @if (jobSubmitted()) {
-    <p-card styleClass="p-6 text-center shadow-4 border-round-xl max-w-30rem">
-      <div class="flex flex-column align-items-center gap-4">
-        @if (readyResultId()) {
-        <i class="pi pi-check-circle text-success-500 text-6xl scalein animation-duration-500"></i>
-        <div class="flex flex-column gap-2">
-          <h2 class="text-2xl font-bold text-900 m-0">Analysis Ready!</h2>
-          <p class="text-600 text-lg">Your resume analysis is complete. You can now view the detailed report.</p>
-        </div>
-        <div class="flex gap-3 mt-2">
-          <p-button label="See Analysis Result" icon="pi pi-file" severity="success" (onClick)="viewResult()" />
-          <p-button label="Start Over" icon="pi pi-refresh" severity="secondary" (onClick)="onReset()" />
-        </div>
-        } @else {
-        <div class="w-full flex flex-column gap-3">
-          <h2 class="text-2xl font-bold text-900 m-0">Processing Resume...</h2>
-          <p-progressBar [value]="progress()" [showValue]="false" styleClass="h-1rem border-round-xl" />
-          <div class="flex justify-content-between text-600 font-medium">
-            <span>{{ progressMessage() || 'Initializing...' }}</span>
-            <span>{{ progress() }}%</span>
-          </div>
-          <p class="text-500 mt-2">Our AI is working task-by-task to analyze your resume and generate documents.</p>
-        </div>
-        <p-button label="Cancel & Start Over" icon="pi pi-times" severity="danger" [text]="true"
-          (onClick)="onReset()" />
-        }
-      </div>
-    </p-card>
-    } @else {
-    <!-- Model Selection Section -->
-    <div class="w-full md:w-10 flex flex-column gap-3 mb-4" style="max-width: 1200px;">
-      <label class="font-semibold text-xl">Select AI Intelligence</label>
-      <!-- Quota Status Messages -->
-      @if(isStandardQuotaReached()) {
-      <div class="p-3 border-round-lg bg-orange-100 text-orange-800 flex align-items-center gap-2 mb-2">
-        <i class="pi pi-exclamation-circle"></i>
-        <span>You have reached your <b>Standard Intelligence</b> usage limit. Please upgrade or contact admin for
-          more.</span>
-      </div>
-      }
-
-      @if(isPremium() && isPremiumQuotaReached()) {
-      <div class="p-3 border-round-lg bg-blue-100 text-blue-800 flex align-items-center gap-2 mb-2">
-        <i class="pi pi-info-circle"></i>
-        <span>Your <b>Advanced/Elite AI</b> quota for this period is finished.</span>
-      </div>
-      }
-
-      <p-selectButton [options]="modelOptions()" [ngModel]="selectedModel()" (ngModelChange)="selectedModel.set($event)"
-        optionLabel="label" optionValue="value" [optionDisabled]="'disabled'"
-        [styleClass]="isMobile() ? 'w-full flex-column' : ''">
-        <ng-template let-item pTemplate="item">
-          <div class="flex flex-column align-items-center gap-1 px-3 py-2" [class.w-full]="isMobile()">
-            <i [class]="item.icon" [style.color]="item.disabled ? '#ccc' : 'inherit'"></i>
-            <span [class.text-400]="item.disabled">{{ item.label }}</span>
-
-            @if(item.value !== 'ollama' && !isPremium()) {
-            <span class="text-xs text-orange-400 font-bold">PREMIUM</span>
-            } @else if (item.disabled) {
-            <span class="text-xs text-red-400 font-bold uppercase">Limit Reached</span>
-            }
-          </div>
-        </ng-template>
-      </p-selectButton>
-
-      @if(!isPremium() && !isAdmin()) {
-      <p class="text-xs text-600 mt-1"><i class="pi pi-info-circle mr-1"></i>Advanced and Elite models are available for
-        premium accounts only.</p>
-      }
-    </div>
-
-    <!-- Company Name Section -->
-    <div class="w-full md:w-10 flex flex-column gap-2 mb-3" style="max-width: 1200px;">
-      <label class="font-semibold text-xl" for="companyName">Target Company Name</label>
-      <input pInputText id="companyName" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)"
-        class="w-full" placeholder="e.g. Google, Microsoft, Startup Inc." />
-    </div>
-
-    <!-- Job Description Section (80% Width) -->
-    <div class="w-full md:w-10 flex flex-column gap-2" style="max-width: 1200px;">
-      <label class="font-semibold text-xl" for="jobDescription">Job Description</label>
-      <textarea rows="12" pInputTextarea [ngModel]="jobDescription()" (ngModelChange)="jobDescription.set($event)"
-        maxlength="2000" class="w-full" style="overflow-y: auto; height: 18rem;"
-        placeholder="Paste job description here (Max 2000 chars)"></textarea>
-    </div>
-
-    <!-- Upload Resume Section -->
-    <div class="w-full flex flex-column align-items-center gap-3 mt-4">
-      <label class="font-semibold text-xl text-center">Upload Resume</label>
-      <div class="flex flex-column md:flex-row gap-4 align-items-center justify-content-center w-full max-w-25rem">
-        <p-fileupload #fu mode="basic" chooseLabel="Choose File" chooseIcon="pi pi-upload" name="demo[]"
-          accept=".pdf,.doc,.docx" maxFileSize="1000000" styleClass="w-full" />
-        <p-button label="Analyze Resume" (onClick)="onUpload(fu)" [raised]=true severity="primary" icon="pi pi-bolt"
-          styleClass="w-full" [disabled]="!jobDescription() || !jobDescription().trim() || !fu.files.length" />
-      </div>
+<div class="max-w-7xl mx-auto py-5 px-4">
+    @if (isLoading()) {
+    <div class="fixed top-0 left-0 w-full h-full flex align-items-center justify-content-center bg-black-alpha-50"
+        style="z-index: 9991;">
+        <p-progressSpinner ariaLabel="loading" />
     </div>
     }
-  </div>
-  } @else {
-  <app-ats-result-component [result]="analysisResult()!" (onReset)="onReset()" />
-  }
+
+    @if (!analysisResult()) {
+    <div class="flex flex-column gap-5">
+        
+        @if (jobSubmitted()) {
+        <div class="flex justify-content-center pt-8">
+            <div class="premium-card text-center max-w-30rem w-full shadow-8 border-round-3xl p-8">
+                @if (readyResultId()) {
+                <div class="flex flex-column align-items-center gap-4">
+                    <div class="w-5rem h-5rem bg-emerald-50 text-emerald-600 border-round-circle flex align-items-center justify-content-center mb-2 shadow-sm border-1 border-emerald-100">
+                        <i class="pi pi-check text-4xl font-bold"></i>
+                    </div>
+                    <div>
+                        <h2 class="section-title text-3xl">Analysis Ready!</h2>
+                        <p class="section-subtitle">Your strategic career alignment report has been generated successfully.</p>
+                    </div>
+                    <div class="flex flex-column gap-3 w-full mt-2">
+                        <p-button label="View Detailed Report" icon="pi pi-file" severity="success"
+                            styleClass="h-3.5rem w-full font-bold shadow-4" (onClick)="viewResult()" />
+                        <p-button label="Start New Analysis" icon="pi pi-refresh" [text]="true"
+                            styleClass="w-full font-bold" (onClick)="onReset()" />
+                    </div>
+                </div>
+                } @else {
+                <div class="flex flex-column gap-4">
+                    <h2 class="section-title text-2xl">Processing Strategy</h2>
+                    <p class="section-subtitle">Our AI is analyzing your resume against the job description...</p>
+                    
+                    <div class="w-full">
+                        <p-progressBar [value]="progress()" [showValue]="false" styleClass="h-0.5rem border-round-xl mb-3" />
+                        <div class="flex justify-content-between text-sm font-bold">
+                            <span class="text-emerald-600 uppercase tracking-wider">{{ progressMessage() || 'Initializing...' }}</span>
+                            <span class="text-900">{{ progress() }}%</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-emerald-50 border-round-xl border-1 border-emerald-100 mt-2">
+                        <p class="text-sm text-emerald-800 line-height-3 m-0">
+                            <i class="pi pi-sparkles mr-2"></i>
+                            Performing deep skill extraction and gap analysis...
+                        </p>
+                    </div>
+
+                    <p-button label="Cancel Process" icon="pi pi-times" severity="danger" [text]="true"
+                        styleClass="mt-4 font-bold" (onClick)="onReset()" />
+                </div>
+                }
+            </div>
+        </div>
+        } @else {
+        <!-- Header Section -->
+        <div class="fadein">
+            <h1 class="text-900 text-4xl font-extrabold mb-2">Resume Strategic Analysis</h1>
+            <p class="text-600 text-xl">Unlock the path to your dream job with AI-powered alignment reports.</p>
+        </div>
+
+        <div class="grid align-items-start">
+            <!-- Left Side: Inputs -->
+            <div class="col-12 lg:col-8 flex flex-column gap-4">
+                
+                <!-- Step 1: Context -->
+                <div class="premium-card">
+                    <h2 class="section-title">Professional Context</h2>
+                    <p class="section-subtitle">Tell us about the company and the position you're aiming for.</p>
+                    
+                    <div class="grid p-fluid">
+                        <div class="col-12 field flex flex-column gap-2 mb-4">
+                            <label class="font-bold text-900 ml-1">Company Persona</label>
+                            <input pInputText [ngModel]="companyName()" (ngModelChange)="companyName.set($event)"
+                                placeholder="e.g. Google, Microsoft, Startup Inc." />
+                            <small class="text-500 ml-1">We'll tailor the analysis to this specific company's values.</small>
+                        </div>
+                        
+                        <div class="col-12 field flex flex-column gap-2">
+                            <label class="font-bold text-900 ml-1">Detailed Job Description</label>
+                            <textarea rows="10" pInputTextarea [ngModel]="jobDescription()" 
+                                (ngModelChange)="jobDescription.set($event)"
+                                style="height: 250px"
+                                placeholder="Paste the full job requirements, responsibilities, and qualifications here..."></textarea>
+                            <div class="flex justify-content-end text-xs text-500">
+                                {{ jobDescription().length }} / 2000 characters
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Side: Action Card -->
+            <div class="col-12 lg:col-4 sticky top-0 py-3 flex flex-column gap-4">
+                <!-- Step 2: Intelligence Selection -->
+                <div class="premium-card border-1 border-emerald-100 dark:border-emerald-800">
+                    <div class="flex justify-content-between align-items-center mb-3">
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-bolt text-emerald-500"></i>
+                            <h2 class="section-title m-0" style="font-size: 1.15rem;">Intelligence</h2>
+                        </div>
+                        <span class="text-xs font-bold text-500 uppercase tracking-wider">AI Engine</span>
+                    </div>
+
+                    @if(isStandardQuotaReached()) {
+                    <div class="p-2 border-round-lg bg-orange-100 text-orange-800 flex align-items-center gap-2 mb-3 text-xs shadow-sm">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        <span>Quota limit reached.</span>
+                    </div>
+                    }
+
+                    <p-selectButton [options]="modelOptions()" [ngModel]="selectedModel()" 
+                        (ngModelChange)="selectedModel.set($event)"
+                        optionLabel="label" optionValue="value" [optionDisabled]="'disabled'"
+                        styleClass="p-button-rounded professional-select mb-2">
+                        <ng-template let-item pTemplate="item">
+                            <div class="flex flex-column align-items-center gap-1 py-1 px-2">
+                                <i [class]="item.icon + ' text-lg'"></i>
+                                <span class="text-xs font-bold">{{ item.label }}</span>
+                            </div>
+                        </ng-template>
+                    </p-selectButton>
+                    
+                    @if(!isPremium() && !isAdmin()) {
+                        <div class="mt-2 p-2 surface-section border-round-lg text-600 text-xs line-height-2 border-1 surface-border">
+                            <i class="pi pi-info-circle text-emerald-500 mr-1"></i>
+                            Advanced models provide 3x deeper reasoning for complex roles.
+                        </div>
+                    }
+                </div>
+
+                <div class="premium-card border-emerald-200 border-2">
+                    <h2 class="section-title" style="font-size: 1.25rem;">Final Action</h2>
+                    <p class="section-subtitle" style="font-size: 0.875rem;">Complete report generation.</p>
+
+                    <div class="flex flex-column gap-4">
+                        <div class="p-4 bg-emerald-50 dark:bg-emerald-900/10 border-round-xl border-dashed border-2 border-emerald-200 dark:border-emerald-800 text-center">
+                            <i class="pi pi-file-pdf text-4xl text-emerald-600 dark:text-emerald-400 mb-3"></i>
+                            <div class="font-bold text-emerald-900 dark:text-emerald-100 mb-2">Upload Resume</div>
+                            <p-fileupload #fu mode="basic" chooseLabel="Browse Files" chooseIcon="pi pi-plus" 
+                                name="demo[]" accept=".pdf,.doc,.docx" maxFileSize="1000000" 
+                                styleClass="w-full text-sm" />
+                            @if(fu.files.length > 0) {
+                                <div class="mt-2 text-emerald-700 font-bold text-xs truncate">
+                                    <i class="pi pi-check mr-1"></i> {{fu.files[0].name}}
+                                </div>
+                            }
+                        </div>
+
+                        <p-button label="Analyze Now" icon="pi pi-bolt" 
+                            (onClick)="onUpload(fu)" [raised]="true" severity="primary"
+                            styleClass="h-4rem w-full font-bold shadow-4 text-xl" 
+                            [disabled]="!jobDescription() || !jobDescription().trim() || !fu.files.length" />
+                            
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="fadein">
+        <app-ats-result-component [result]="analysisResult()!" (onReset)="onReset()" />
+    </div>
+    }
 </div>

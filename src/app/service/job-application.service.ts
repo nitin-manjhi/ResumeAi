@@ -71,4 +71,8 @@ export class JobApplicationService {
     getAnalysisResult(jobId: number) {
         return this.http.get<any>(`${this.baseUrl}/${jobId}/analysis-result`);
     }
+
+    getStats() {
+        return this.http.get<any>(`${this.baseUrl}/stats`);
+    }
 }

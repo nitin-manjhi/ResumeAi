@@ -1,27 +1,26 @@
 <div class="flex flex-column gap-4 p-4">
-    <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-3">
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-4 surface-card p-4 border-round-2xl shadow-sm border-1 surface-border">
         <div class="flex flex-column gap-1 text-center md:text-left">
-            <h2 class="m-0 text-primary text-2xl md:text-3xl">ATS Analysis Result</h2>
+            <h1 class="m-0 text-900 text-3xl font-extrabold tracking-tight">AI Strategy Analysis</h1>
             @if (result.companyName) {
-            <span
-                class="text-600 font-medium flex align-items-center justify-content-center md:justify-content-start gap-2">
+            <div class="flex align-items-center justify-content-center md:justify-content-start gap-2 text-emerald-600 font-bold bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 border-round-xl w-fit">
                 <i class="pi pi-briefcase text-sm"></i>
-                Target: <b class="text-900">{{ result.companyName }}</b>
-            </span>
+                <span class="text-sm uppercase tracking-wider">Targeting: {{ result.companyName }}</span>
+            </div>
             }
         </div>
         <div class="flex flex-wrap gap-2 justify-content-center md:justify-content-end w-full md:w-auto">
             <p-button [label]="result.coverLetter ? (isMobile() ? 'Letter' : 'Review Cover Letter') : 'Gen Letter'"
                 [icon]="result.coverLetter ? 'pi pi-file-edit' : 'pi pi-sparkles'" (onClick)="reviewCoverLetter()"
-                [loading]="isGeneratingCL()" severity="info" class="flex-grow-1 md:flex-grow-0" />
+                [loading]="isGeneratingCL()" severity="info" styleClass="p-button-outlined border-2 font-bold" />
             <p-button [label]="result.email ? (isMobile() ? 'Email' : 'Email Draft') : 'Gen Email'"
                 [icon]="result.email ? 'pi pi-envelope' : 'pi pi-sparkles'"
                 (onClick)="result.email ? sendMail() : generateEmail()" [loading]="isGeneratingEmail()"
-                severity="success" class="flex-grow-1 md:flex-grow-0" />
+                severity="success" styleClass="border-none font-bold shadow-2 btn-emerald" />
             <p-button [label]="isMobile() ? 'Track' : 'Track App'" icon="pi pi-list" (onClick)="goToTracker()"
-                severity="warn" class="flex-grow-1 md:flex-grow-0" />
+                severity="warn" styleClass="p-button-outlined border-2 font-bold" />
             <p-button [label]="isMobile() ? 'New' : 'Analyze New'" icon="pi pi-refresh" (onClick)="reset()"
-                severity="secondary" class="flex-grow-1 md:flex-grow-0" />
+                severity="secondary" styleClass="p-button-outlined border-2 font-bold" />
         </div>
     </div>
 
@@ -35,12 +34,12 @@
         <p-tabpanels>
             <!-- TOP REPORTS TAB -->
             <p-tabpanel [value]="0">
-                <div class="flex flex-column gap-4 mt-2">
-                    <div class="card flex flex-column align-items-center justify-content-center p-4 text-center border-top-3 shadow-2 border-round-xl"
+                <div class="flex flex-column gap-5 mt-2">
+                    <div class="premium-card flex flex-column align-items-center justify-content-center p-6 text-center border-top-3"
                         [style.border-color]="scoreColor">
-                        <h3 class="mb-4 text-900 text-xl font-bold">ATS Match Score</h3>
+                        <h3 class="mt-0 mb-4 text-900 text-2xl font-black tracking-tight">ATS Alignment Score</h3>
                         
-                        <div class="circular-container mb-3">
+                        <div class="circular-container mb-4">
                             <svg viewBox="0 0 100 100" class="progress-circle">
                                 <circle cx="50" cy="50" r="45" class="bg"></circle>
                                 <circle cx="50" cy="50" r="45" class="progress" 
@@ -54,58 +53,66 @@
                         </div>
 
                         <p-tag [value]="scoreLabel" [severity]="scoreSeverity" [rounded]="true"
-                            styleClass="px-4 py-2 font-bold text-base shadow-1" />
+                            styleClass="px-5 py-3 font-bold text-lg shadow-2" />
+                        
+                        <p class="text-600 mt-4 max-w-20rem mx-auto line-height-3">
+                            Based on your resume's contextual relevance to the job requirements.
+                        </p>
                     </div>
 
-                    <!-- SCORE INSIGHTS -->
-                    @if (formattedScoreExplanation.length > 0) {
-                    <div class="card p-4 border-left-3 border-cyan-500">
-                        <h3 class="text-900 mb-3 border-bottom-1 border-100 pb-2 flex align-items-center">
-                            <i class="pi pi-info-circle mr-2 text-cyan-500 text-xl"></i>Score Insights
-                        </h3>
-                        <ul class="list-none p-0 m-0 flex flex-column gap-3">
-                            @for (point of formattedScoreExplanation; track point) {
-                            <li class="flex align-items-start gap-3 p-2 surface-50 border-round">
-                                <i class="pi pi-check-circle text-green-500 mt-1"></i>
-                                <span class="text-sm text-700 font-medium line-height-3">{{ point }}</span>
-                            </li>
-                            }
-                        </ul>
-                    </div>
-                    }
-
-                    <!-- KEYWORDS SECTION -->
-                    <div class="card p-4 border-left-3 border-green-500">
-                        <h3 class="text-900 mb-3 flex align-items-center"><i
-                                class="pi pi-tags mr-2 text-green-500 text-xl"></i>Extracted ATS Keywords
-                        </h3>
-                        <div class="flex flex-wrap gap-3">
-                            @for (skill of result.matchedSkills; track skill) {
-                            <div
-                                class="flex align-items-center gap-1 p-2 surface-50 border-round border-1 surface-border shadow-1">
-                                <span class="font-bold text-900">{{ skill }}</span>
-                                @if (getImportanceLabel(skill) !== 'OPTIONAL') {
-                                <p-tag [value]="getImportanceLabel(skill)" [severity]="getImportanceSeverity(skill)"
-                                    styleClass="text-xs px-2"></p-tag>
-                                }
+                    <div class="grid">
+                        <!-- SCORE INSIGHTS -->
+                        @if (formattedScoreExplanation.length > 0) {
+                        <div class="col-12 lg:col-6">
+                            <div class="premium-card h-full border-left-3 border-cyan-500">
+                                <h3 class="text-900 text-xl font-bold mb-4 flex align-items-center gap-2">
+                                    <i class="pi pi-bolt text-cyan-500"></i>AI Analysis Insights
+                                </h3>
+                                <div class="flex flex-column gap-3">
+                                    @for (point of formattedScoreExplanation; track point) {
+                                    <div class="flex align-items-start gap-3 p-3 bg-cyan-50 dark:bg-cyan-900/20 border-round-xl border-1 border-cyan-100 dark:border-cyan-800">
+                                        <i class="pi pi-check-circle text-cyan-600 dark:text-cyan-400 mt-1"></i>
+                                        <span class="text-sm text-cyan-900 dark:text-cyan-100 font-medium line-height-3">{{ point }}</span>
+                                    </div>
+                                    }
+                                </div>
                             </div>
-                            }
-                            @if (result.matchedSkills.length === 0) {
-                            <span class="text-gray-500 italic">No specific keywords extracted.</span>
-                            }
+                        </div>
+                        }
+
+                        <!-- KEYWORDS SECTION -->
+                        <div class="col-12 lg:col-6">
+                            <div class="premium-card h-full border-left-3 border-emerald-500">
+                                <h3 class="text-900 text-xl font-bold mb-4 flex align-items-center gap-2">
+                                    <i class="pi pi-tags text-emerald-500"></i>Optimized Keywords
+                                </h3>
+                                <div class="flex flex-wrap gap-2">
+                                    @for (skill of result.matchedSkills; track skill) {
+                                    <div class="flex align-items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 border-round-lg border-1 border-emerald-100 dark:border-emerald-800 shadow-sm">
+                                        <span class="font-bold text-emerald-900 dark:text-emerald-100 text-sm">{{ skill }}</span>
+                                        @if (getImportanceLabel(skill) !== 'OPTIONAL') {
+                                            <div class="w-4px h-4px border-round-circle bg-emerald-300"></div>
+                                            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ getImportanceLabel(skill) }}</span>
+                                        }
+                                    </div>
+                                    }
+                                    @if (result.matchedSkills.length === 0) {
+                                        <span class="text-gray-500 italic p-3">No specific keywords extracted.</span>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- MISSING SKILLS SECTION -->
-                    <div class="card p-4 border-left-3 border-orange-500">
-                        <h3 class="text-900 mb-3 flex align-items-center"><i
-                                class="pi pi-exclamation-triangle mr-2 text-orange-500 text-xl"></i>Missing
-                            Skills Alignment</h3>
-                        <div class="flex flex-wrap gap-3">
+                    <div class="premium-card border-left-3 border-orange-500">
+                        <h3 class="text-900 text-xl font-bold mb-4 flex align-items-center gap-2">
+                            <i class="pi pi-exclamation-triangle text-orange-500"></i>Missing Skills Alignment
+                        </h3>
+                        <div class="flex flex-wrap gap-2">
                             @for (skill of result.missingSkills; track skill) {
-                            <div
-                                class="flex align-items-center gap-2 p-2 px-3 surface-50 border-round border-1 surface-border shadow-1 border-left-3 border-orange-500">
-                                <span class="font-bold text-700">{{ skill }}</span>
+                            <div class="flex align-items-center gap-2 px-3 py-2 bg-orange-50 dark:bg-orange-900/20 border-round-lg border-1 border-orange-100 dark:border-orange-800 shadow-sm">
+                                <span class="font-bold text-orange-900 dark:text-orange-100 text-sm">{{ skill }}</span>
                                 @if (getImportanceLabel(skill) !== 'OPTIONAL') {
                                 <p-tag [value]="getImportanceLabel(skill)" [severity]="getImportanceSeverity(skill)"
                                     styleClass="text-xs px-2"></p-tag>
@@ -113,25 +120,28 @@
                             </div>
                             }
                             @if (result.missingSkills.length === 0) {
-                            <span class="text-gray-500 italic">Excellent alignment! No major gaps found.</span>
+                            <div class="w-full p-4 bg-emerald-50 border-round-xl text-emerald-800 text-center font-bold">
+                                <i class="pi pi-verified mr-2"></i>Excellent alignment! No major gaps found.
+                            </div>
                             }
                         </div>
                     </div>
 
                     <!-- WEAKNESS ANALYSIS -->
-                    <div class="card p-4 border-left-3 border-red-500">
-                        <h3 class="text-900 mb-3 flex align-items-center"><i
-                                class="pi pi-search mr-2 text-red-500 text-xl"></i>Weakness Analysis</h3>
+                    <div class="premium-card border-left-3 border-red-500">
+                        <h3 class="text-900 text-xl font-bold mb-4 flex align-items-center gap-2">
+                            <i class="pi pi-search text-red-500 text-xl"></i>Weakness Analysis
+                        </h3>
                         <div class="grid">
                             @for (improvement of result.improvementSuggestions; track improvement) {
-                            <div class="col-12 md:col-6">
-                                <div class="p-3 surface-50 border-round-lg border-left-3 border-primary h-full">
-                                    <span class="text-sm text-700 line-height-3">{{ improvement }}</span>
+                            <div class="col-12 md:col-6 mb-3">
+                                <div class="p-4 bg-red-50 dark:bg-red-900/20 border-round-xl border-left-3 border-red-400 h-full shadow-sm">
+                                    <span class="text-sm text-red-900 dark:text-red-100 line-height-3 font-medium">{{ improvement }}</span>
                                 </div>
                             </div>
                             }
                             @if (result.improvementSuggestions.length === 0) {
-                            <div class="col-12 p-3 text-center text-gray-500 italic">No specific weaknesses identified.
+                            <div class="col-12 p-5 text-center text-gray-400 italic bg-gray-50 border-round-xl">No specific weaknesses identified.
                             </div>
                             }
                         </div>

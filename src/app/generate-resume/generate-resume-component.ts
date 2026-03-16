@@ -35,6 +35,7 @@ import { LocationService } from '../service/location.service';
 import { EducationService } from '../service/education.service';
 import { ResumeAnalysisService } from '../service/resume-analysis-service';
 import { AuthService } from '../service/auth.service';
+import { ResumeStateService } from '../service/resume-state.service';
 
 @Component({
   selector: 'app-generate-resume-component',
@@ -70,6 +71,7 @@ export class GenerateResumeComponent implements OnInit {
   private educationService = inject(EducationService);
   private resumeService = inject(ResumeAnalysisService);
   private authService = inject(AuthService);
+  private stateService = inject(ResumeStateService);
 
   isAdmin = computed(() => this.authService.currentUser()?.role === 'ADMIN');
   isGenerationQuotaReached = computed(() => {
@@ -80,9 +82,10 @@ export class GenerateResumeComponent implements OnInit {
   });
 
   steps: MenuItem[] = [];
-  activeStep: number = 0;
+  activeStep: number = this.stateService.activeStep();
   resumeForm!: FormGroup;
-  showPreview: boolean = true;
+  showPreview: boolean = false; // Hidden by default, side-by-side removed
+  showPreviewDialog: boolean = false;
   isMobile = signal(window.innerWidth < 768);
   showCategorizationDialog: boolean = false;
   isCategorizing: boolean = false;
@@ -158,18 +161,20 @@ export class GenerateResumeComponent implements OnInit {
       color: 'bg-teal-500',
     },
   ];
-  density: 'compact' | 'normal' | 'spacious' = 'normal';
+  density: 'compact' | 'normal' | 'spacious' = this.stateService.density();
 
   onDrop(event: CdkDragDrop<string[]>) {
     moveItemInArray(this.sectionOrder, event.previousIndex, event.currentIndex);
+    this.stateService.saveSectionOrder(this.sectionOrder);
   }
 
   setDensity(value: 'compact' | 'normal' | 'spacious') {
     this.density = value;
+    this.stateService.saveDensity(value);
   }
 
   togglePreview() {
-    this.showPreview = !this.showPreview;
+    this.showPreviewDialog = true;
   }
 
   ngOnInit() {
@@ -197,15 +202,51 @@ export class GenerateResumeComponent implements OnInit {
       other: this.fb.array([]),
     });
 
-    // Initialize with one item for each to encourage user (optional, but good UX)
-    this.addEducation();
-    this.addSkillCategory();
-    this.addWorkExperience();
-    this.addProject();
-    this.addOther();
+    // Load saved data if exists
+    const savedData = this.stateService.resumeFormData();
+    const savedOrder = this.stateService.sectionOrder();
 
-    // Track form changes for validity
-    this.resumeForm.valueChanges.subscribe(() => this.updateFormValidity());
+    if (savedOrder) {
+      this.sectionOrder = [...savedOrder];
+    }
+
+    if (savedData) {
+      // Reconstruct FormArrays based on saved data
+      if (savedData.education) {
+        savedData.education.forEach(() => this.addEducation());
+      }
+      if (savedData.skills?.categories) {
+        savedData.skills.categories.forEach(() => this.addSkillCategory());
+      }
+      if (savedData.workExperience) {
+        savedData.workExperience.forEach(() => this.addWorkExperience());
+      }
+      if (savedData.projects) {
+        savedData.projects.forEach(() => this.addProject());
+      }
+      if (savedData.other) {
+        savedData.other.forEach(() => this.addOther());
+      }
+
+      // Use timeout or next tick to ensure arrays are ready for patching
+      setTimeout(() => {
+        this.resumeForm.patchValue(savedData);
+        this.updateFormValidity();
+      });
+    } else {
+      // Initialize with one item for each to encourage user (optional, but good UX)
+      this.addEducation();
+      this.addSkillCategory();
+      this.addWorkExperience();
+      this.addProject();
+      this.addOther();
+    }
+
+    // Track form changes for validity and persistence
+    this.resumeForm.valueChanges.subscribe((value) => {
+      this.updateFormValidity();
+      this.stateService.saveFormData(value);
+    });
 
     // Fetch States
     this.locationService.getStates().subscribe({
@@ -310,6 +351,10 @@ export class GenerateResumeComponent implements OnInit {
     return this.isStepValid(0) && this.isStepValid(1) && this.isStepValid(2) && this.isStepValid(3);
   }
 
+  isSubmissionReady(): boolean {
+    return this.isAllMandatoryStepsValid() && this.isLastStep();
+  }
+
   goToStep(index: number) {
     if (index === this.activeStep) return;
 
@@ -330,6 +375,7 @@ export class GenerateResumeComponent implements OnInit {
 
     // If moving backward or valid forward, allow it
     this.activeStep = index;
+    this.stateService.saveActiveStep(index);
   }
 
 
@@ -1078,12 +1124,53 @@ export class GenerateResumeComponent implements OnInit {
   }
 
   isLastStep(): boolean {
-    return this.activeStep === this.steps.length - 1;
+    return this.activeStep === 6;
   }
 
   prev() {
     if (this.activeStep > 0) {
       this.activeStep--;
+      this.stateService.saveActiveStep(this.activeStep);
     }
+  }
+
+  resetForm() {
+    this.confirmationService.confirm({
+      message: 'Are you sure you want to reset the form? All your progress will be lost.',
+      header: 'Reset Confirmation',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        // Clear FormArrays
+        this.education.clear();
+        this.skillCategories.clear();
+        this.workExperience.clear();
+        this.projects.clear();
+        this.other.clear();
+
+        // Reset main form
+        this.resumeForm.reset({
+          skills: { layout: 'categorized' }
+        });
+
+        // Clear Persistence
+        this.stateService.clearState();
+
+        // Re-initialize with one empty item each
+        this.addEducation();
+        this.addSkillCategory();
+        this.addWorkExperience();
+        this.addProject();
+        this.addOther();
+
+        this.activeStep = 0;
+        this.stateService.saveActiveStep(0);
+
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Form Reset',
+          detail: 'All data has been cleared.'
+        });
+      }
+    });
   }
 }

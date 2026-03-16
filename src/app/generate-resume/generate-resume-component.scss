@@ -1,346 +1,204 @@
 :host {
     display: block;
+    --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .form-container {
-    transition: all 0.3s ease-in-out;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.surface-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* Unified Input Styles */
+:host ::ng-deep {
+    input[pInputText], 
+    textarea[pInputTextarea],
+    .skill-chip-container,
+    .p-select,
+    .p-datepicker {
+        background: var(--surface-card) !important;
+        border: 1px solid var(--surface-border) !important;
+        border-radius: 6px !important;
+        padding: 0.65rem 0.75rem !important;
+        min-height: 2.85rem !important;
+        width: 100% !important;
+        color: var(--text-color) !important;
+        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
+
+        &:hover {
+            border-color: #9ca3af !important;
+        }
+
+        &:focus, &:focus-within {
+            outline: none !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 1px var(--primary-color) !important;
+        }
+    }
+
+    textarea[pInputTextarea] {
+        min-height: 5rem !important;
+    }
+}
+
+.skill-chip-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: text;
+
+    input {
+        flex: 1;
+        min-width: 150px;
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        color: var(--text-color) !important;
+        padding: 0.2rem 0 !important; /* Internal input doesn't need external-like padding */
+        min-height: auto !important;
+        
+        &::placeholder {
+            color: var(--text-color-secondary);
+            opacity: 0.7;
+        }
+    }
+}
+
+.step-card {
+    background: var(--surface-card);
     border: 1px solid var(--surface-border);
+    border-radius: 1.5rem;
+    padding: 2.5rem !important;
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 
     &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 }
 
 .glass-header {
-    background-color: var(--surface-card) !important;
-    backdrop-filter: blur(10px);
+    background: rgba(var(--surface-card-rgb), 0.8) !important;
+    backdrop-filter: blur(12px) saturate(180%);
     border-bottom: 1px solid var(--surface-border) !important;
-
-    // For modern browsers, we can add a bit of transparency
-    @supports (background-color: color-mix(in srgb, white, black)) {
-        background-color: color-mix(in srgb, var(--surface-card), transparent 15%) !important;
-    }
+    border-radius: 0 0 1.5rem 1.5rem;
 }
 
 .field label {
     display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-color-secondary);
-    font-size: 0.9rem;
-    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
 }
 
 .field-required::after {
     content: " *";
-    color: var(--red-500);
+    color: #ef4444;
 }
 
-.p-steps .p-steps-item.p-highlight .p-steps-number {
-    background-color: var(--primary-color);
-    color: var(--primary-color-text);
-}
+/* Steps Refinement */
+:host ::ng-deep {
+    .p-steps {
+        .p-steps-item {
+            .p-steps-number {
+                width: 2.5rem;
+                height: 2.5rem;
+                line-height: 2.5rem;
+                font-weight: 700;
+                background: var(--surface-100);
+                border: 2px solid var(--surface-200);
+                color: var(--text-color-secondary);
+                transition: all 0.2s ease;
+            }
 
-textarea {
-    width: 100%;
+            &.p-highlight .p-steps-number {
+                background: var(--primary-gradient);
+                border-color: transparent;
+                color: white;
+                box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            }
+        }
+    }
 }
 
 .resume-preview-container {
-    background-color: white;
-    color: black !important;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.4;
-    font-size: 10pt;
-    transition: all 0.3s ease;
-    transform-origin: top center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
-    border: 1px solid #ddd;
-    overflow: visible; // Changed from hidden to avoid clipping in PDF
-    position: relative;
-    letter-spacing: normal !important;
-    text-rendering: auto !important;
-    -webkit-font-smoothing: antialiased;
-
-    * {
-        color: black !important;
-        border-color: black !important;
-    }
+    background: white;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    border: none;
+    font-family: 'Inter', "Outfit", system-ui, -apple-system, sans-serif;
+    color: #1e293b !important;
+    margin: 0 auto;
 
     h1 {
-        font-size: 24pt;
-        margin-bottom: 4pt;
-        margin-top: 0;
-        letter-spacing: 1px;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: #0f172a !important;
     }
 
     h2 {
-        font-size: 11pt;
-        border-bottom: 1px solid black;
-        margin-top: 10pt;
-        margin-bottom: 3pt;
-        padding-bottom: 1pt;
-        font-weight: bold;
-        text-transform: uppercase;
+        border-color: #e2e8f0 !important;
+        color: #334155 !important;
+        font-weight: 700;
+        letter-spacing: 0.05em;
     }
 
-    .resume-section:first-of-type h2 {
-        margin-top: 0;
-    }
-
-    h3 {
-        font-size: 11pt;
-        margin-bottom: 2pt;
-    }
-
-    h4 {
-        font-size: 10pt;
-        margin-bottom: 1pt;
-    }
-
-    .resume-section {
-        margin-bottom: 4pt;
-    }
-
-    .resume-item {
-        margin-bottom: 3pt;
-    }
-
-    .flex-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        width: 100%;
-    }
-
-    .bold {
-        font-weight: bold;
-    }
-
-    .italic {
-        font-style: italic;
-    }
-
-    .uppercase {
-        text-transform: uppercase;
-    }
-
-    // Fix for overlapping text in PDF
-    .flex-row {
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-between !important;
-        align-items: flex-end !important;
-        width: 100% !important;
-        gap: 1rem;
-    }
-
-    // List refinement
-    ul {
-        margin: 2pt 0 0 0;
-        padding-left: 1.5rem;
-        list-style-position: outside;
-
-        li {
-            list-style-type: disc;
-            margin-bottom: 2pt;
-            line-height: 1.4;
-            padding-left: 4pt;
-        }
-    }
-
-    // Density modifiers
-    &.density-compact {
-        font-size: 8.5pt;
-        line-height: 1.2;
-        padding: 10mm 15mm !important;
-
-        h1 {
-            font-size: 18pt;
-        }
-
-        h2 {
-            font-size: 10pt;
-            margin-top: 6pt;
-            margin-bottom: 2pt;
-        }
-
-        .resume-section {
-            margin-bottom: 4pt;
-        }
-
-        .resume-item {
-            margin-bottom: 2pt;
-        }
-    }
-
-    &.density-spacious {
-        font-size: 11pt;
-        line-height: 1.6;
-        padding: 20mm 25mm !important;
-
-        h1 {
-            font-size: 28pt;
-            margin-bottom: 8pt;
-        }
-
-        h2 {
-            font-size: 14pt;
-            margin-top: 18pt;
-            margin-bottom: 10pt;
-        }
-
-        .resume-section {
-            margin-bottom: 16pt;
-        }
-
-        .resume-item {
-            margin-bottom: 10pt;
-        }
-    }
-}
-
-// Layout Step Styles
-.drag-list {
-    display: block;
+    .resume-section { padding: 0.5rem 0; }
 }
 
 .drag-item {
+    background: var(--surface-card);
+    padding: 1.2rem;
+    border-radius: 1rem;
+    border: 1px solid var(--surface-border);
+    margin-bottom: 0.75rem;
     display: flex;
     align-items: center;
-    padding: 1rem;
-    background: var(--surface-card);
-    color: var(--text-color);
-    margin-bottom: 1rem;
-    border-radius: 12px;
-    border: 1px solid var(--surface-border);
-    cursor: move;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease;
 
     &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    &.cdk-drag-placeholder {
-        opacity: 0;
-    }
-
-    .drag-handle {
-        color: var(--text-color-secondary);
-        margin-left: auto;
+        border-color: var(--primary-color);
+        background: var(--surface-50);
+        transform: scale(1.01);
     }
 }
 
 .density-card {
+    padding: 1.5rem;
+    border: 2px solid var(--surface-200);
+    border-radius: 1.25rem;
     cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 
-    &:hover {
-        border-color: var(--primary-color);
-        background-color: var(--primary-50);
-    }
+    i { color: var(--text-color-secondary); }
 
     &.active {
-        border-color: var(--primary-color);
-        background-color: var(--primary-50);
-        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+        border-color: var(--emerald-primary);
+        background: var(--emerald-50);
+        i { color: var(--emerald-primary); }
     }
 }
 
-.text-sm-resume {
-    font-size: 9pt;
+/* Animations */
+.fadein {
+    animation: fadeInSlide 0.4s ease-out;
 }
 
-.text-xs-resume {
-    font-size: 8pt;
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-// Multi-column skills grid
-.skills-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4pt 1rem;
-    margin-top: 4pt;
+/* Utility to ensure text is ALWAYS black in preview */
+#resumePreview * {
+    color: black !important;
 }
 
-.skill-bullet-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    font-size: 9pt;
-    line-height: 1.2;
-
-    .bullet-dot {
-        font-size: 11pt;
-        line-height: 9pt;
-        font-weight: bold;
-    }
-}
-
-// Preview responsiveness logic
-.preview-wrapper {
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    padding: 1rem 0;
-}
-
-@media screen and (max-width: 1400px) {
-    #resumePreview {
-        transform: scale(0.9);
-    }
-}
-
-@media screen and (max-width: 1200px) {
-    #resumePreview {
-        transform: scale(0.75);
-    }
-}
-
-@media screen and (max-width: 991px) {
-    #resumePreview {
-        transform: scale(0.9);
-        margin-top: 2rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    #resumePreview {
-        transform: scale(0.65);
-        margin-bottom: -150px; // Offset scale shrinkage
-    }
-
-    :host ::ng-deep {
-        .p-steps .p-steps-label {
-            display: none !important;
-        }
-
-        .p-steps .p-steps-item:before {
-            top: 50% !important;
-        }
-    }
-}
-
-@media screen and (max-width: 576px) {
-    #resumePreview {
-        transform: scale(0.40);
-        margin-bottom: -340px;
-    }
-}
-
-a {
-    color: inherit;
-    /* Keeps the link the same color as your text */
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline;
-    /* Shows it's clickable only when hovering */
-}
+#resumePreview a {
+    color: #2563eb !important;
+}

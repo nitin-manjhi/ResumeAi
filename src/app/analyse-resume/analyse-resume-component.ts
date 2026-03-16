@@ -19,6 +19,7 @@ import { NotificationService } from '../service/notification.service';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { InputTextModule } from 'primeng/inputtext';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'app-analyse-resume-component',
@@ -34,6 +35,7 @@ import { InputTextModule } from 'primeng/inputtext';
     CardModule,
     ProgressSpinnerModule,
     InputTextModule,
+    BadgeModule,
     AtsResultComponent,
   ],
   templateUrl: './analyse-resume-component.html',
