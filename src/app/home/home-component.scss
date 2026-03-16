@@ -1,0 +1,253 @@
+:host {
+    display: block;
+    --navy-deep: #0f172a;
+    --emerald-primary: #10b981;
+    --emerald-soft: #ecfdf5;
+    --slate-text: #475569;
+    --slate-light: #f8fafc;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --card-bg: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --hero-bg: radial-gradient(circle at 10% 20%, #f8fafc 0%, #f1f5f9 100%);
+    --hero-dot: #cbd5e1;
+    --hero-text: #0f172a;
+    --mockup-bg: #ffffff;
+    --mockup-border: #e2e8f0;
+    --mockup-header: #f8fafc;
+    --mockup-line: #e2e8f0;
+}
+
+:host-context(.p-dark) {
+    --emerald-soft: #064e3b;
+    --slate-light: #0f172a;
+    --glass-bg: rgba(30, 41, 59, 0.8);
+    --card-bg: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --hero-bg: var(--surface-ground);
+    --hero-dot: rgba(255, 255, 255, 0.03);
+    --hero-text: #ffffff;
+    --mockup-bg: #0f172a;
+    --mockup-border: rgba(255, 255, 255, 0.1);
+    --mockup-header: #1e293b;
+    --mockup-line: rgba(255, 255, 255, 0.08);
+}
+
+h1, h2, h3, h4 {
+    color: var(--text-main);
+    transition: color 0.3s ease;
+}
+
+p {
+    color: var(--text-muted);
+    transition: color 0.3s ease;
+}
+
+.hero-section {
+    background: var(--hero-bg);
+    position: relative;
+    overflow: hidden;
+    padding: 6rem 2rem;
+    border-radius: 0 0 4rem 4rem;
+
+    &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(var(--hero-dot) 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: var(--hero-text);
+    
+    span {
+        color: var(--emerald-primary);
+    }
+}
+
+.hero-subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: var(--text-muted);
+    max-width: 600px;
+    margin-bottom: 2.5rem;
+    line-height: 1.6;
+}
+
+.dashboard-mockup {
+    background: var(--mockup-bg);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    border: 1px solid var(--mockup-border);
+    transform: rotateX(8deg) rotateY(-12deg);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.2);
+    
+    &:hover {
+        transform: rotateX(0deg) rotateY(0deg) scale(1.02);
+    }
+
+    .mockup-header {
+        padding: 0.8rem;
+        background: var(--mockup-header);
+        display: flex;
+        gap: 0.6rem;
+        border-bottom: 1px solid var(--mockup-border);
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            &.red { background: #ff5f57; }
+            &.yellow { background: #ffbd2e; }
+            &.green { background: #28c840; }
+        }
+    }
+
+    .mockup-body {
+        padding: 2.5rem;
+        .mockup-line {
+            height: 10px;
+            background: var(--mockup-line);
+            border-radius: 5px;
+            margin-bottom: 1.2rem;
+            &.w-8 { width: 85%; }
+            &.w-10 { width: 100%; }
+            &.w-6 { width: 65%; }
+        }
+    }
+}
+
+.chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    height: 4rem;
+    margin-top: 2rem;
+    .bar {
+        flex: 1;
+        background: var(--emerald-primary);
+        border-radius: 3px 3px 0 0;
+        opacity: 0.2;
+        transition: height 1s ease;
+        &.active {
+            opacity: 0.8;
+            box-shadow: 0 0 15px var(--emerald-primary);
+        }
+    }
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-main);
+    
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: var(--emerald-primary);
+    }
+
+    h4, .text-xl {
+        color: var(--text-main) !important;
+    }
+
+    p, .text-slate-600 {
+        color: var(--text-muted) !important;
+    }
+}
+
+.feature-tag {
+    display: inline-flex;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--emerald-soft);
+    color: var(--emerald-primary);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.section-label {
+    color: var(--emerald-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.p-button.custom-btn {
+    border-radius: 0.75rem;
+    padding: 0.8rem 1.8rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: all 0.2s ease;
+    
+    &.btn-primary {
+        background: var(--emerald-primary);
+        border: none;
+        &:hover {
+            background: #059669;
+            transform: scale(1.02);
+        }
+    }
+
+    &.btn-outline {
+        background: transparent;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: white;
+        }
+    }
+}
+
+.workflow-step {
+    position: relative;
+    &::before {
+        content: "";
+        position: absolute;
+        top: 2rem;
+        left: 50%;
+        width: 100%;
+        height: 1px;
+        border-top: 2px dashed var(--border-color);
+        z-index: 0;
+    }
+    &:last-child::before {
+        display: none;
+    }
+    
+    h3 { color: var(--text-main); }
+    p { color: var(--text-muted); }
+}
+
+.bg-slate-50, .surface-ground {
+    background-color: var(--slate-light) !important;
+}
+
+.text-900 { color: var(--text-main) !important; }
+.text-slate-500, .text-slate-600 { color: var(--text-muted) !important; }
+
+@media (max-width: 768px) {
+    .workflow-step::before {
+        display: none;
+    }
+}

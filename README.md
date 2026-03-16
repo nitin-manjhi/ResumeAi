@@ -17,10 +17,15 @@
 - **Density Control**: Three layout modes (**Compact**, **Normal**, **Spacious**) to fit content perfectly on one page.
 - **Professional Templates**: ATS-readable designs that prioritize clean typography and structure.
 
+### 📊 Strategic Analytics Dashboard
+- **Executive KPI Cards**: Premium cards for total applications, 7-day velocity, and analysis counts.
+- **Visual Status Grid**: Color-coded distribution cards showing your standing in the hiring pipeline.
+- **Conversion Insights**: Data-driven tips to optimize your "Applied" to "Interviewing" ratio.
+
 ### 🎨 Premium Aesthetics
-- **Dark Mode Support**: Fully adaptive UI including specialized drag-and-drop components.
-- **Glassmorphism**: Modern UI elements with blurred backgrounds and high-end gradients.
-- **Micro-animations**: Smooth transitions and hover effects for a premium feel.
+- **Dark Mode Support**: Deep slate/emerald themes with specialized contrast for form fields.
+- **Glassmorphism**: High-end UI elements with blurred backgrounds and semi-transparent layers.
+- **Micro-animations**: Dynamic hover effects on KPI cards and smooth tab transitions.
 
 ---
 
@@ -50,7 +55,8 @@
 
 - `AnalyseResumeComponent`: Handles file upload, model selection, and progress monitoring.
 - `GenerateResumeComponent`: Comprehensive multi-step form with live preview and layout settings.
-- `AtsResultComponent`: Displays detailed dashboard of the AI analysis.
+- `JobTrackerComponent`: Advanced lifecycle tracking and the Strategic Stats Dashboard.
+- `AtsResultComponent`: Displays the detailed AI-driven alignment report.
 
 ---
 

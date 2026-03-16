@@ -141,20 +141,62 @@ export class AuthService {
 
     private startTokenRefresh() {
         if (this.refreshTimer) return;
-        // Refresh every 500 seconds (since it expires in 599s)
-        this.refreshTimer = setInterval(() => {
-            this.refresh().subscribe({
-                error: (err) => {
-                    console.error('Token refresh failed', err);
-                    this.logout().subscribe();
-                }
-            });
-        }, 500 * 1000);
+
+        const scheduleRefresh = () => {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+
+            try {
+                // Decode JWT payload to find 'exp' claim
+                const payloadBase64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                const payload = JSON.parse(atob(payloadBase64));
+                const expirationDate = payload.exp * 1000; // Firebase/JWT exp is in seconds
+                const now = Date.now();
+                
+                // Calculate delay to refresh at 80% of token lifetime or 30s before expiration
+                // whichever is more conservative.
+                const bufferTime = 30 * 1000; // 30 seconds buffer
+                const totalLifetime = expirationDate - (payload.iat * 1000 || now);
+                const refreshAtTime = expirationDate - Math.max(bufferTime, totalLifetime * 0.2);
+                let delay = refreshAtTime - now;
+
+                // Fallback if token is already near expiration or if calculation fails
+                if (delay <= 0) delay = 1000; // Refresh very soon
+
+                console.log(`Scheduling token refresh in ${Math.round(delay / 1000)} seconds`);
+
+                this.refreshTimer = setTimeout(() => {
+                    this.refresh().subscribe({
+                        next: () => {
+                            this.refreshTimer = null;
+                            scheduleRefresh(); // Schedule next refresh
+                        },
+                        error: (err) => {
+                            console.error('Token refresh failed', err);
+                            this.logout().subscribe();
+                        }
+                    });
+                }, delay);
+            } catch (e) {
+                console.error('Failed to decode JWT for refresh scheduling', e);
+                // Fallback to a safe default if decoding fails
+                this.refreshTimer = setTimeout(() => {
+                    this.refresh().subscribe({
+                        next: () => {
+                            this.refreshTimer = null;
+                            scheduleRefresh();
+                        }
+                    });
+                }, 5 * 60 * 1000); // 5 minutes default
+            }
+        };
+
+        scheduleRefresh();
     }
 
     private stopTokenRefresh() {
         if (this.refreshTimer) {
-            clearInterval(this.refreshTimer);
+            clearTimeout(this.refreshTimer); // Changed to clearTimeout since we use setTimeout now
             this.refreshTimer = null;
         }
     }

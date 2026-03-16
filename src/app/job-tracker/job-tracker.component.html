@@ -1,6 +1,9 @@
 <div class="p-4">
-    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
-        <h2 class="m-0 text-primary">Job Search Tracker</h2>
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-6 gap-3">
+        <div class="flex align-items-center gap-2">
+            <i class="pi pi-list text-primary text-3xl"></i>
+            <h1 class="m-0 text-900 text-3xl font-extrabold tracking-tight">Job Search Tracker</h1>
+        </div>
         <div class="flex flex-wrap gap-2 justify-content-center">
             <p-button label="Export" icon="pi pi-file-excel" [rounded]="true" [text]="true" severity="success"
                 (onClick)="exportData()" pTooltip="Download Backup" class="md:hidden" />
@@ -13,24 +16,25 @@
                 (onClick)="fileInput.click()" pTooltip="Restore Data from CSV" class="hidden md:inline-flex" />
 
             <input #fileInput type="file" (change)="onImport($event)" style="display: none" accept=".csv" />
-            <p-button label="Add New" icon="pi pi-plus" (onClick)="addNew()" class="md:hidden" />
+            <p-button label="Add New" icon="pi pi-plus" (onClick)="addNew()" 
+                styleClass="btn-emerald" class="md:hidden" />
             <p-button label="Add New Application" icon="pi pi-plus" (onClick)="addNew()"
-                class="hidden md:inline-flex" />
+                styleClass="btn-emerald" class="hidden md:inline-flex" />
         </div>
     </div>
 
-    <p-tabs [value]="activeTab()">
-        <p-tablist>
-            <p-tab [value]="0"><i class="pi pi-list mr-2"></i>Tracker</p-tab>
-            <p-tab [value]="1"><i class="pi pi-chart-line mr-2"></i>Stats</p-tab>
+    <p-tabs [value]="activeTab()" styleClass="mb-5" (valueChange)="onTabChange({index: $event})">
+        <p-tablist styleClass="bg-transparent border-none">
+            <p-tab [value]="0" styleClass="font-bold text-lg"><i class="pi pi-list mr-2"></i>Tracker</p-tab>
+            <p-tab [value]="1" styleClass="font-bold text-lg"><i class="pi pi-chart-line mr-2"></i>Stats</p-tab>
         </p-tablist>
 
         <p-tabpanels>
             <!-- TRACKER TABLE TAB -->
             <p-tabpanel [value]="0">
-                <div class="card shadow-2 border-round">
+                <div class="premium-card p-0 overflow-hidden">
                     <p-table #dt [value]="applications()" [rows]="10" [paginator]="true" [responsiveLayout]="'stack'"
-                        [breakpoint]="'960px'" styleClass="p-datatable-sm"
+                        [breakpoint]="'960px'" styleClass="p-datatable-gridlines p-datatable-sm professional-table"
                         [globalFilterFields]="['companyName', 'hrName', 'phone']" [rowsPerPageOptions]="[10, 25, 50]"
                         [lazy]="true" (onLazyLoad)="loadApplications($event)" [totalRecords]="totalRecords()"
                         [loading]="loading()">
@@ -41,12 +45,12 @@
                                 <div class="flex flex-column md:flex-row gap-2">
                                     <p-select [options]="statusOptions" placeholder="Filter by Status"
                                         (onChange)="dt.filter($event.value, 'status', 'equals')"
-                                        styleClass="w-full md:w-12rem" />
+                                        styleClass="w-full md:w-12rem professional-select border-round-xl" />
                                     <p-iconfield iconPosition="left">
-                                        <p-inputicon class="pi pi-search" />
+                                        <p-inputicon class="pi pi-search text-500" />
                                         <input pInputText type="text"
                                             (input)="dt.filterGlobal($any($event.target).value, 'contains')"
-                                            placeholder="Search Keyword" class="w-full md:w-15rem" />
+                                            placeholder="Search Global..." class="w-full md:w-15rem border-round-xl bg-transparent" />
                                     </p-iconfield>
                                 </div>
                             </div>
@@ -85,24 +89,28 @@
                                         (onClick)="viewJd(app.jobDescription, app.companyName)" />
                                 </td>
                                 <td>
-                                    <div class="flex gap-2">
+                                    <div class="flex gap-2 justify-content-end">
                                         <p-button [icon]="app.analysisId ? 'pi pi-chart-bar' : 'pi pi-bolt'" 
                                             [rounded]="true" [text]="true"
                                             [severity]="app.analysisId ? 'success' : 'primary'" 
                                             [pTooltip]="app.analysisId ? 'See Resume Analysis' : 'Start New Analysis'"
                                             (onClick)="viewAnalysis(app)" />
                                         <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
-                                            (onClick)="editApplication(app)" />
+                                            (onClick)="editApplication(app)" pTooltip="Edit Application" />
                                         <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
-                                            (onClick)="deleteApplication(app)" />
+                                            (onClick)="deleteApplication(app)" pTooltip="Delete" />
                                     </div>
                                 </td>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="emptymessage">
                             <tr>
-                                <td colspan="6" class="text-center p-4 text-500">
-                                    No job applications tracked yet. Click "Add New Application" to start.
+                                <td colspan="7" class="text-center p-8 text-500">
+                                    <div class="flex flex-column align-items-center gap-3">
+                                        <i class="pi pi-folder-open text-5xl text-400"></i>
+                                        <span class="text-xl font-medium">No job applications tracked yet.</span>
+                                        <p-button label="Add Your First Application" (onClick)="addNew()" styleClass="btn-emerald" />
+                                    </div>
                                 </td>
                             </tr>
                         </ng-template>
@@ -112,11 +120,86 @@
 
             <!-- STATS TAB -->
             <p-tabpanel [value]="1">
-                <div class="card p-6 text-center shadow-1 border-round surface-50">
-                    <i class="pi pi-calendar-plus text-4xl mb-3 text-400"></i>
-                    <h3 class="text-900 m-0">Future Feature: Interview Stats</h3>
-                    <p class="text-600">This section will visualize your interview success rates and upcoming dates.</p>
+                @if (stats()) {
+                <div class="grid row-gap-4">
+                    <!-- KPI Cards Row -->
+                    <div class="col-12 md:col-4">
+                        <div class="premium-card bg-emerald-600 text-white border-none shadow-4 h-full">
+                            <div class="flex justify-content-between align-items-center mb-3">
+                                <span class="text-emerald-100 font-bold uppercase tracking-wider text-xs">Total Applications</span>
+                                <i class="pi pi-briefcase text-xl opacity-80"></i>
+                            </div>
+                            <div class="text-5xl font-extrabold mb-1">{{ stats()?.totalApplications }}</div>
+                            <div class="text-sm text-emerald-100 italic">Across all status levels</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-4">
+                        <div class="premium-card surface-card border-1 surface-border h-full">
+                            <div class="flex justify-content-between align-items-center mb-3">
+                                <span class="text-500 font-bold uppercase tracking-wider text-xs">Recent Velocity</span>
+                                <i class="pi pi-clock text-xl text-primary opacity-80"></i>
+                            </div>
+                            <div class="text-4xl font-extrabold text-900 mb-1">+{{ stats()?.applicationsLast7Days }}</div>
+                            <div class="text-sm text-500">Applications in last 7 days</div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 md:col-4">
+                        <div class="premium-card surface-card border-1 surface-border h-full">
+                            <div class="flex justify-content-between align-items-center mb-3">
+                                <span class="text-500 font-bold uppercase tracking-wider text-xs">Smart Analysis</span>
+                                <i class="pi pi-bolt text-xl text-orange-500 opacity-80"></i>
+                            </div>
+                            <div class="text-4xl font-extrabold text-900 mb-1">{{ stats()?.withAnalysisCount }}</div>
+                            <div class="text-sm text-500">Strategically aligned reports</div>
+                        </div>
+                    </div>
+
+                    <!-- Distribution Section -->
+                    <div class="col-12">
+                        <div class="premium-card surface-card border-1 surface-border">
+                            <div class="flex align-items-center gap-2 mb-5">
+                                <i class="pi pi-chart-pie text-2xl text-primary"></i>
+                                <h3 class="m-0 text-900 font-bold">Status Distribution</h3>
+                            </div>
+                            
+                            <div class="grid">
+                                @for (status of statusOptions; track status.value) {
+                                    @if (status.value) {
+                                        <div class="col-12 md:col-6 lg:col-4 p-3">
+                                            <div class="flex flex-column gap-2 p-3 surface-50 border-round-xl border-1 surface-border hover:surface-100 transition-all transition-duration-200">
+                                                <div class="flex justify-content-between align-items-center">
+                                                    <p-tag [value]="status.label" [severity]="getStatusSeverity(status.value)" [rounded]="true" />
+                                                    <span class="font-bold text-900">
+                                                        {{ stats()?.statusDistribution?.[status.value] || 0 }} 
+                                                        <small class="text-500 font-normal ml-1">
+                                                            ({{ stats()?.totalApplications ? (((stats()?.statusDistribution?.[status.value] || 0) / stats()!.totalApplications) * 100).toFixed(0) : 0 }}%)
+                                                        </small>
+                                                    </span>
+                                                </div>
+                                                <p-progressbar [value]="stats()?.totalApplications ? ((stats()?.statusDistribution?.[status.value] || 0) / stats()!.totalApplications) * 100 : 0" 
+                                                    [showValue]="false" styleClass="h-0.5rem" />
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+
+                            <div class="mt-5 pt-4 border-top-1 surface-border text-center">
+                                <p class="text-500 text-sm italic m-0">
+                                    <i class="pi pi-info-circle mr-1 text-primary"></i>
+                                    Pro-tip: Focus on increasing your "Applied" to "Interviewing" conversion rate.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                } @else {
+                <div class="flex justify-content-center py-8">
+                    <p-progressspinner />
+                </div>
+                }
             </p-tabpanel>
         </p-tabpanels>
     </p-tabs>

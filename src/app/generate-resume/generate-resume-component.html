@@ -6,21 +6,14 @@
 
 <div class="flex justify-content-end mb-4 px-3 sticky top-0 z-5 py-3 glass-header shadow-2">
     <div class="flex align-items-center gap-3">
-        @if (showPreview) {
-        <span class="text-sm font-bold text-primary flex align-items-center gap-2">
-            <i class="pi pi-check-circle text-green-500"></i> Live Preview Active
-        </span>
-        }
-        <p-button (onClick)="togglePreview()" [label]="showPreview ? 'Hide Preview' : 'Show Preview'"
-            [icon]="showPreview ? 'pi pi-eye-slash' : 'pi pi-eye'" [severity]="showPreview ? 'help' : 'info'"
-            styleClass="p-button-raised p-button-sm font-bold shadow-3"></p-button>
+        <p-button (onClick)="togglePreview()" label="Live Preview" icon="pi pi-eye" 
+            severity="info" styleClass="p-button-raised p-button-sm font-bold shadow-3"></p-button>
     </div>
 </div>
 
 <div class="grid mt-2">
     <!-- Form Section -->
-    <div [class]="showPreview ? 'col-12 lg:col-6' : 'col-12 md:col-10 lg:col-8 md:col-offset-1 lg:col-offset-2'"
-        class="form-container">
+    <div class="col-12 md:col-10 lg:col-8 md:col-offset-1 lg:col-offset-2 form-container">
         <div class="card p-4 h-full border-none surface-ground">
             <form [formGroup]="resumeForm">
 
@@ -30,7 +23,7 @@
                     <h2 class="mb-2 font-bold text-3xl">Professional Profile</h2>
                     <p class="text-gray-600 mb-4 text-lg">Set the foundation with your contact information.</p>
 
-                    <div class="surface-card p-4 border-round-xl shadow-2 mb-4">
+                    <div class="step-card mb-4">
                         <div class="grid p-fluid">
                             <div class="col-12 md:col-6 field flex flex-column gap-2">
                                 <label for="fullName" class="field-required">Full Name</label>
@@ -70,11 +63,10 @@
                             </div>
 
                             <div class="col-12 mt-3">
-                                <div class="flex align-items-center gap-2 p-3 surface-100 border-round">
+                                <div class="flex align-items-center gap-3 p-4 surface-section border-round-xl border-1 surface-border hover:border-emerald-500 transition-colors transition-duration-200">
                                     <p-checkbox formControlName="addSummary" [binary]="true"
                                         inputId="addSummary"></p-checkbox>
-                                    <label for="addSummary" class="m-0 cursor-pointer">Include a Professional
-                                        Summary</label>
+                                    <label for="addSummary" class="m-0 cursor-pointer font-bold text-900">Include a Professional Summary</label>
                                 </div>
                             </div>
 
@@ -100,7 +92,7 @@
 
                     @for (edu of education.controls; track edu; let i = $index) {
                     <div [formGroupName]="i"
-                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-primary">
+                        class="step-card mb-4 border-left-3 border-primary">
                         <div class="grid p-fluid">
                             <div class="col-12 flex justify-content-between align-items-center mb-3">
                                 <span class="font-bold text-xl text-primary">Academic Entry #{{i+1}}</span>
@@ -155,16 +147,16 @@
                             </div>
                             <div class="col-12 md:col-6 field flex flex-column gap-2">
                                 <label>Score Type</label>
-                                <div class="flex gap-4 p-2 surface-100 border-round">
+                                <div class="flex gap-4 p-3 surface-section border-round-xl border-1 surface-border">
                                     <div class="flex align-items-center gap-2">
                                         <p-radioButton formControlName="gradeType" value="CGPA" inputId="cgpa{{i}}"
                                             (onClick)="onGradeTypeChange(i)"></p-radioButton>
-                                        <label for="cgpa{{i}}" class="m-0 cursor-pointer">CGPA</label>
+                                        <label for="cgpa{{i}}" class="m-0 cursor-pointer font-medium">CGPA</label>
                                     </div>
                                     <div class="flex align-items-center gap-2">
                                         <p-radioButton formControlName="gradeType" value="Percentage"
                                             inputId="percent{{i}}" (onClick)="onGradeTypeChange(i)"></p-radioButton>
-                                        <label for="percent{{i}}" class="m-0 cursor-pointer">Percentage</label>
+                                        <label for="percent{{i}}" class="m-0 cursor-pointer font-medium">Percentage</label>
                                     </div>
                                 </div>
                             </div>
@@ -206,7 +198,7 @@
                     <h2 class="mb-2 font-bold text-3xl">Key Skills</h2>
                     <p class="text-gray-600 mb-4 text-lg">Choose a layout and list your technical expertise.</p>
 
-                    <div class="surface-card p-3 border-round-xl mb-4 bg-primary-50 border-primary-100 border-1">
+                    <div class="step-card mb-4 border-1 border-primary-100 bg-primary-reverse-10" style="padding: 1.5rem !important;">
                         <div class="flex flex-column md:flex-row gap-4 justify-content-between align-items-center">
                             <div class="flex gap-4">
                                 <div class="flex align-items-center gap-2">
@@ -214,15 +206,13 @@
                                         [ngModelOptions]="{standalone: true}" value="categorized" inputId="layoutCat"
                                         name="skillLayoutGroup"
                                         (onClick)="onLayoutChange('categorized')"></p-radioButton>
-                                    <label for="layoutCat" class="m-0 font-bold cursor-pointer">Categorized
-                                        Grouping</label>
+                                    <label for="layoutCat" class="m-0 font-bold cursor-pointer text-900">Categorized Grouping</label>
                                 </div>
                                 <div class="flex align-items-center gap-2">
                                     <p-radioButton [ngModel]="skillGroup.get('layout')?.value"
                                         [ngModelOptions]="{standalone: true}" value="bullets" inputId="layoutBul"
                                         name="skillLayoutGroup" (onClick)="onLayoutChange('bullets')"></p-radioButton>
-                                    <label for="layoutBul" class="m-0 font-bold cursor-pointer">Bullet Points
-                                        List</label>
+                                    <label for="layoutBul" class="m-0 font-bold cursor-pointer text-900">Bullet Points List</label>
                                 </div>
                             </div>
 
@@ -262,8 +252,8 @@
                     <div formArrayName="categories">
                         @for (skill of skillCategories.controls; track skill; let i = $index) {
                         <div [formGroupName]="i"
-                            class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-cyan-500">
-                            <div class="grid p-fluid">
+                            class="step-card mb-4 border-left-3 border-cyan-500">
+                            <div class="grid p-fluid align-items-start">
                                 <div class="col-12 flex justify-content-between align-items-center mb-3">
                                     <span class="font-bold text-xl text-cyan-600">Skill Category #{{i+1}}</span>
                                     @if (skillCategories.controls.length > 1) {
@@ -278,15 +268,14 @@
                                 </div>
                                 <div class="col-12 md:col-8 field flex flex-column gap-2">
                                     <label class="field-required">Skills (Press Enter or use comma to add)</label>
-                                    <div
-                                        class="flex flex-wrap gap-2 p-2 surface-card border-1 surface-border border-round-md min-h-3rem align-items-center">
+                                    <div class="skill-chip-container">
                                         @for (s of skill.get('skills')?.value; track s) {
                                         <p-chip [label]="s" [removable]="true"
                                             (onRemove)="removeSkillFromControl(s, skill.get('skills'))"
                                             class="fadein"></p-chip>
                                         }
                                         <input pInputText type="text"
-                                            class="flex-1 border-none outline-none bg-transparent p-1 surface-text"
+                                            class="flex-1 border-none outline-none bg-transparent p-1 shadow-none"
                                             [placeholder]="addedSuggestionsCount >= MAX_SUGGESTIONS ? 'Limit reached' : 'Add skill...'"
                                             [disabled]="addedSuggestionsCount >= MAX_SUGGESTIONS"
                                             (keydown)="onSkillInput($event, skill.get('skills'))" />
@@ -299,27 +288,26 @@
                             styleClass="p-button-outlined w-full p-3 font-bold"></p-button>
                     </div>
                     } @else {
-                    <div class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-cyan-500">
+                    <div class="step-card mb-4 border-left-3 border-cyan-500">
                         <div class="field flex flex-column gap-2">
                             <label class="field-required text-xl mb-2">Technical Skills</label>
                             <p class="text-gray-500 text-sm mb-3">Add your skills below. Press enter after each skill.
                             </p>
-                            <div
-                                class="flex flex-wrap gap-2 p-3 surface-card border-1 surface-border border-round-md min-h-4rem align-items-center mb-2 shadow-inner">
+                            <div class="skill-chip-container mb-2">
                                 @for (s of skillGroup.get('bulletSkills')?.value; track s) {
                                 <p-chip [label]="s" [removable]="true"
                                     (onRemove)="removeSkillFromControl(s, skillGroup.get('bulletSkills'))"
                                     class="fadein"></p-chip>
                                 }
                                 <input pInputText type="text"
-                                    class="flex-1 border-none outline-none bg-transparent p-2 surface-text text-lg"
+                                    class="flex-1 border-none outline-none bg-transparent p-2 shadow-none"
                                     [placeholder]="addedSuggestionsCount >= MAX_SUGGESTIONS ? 'Limit reached' : 'Type skill and press Enter...'"
                                     [disabled]="addedSuggestionsCount >= MAX_SUGGESTIONS"
                                     (keydown)="onSkillInput($event, skillGroup.get('bulletSkills'))" />
                             </div>
                         </div>
                         @if (missingSkills.length > 0) {
-                        <div class="mt-3 p-3 border-round-xl surface-100 border-1 surface-border shadow-1">
+                        <div class="mt-3 p-4 border-round-2xl surface-section border-1 surface-border shadow-2">
                             <div class="flex justify-content-between align-items-center mb-3">
                                 <span class="block font-bold text-primary">
                                     <i class="pi pi-sparkles mr-1"></i> Smart Suggestions
@@ -355,7 +343,7 @@
 
                     @for (work of workExperience.controls; track work; let i = $index) {
                     <div [formGroupName]="i"
-                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-indigo-500">
+                        class="step-card mb-4 border-left-3 border-indigo-500">
                         <div class="grid p-fluid">
                             <div class="col-12 flex justify-content-between align-items-center mb-3">
                                 <span class="font-bold text-xl text-indigo-600">Work Experience #{{i+1}}</span>
@@ -432,7 +420,7 @@
 
                     @for (prof of projects.controls; track prof; let i = $index) {
                     <div [formGroupName]="i"
-                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-orange-500">
+                        class="step-card mb-4 border-left-3 border-orange-500">
                         <div class="grid p-fluid">
                             <div class="col-12 flex justify-content-between align-items-center mb-3">
                                 <span class="font-bold text-xl text-orange-600">Project Detail #{{i+1}}</span>
@@ -478,7 +466,7 @@
 
                     @for (item of other.controls; track item; let i = $index) {
                     <div [formGroupName]="i"
-                        class="surface-card p-4 border-round-xl shadow-2 mb-4 border-left-3 border-teal-500">
+                        class="step-card mb-4 border-left-3 border-teal-500">
                         <div class="grid p-fluid">
                             <div class="col-12 flex justify-content-between align-items-center mb-3">
                                 <span class="font-bold text-xl text-teal-600">Additional Highlight #{{i+1}}</span>
@@ -512,7 +500,7 @@
                     <p class="text-gray-600 mb-4 text-lg">Fine-tune the appearance and structure of your resume.</p>
 
                     <!-- Density Selection -->
-                    <div class="surface-card p-4 border-round-xl shadow-2 mb-4">
+                    <div class="step-card mb-4">
                         <h3 class="mt-0 mb-2 font-bold">Layout Density</h3>
                         <p class="text-sm text-gray-500 mb-4">Adjust spacing and sizing to fit your content perfectly.
                         </p>
@@ -572,12 +560,17 @@
                 <!-- Footer Navigation -->
                 <div class="flex justify-content-between align-items-center mt-6 p-4 border-top-1 surface-border">
                     @if (activeStep > 0) {
-                    <p-button label="Previous Step" (onClick)="prev()" icon="pi pi-chevron-left" severity="secondary"
-                        styleClass="p-button-text font-bold"></p-button>
+                    <div class="flex gap-2">
+                        <p-button label="Previous" (onClick)="prev()" icon="pi pi-chevron-left" severity="secondary"
+                            styleClass="p-button-text font-bold"></p-button>
+                        <p-button label="Reset" (onClick)="resetForm()" icon="pi pi-refresh" severity="danger"
+                            styleClass="p-button-text font-bold"></p-button>
+                    </div>
                     }
 
                     @if (activeStep === 0) {
-                    <div></div> <!-- Spacer -->
+                    <p-button label="Reset Form" (onClick)="resetForm()" icon="pi pi-refresh" severity="danger"
+                        styleClass="p-button-text font-bold"></p-button>
                     }
 
                     <div class="flex flex-column align-items-end gap-3">
@@ -607,48 +600,64 @@
         </div>
     </div>
 
-    <!-- Preview Section -->
-    @if (showPreview) {
-    <div class="col-12 lg:col-6 fadein"
-        style="position: sticky; top: 1rem; align-self: flex-start; max-height: calc(100vh - 2rem); overflow-y: auto;">
-        <div class="flex justify-content-end mb-2">
-            <p-button label="Download PDF" icon="pi pi-file-pdf" severity="danger" (onClick)="downloadPDF()"
-                styleClass="p-button-sm"></p-button>
-        </div>
-        <div class="preview-wrapper">
-            <div id="resumePreview" class="shadow-8 border-round-none bg-white resume-preview-container"
-                [class.density-compact]="density === 'compact'" [class.density-spacious]="density === 'spacious'"
-                style="min-height: 297mm; width: 210mm; box-sizing: border-box; padding: 15mm 20mm;">
+</div>
 
+<!-- Live Preview Dialog -->
+<p-dialog [(visible)]="showPreviewDialog" [modal]="true" [maximizable]="true" 
+    [style]="{width: '85vw', maxWidth: '1000px'}" 
+    [contentStyle]="{padding: '2rem', background: 'var(--surface-ground)'}"
+    header="Professional Resume Preview" [draggable]="false" [resizable]="false">
+    
+    <ng-template pTemplate="header">
+        <div class="flex align-items-center justify-content-between w-full pr-6">
+            <div class="flex align-items-center gap-3">
+                <i class="pi pi-file-pdf text-primary text-2xl"></i>
+                <span class="font-bold text-xl">Resume Preview</span>
+            </div>
+            <div class="flex gap-2">
+                @if (isSubmissionReady()) {
+                    <p-button label="Download PDF" icon="pi pi-download" severity="danger" 
+                        (onClick)="downloadPDF()" styleClass="p-button-raised shadow-2"></p-button>
+                } @else {
+                    <span class="text-orange-500 text-sm font-semibold flex align-items-center gap-2 bg-orange-50 px-3 py-2 border-round">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        Complete all steps to download
+                    </span>
+                }
+            </div>
+        </div>
+    </ng-template>
+
+    <div class="flex justify-content-center">
+        <div class="preview-wrapper bg-white shadow-8 border-round overflow-hidden" 
+             style="transform: scale(0.95); transform-origin: top center;">
+            <div id="resumePreview" class="resume-preview-container"
+                [class.density-compact]="density === 'compact'" 
+                [class.density-spacious]="density === 'spacious'"
+                style="min-height: 297mm; width: 210mm; box-sizing: border-box; padding: 15mm 20mm; background: white; color: black !important;">
+                
                 <!-- Header -->
                 <div class="text-center mb-3">
-                    <h1 class="bold uppercase m-0">{{ generalInfo.get('fullName')?.value || 'FULL NAME' }}</h1>
+                    <h1 class="bold uppercase m-0" style="color: black !important;">{{ generalInfo.get('fullName')?.value || 'FULL NAME' }}</h1>
                     <div class="flex justify-content-center flex-wrap gap-2 text-sm-resume mt-1">
                         @if (generalInfo.get('email')?.value) {
-                        <span>{{ generalInfo.get('email')?.value }}</span>
+                            <span>{{ generalInfo.get('email')?.value }}</span>
                         }
                         @if (generalInfo.get('mobileNumber')?.value) {
-                        @if (generalInfo.get('email')?.value) { <span>|</span> }
-                        <span>{{ generalInfo.get('mobileNumber')?.value }}</span>
+                            @if (generalInfo.get('email')?.value) { <span>|</span> }
+                            <span>{{ generalInfo.get('mobileNumber')?.value }}</span>
                         }
                         @if (generalInfo.get('linkedinUrl')?.value) {
-                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value) { <span>|</span>
-                        }
-                        <a [href]="generalInfo.get('linkedinUrl')?.value" target="_blank"
-                            class="text-decoration-none">LinkedIn</a>
+                            @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value) { <span>|</span> }
+                            <a [href]="generalInfo.get('linkedinUrl')?.value" target="_blank" style="color: black !important; text-decoration: none;">LinkedIn</a>
                         }
                         @if (generalInfo.get('githubUrl')?.value) {
-                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value ||
-                        generalInfo.get('linkedinUrl')?.value) { <span>|</span> }
-                        <a [href]="generalInfo.get('githubUrl')?.value" target="_blank"
-                            class="text-decoration-none">GitHub</a>
+                            @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value || generalInfo.get('linkedinUrl')?.value) { <span>|</span> }
+                            <a [href]="generalInfo.get('githubUrl')?.value" target="_blank" style="color: black !important; text-decoration: none;">GitHub</a>
                         }
-
                         @if (generalInfo.get('portfolioUrl')?.value) {
-                        @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value ||
-                        generalInfo.get('linkedinUrl')?.value || generalInfo.get('githubUrl')?.value) { <span>|</span> }
-                        <a [href]="generalInfo.get('portfolioUrl')?.value" target="_blank"
-                            class="text-decoration-none">Portfolio</a>
+                            @if (generalInfo.get('email')?.value || generalInfo.get('mobileNumber')?.value || generalInfo.get('linkedinUrl')?.value || generalInfo.get('githubUrl')?.value) { <span>|</span> }
+                            <a [href]="generalInfo.get('portfolioUrl')?.value" target="_blank" style="color: black !important; text-decoration: none;">Portfolio</a>
                         }
                     </div>
                 </div>
@@ -656,136 +665,116 @@
                 <!-- Dynamic Section Order Rendering -->
                 @for (section of sectionOrder; track section.id) {
 
-                <!-- Education -->
-                @if (section.id === 'education' && education.length > 0 &&
-                education.controls[0].get('institute')?.value) {
-                <div class="resume-section">
-                    <h2>Education</h2>
-                    @for (edu of education.controls; track edu) {
-                    <div class="resume-item">
-                        <div class="flex-row">
-                            <span class="bold">
-                                {{ edu.get('institute')?.value === 'Other' ? (edu.get('otherInstitute')?.value ||
-                                'Institute Name') : (edu.get('institute')?.value || 'Institute Name') }}
-                            </span>
-                            <span class="bold">{{ edu.get('location')?.value }}</span>
-                        </div>
-                        <div class="flex-row">
-                            <span class="italic">{{ edu.get('degree')?.value }} @if (edu.get('fieldOfStudy')?.value) {
-                                <span>in {{ edu.get('fieldOfStudy')?.value }}</span> }</span>
-                            <span>{{ edu.get('startDate')?.value | date: 'MMM yyyy' }} — {{ edu.get('current')?.value ?
-                                'Present' : (edu.get('endDate')?.value | date: 'MMM yyyy') }}</span>
-                        </div>
-                        @if (edu.get('grade')?.value) {
-                        <div class="text-sm-resume mt-1">
-                            {{ edu.get('gradeType')?.value === 'CGPA' ? 'GPA' : 'Percentage' }}: {{
-                            edu.get('grade')?.value }}
-                        </div>
-                        }
-                    </div>
-                    }
-                </div>
-                }
-
-                <!-- Skills -->
-                @if (section.id === 'skills' && (
-                (skillGroup.get('layout')?.value === 'categorized' && addedSuggestionsCount > 0) ||
-                (skillGroup.get('layout')?.value === 'bullets' && addedSuggestionsCount > 0)
-                )) {
-                <div class="resume-section">
-                    <h2>Skills</h2>
-                    @if (skillGroup.get('layout')?.value === 'categorized') {
-                    @for (skill of skillCategories.controls; track skill) {
-                    <div class="text-sm-resume mb-1">
-                        @if (skill.get('category')?.value) {
-                        <span class="bold">{{ skill.get('category')?.value }}: </span>
-                        }
-                        <span>{{ (skill.get('skills')?.value || []).join(', ') }}</span>
-                    </div>
-                    }
-                    } @else {
-                    <div class="skills-grid">
-                        @for (item of getBulletSkillsArray(); track item) {
-                        <div class="skill-bullet-item">
-                            <span class="bullet-dot">•</span>
-                            <span>{{ item }}</span>
-                        </div>
-                        }
-                    </div>
-                    }
-                </div>
-                }
-
-                <!-- Experience -->
-                @if (section.id === 'workExperience' && workExperience.length > 0 &&
-                workExperience.controls[0].get('jobTitle')?.value) {
-                <div class="resume-section">
-                    <h2>Experience</h2>
-                    @for (work of workExperience.controls; track work) {
-                    <div class="resume-item">
-                        <div class="flex-row">
-                            <span class="bold">{{ work.get('jobTitle')?.value }}</span>
-                            <span class="bold">{{ work.get('startDate')?.value | date: 'MMM yyyy' }} — {{
-                                work.get('current')?.value ? 'Present' : (work.get('endDate')?.value | date: 'MMM yyyy')
-                                }}</span>
-                        </div>
-                        <div class="flex-row mb-1">
-                            <span class="bold italic">{{ work.get('company')?.value }}</span>
-                            <span class="italic">{{ work.get('location')?.value }}</span>
-                        </div>
-                        @if (work.get('description')?.value) {
-                        <ul>
-                            @for (point of work.get('description')?.value.split('\n'); track point) {
-                            <li>{{ point }}</li>
-                            }
-                        </ul>
-                        }
-                    </div>
-                    }
-                </div>
-                }
-
-                <!-- Projects -->
-                @if (section.id === 'projects' && projects.length > 0 && projects.controls[0].get('title')?.value) {
-                <div class="resume-section">
-                    <h2>Projects</h2>
-                    @for (proj of projects.controls; track proj) {
-                    <div class="resume-item">
-                        <div class="flex-row">
-                            <span class="bold">{{ proj.get('title')?.value }}</span>
-                            @if (proj.get('technologies')?.value) {
-                            <span class="italic text-sm-resume">{{ proj.get('technologies')?.value }}</span>
+                    <!-- Education -->
+                    @if (section.id === 'education' && education.length > 0 && education.controls[0].get('institute')?.value) {
+                        <div class="resume-section">
+                            <h2 style="border-bottom: 1px solid #333; color: black !important; text-transform: uppercase; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; text-align: left;">Education</h2>
+                            @for (edu of education.controls; track edu) {
+                                <div class="resume-item mb-2" style="text-align: left;">
+                                    <div class="flex justify-content-between font-bold" style="display: flex; justify-content: space-between;">
+                                        <span>{{ edu.get('institute')?.value === 'Other' ? (edu.get('otherInstitute')?.value) : (edu.get('institute')?.value) }}</span>
+                                        <span>{{ edu.get('location')?.value }}</span>
+                                    </div>
+                                    <div class="flex justify-content-between italic" style="display: flex; justify-content: space-between;">
+                                        <span>{{ edu.get('degree')?.value }} @if (edu.get('fieldOfStudy')?.value) { <span>in {{ edu.get('fieldOfStudy')?.value }}</span> }</span>
+                                        <span>{{ edu.get('startDate')?.value | date: 'MMM yyyy' }} — {{ edu.get('current')?.value ? 'Present' : (edu.get('endDate')?.value | date: 'MMM yyyy') }}</span>
+                                    </div>
+                                </div>
                             }
                         </div>
-                        @if (proj.get('description')?.value) {
-                        <ul>
-                            @for (point of proj.get('description')?.value.split('\n'); track point) {
-                            <li>{{ point }}</li>
-                            }
-                        </ul>
-                        }
-                    </div>
                     }
-                </div>
-                }
 
-                <!-- Awards/Other -->
-                @if (section.id === 'other' && other.length > 0 && other.controls[0].get('title')?.value) {
-                <div class="resume-section">
-                    <h2>Activities & Leadership</h2>
-                    @for (item of other.controls; track item) {
-                    <div class="resume-item">
-                        <div class="bold">{{ item.get('title')?.value }}</div>
-                        @if (item.get('description')?.value) {
-                        <div class="text-sm-resume italic">{{ item.get('description')?.value }}</div>
-                        }
-                    </div>
+                    <!-- Skills -->
+                    @if (section.id === 'skills' && addedSuggestionsCount > 0) {
+                        <div class="resume-section">
+                            <h2 style="border-bottom: 1px solid #333; color: black !important; text-transform: uppercase; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; text-align: left;">Skills</h2>
+                            @if (skillGroup.get('layout')?.value === 'categorized') {
+                                @for (skill of skillCategories.controls; track skill) {
+                                    <div class="text-sm-resume mb-1" style="text-align: left;">
+                                        @if (skill.get('category')?.value) { <span class="bold" style="font-weight: bold;">{{ skill.get('category')?.value }}: </span> }
+                                        <span>{{ (skill.get('skills')?.value || []).join(', ') }}</span>
+                                    </div>
+                                }
+                            } @else {
+                                <div class="flex flex-wrap gap-2" style="text-align: left;">
+                                    @for (item of getBulletSkillsArray(); track item) {
+                                        <span>• {{ item }}</span>
+                                    }
+                                </div>
+                            }
+                        </div>
                     }
-                </div>
-                }
+
+                    <!-- Experience -->
+                    @if (section.id === 'workExperience' && workExperience.length > 0 && workExperience.controls[0].get('jobTitle')?.value) {
+                        <div class="resume-section">
+                            <h2 style="border-bottom: 1px solid #333; color: black !important; text-transform: uppercase; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; text-align: left;">Experience</h2>
+                            @for (work of workExperience.controls; track work) {
+                                <div class="resume-item mb-2" style="text-align: left;">
+                                    <div class="flex justify-content-between font-bold" style="display: flex; justify-content: space-between;">
+                                        <span>{{ work.get('jobTitle')?.value }}</span>
+                                        <span>{{ work.get('startDate')?.value | date: 'MMM yyyy' }} — {{ work.get('current')?.value ? 'Present' : (work.get('endDate')?.value | date: 'MMM yyyy') }}</span>
+                                    </div>
+                                    <div class="flex justify-content-between italic mb-1" style="display: flex; justify-content: space-between;">
+                                        <span style="font-weight: bold;">{{ work.get('company')?.value }}</span>
+                                        <span>{{ work.get('location')?.value }}</span>
+                                    </div>
+                                    @if (work.get('description')?.value) {
+                                        <ul class="m-0 pl-4 text-sm-resume">
+                                            @for (point of work.get('description')?.value.split('\n'); track point) {
+                                                @if (point.trim()) { <li>{{ point }}</li> }
+                                            }
+                                        </ul>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Projects -->
+                    @if (section.id === 'projects' && projects.length > 0 && projects.controls[0].get('title')?.value) {
+                        <div class="resume-section">
+                            <h2 style="border-bottom: 1px solid #333; color: black !important; text-transform: uppercase; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; text-align: left;">Projects</h2>
+                            @for (proj of projects.controls; track proj) {
+                                <div class="resume-item mb-2" style="text-align: left;">
+                                    <div class="flex justify-content-between font-bold" style="display: flex; justify-content: space-between;">
+                                        <span>{{ proj.get('title')?.value }}</span>
+                                        @if (proj.get('technologies')?.value) {
+                                            <span class="italic text-sm-resume">{{ proj.get('technologies')?.value }}</span>
+                                        }
+                                    </div>
+                                    @if (proj.get('description')?.value) {
+                                        <ul class="m-0 pl-4 text-sm-resume">
+                                            @for (point of proj.get('description')?.value.split('\n'); track point) {
+                                                @if (point.trim()) { <li>{{ point }}</li> }
+                                            }
+                                        </ul>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Other -->
+                    @if (section.id === 'other' && other.length > 0 && other.controls[0].get('title')?.value) {
+                        <div class="resume-section">
+                            <h2 style="border-bottom: 1px solid #333; color: black !important; text-transform: uppercase; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; text-align: left;">Activities & Leadership</h2>
+                            @for (item of other.controls; track item) {
+                                <div class="resume-item mb-2" style="text-align: left;">
+                                    <div class="bold" style="font-weight: bold;">{{ item.get('title')?.value }}</div>
+                                    @if (item.get('description')?.value) {
+                                        <div class="text-sm-resume italic">{{ item.get('description')?.value }}</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
                 }
             </div>
         </div>
     </div>
-    }
-</div>
+
+    <ng-template pTemplate="footer">
+        <p-button label="Close Preview" (onClick)="showPreviewDialog = false" styleClass="p-button-text font-bold"></p-button>
+    </ng-template>
+</p-dialog>
