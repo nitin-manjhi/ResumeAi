@@ -23,7 +23,7 @@ export class AdminService {
         return this.http.get<UserProfile[]>(`${this.baseUrl}/users`);
     }
 
-    updateUserUsage(userId: number, analysisCount: number, generationCount: number, usageLimit: number, role: string, premiumActive: boolean, premiumUsageLimit: number, premiumUsageCount: number) {
+    updateUserUsage(userId: number, analysisCount: number, generationCount: number, usageLimit: number, role: string, premiumActive: boolean, premiumUsageLimit: number, premiumUsageCount: number, suspended: boolean) {
         let params = new HttpParams();
         if (analysisCount !== null) params = params.set('analysisCount', analysisCount.toString());
         if (generationCount !== null) params = params.set('generationCount', generationCount.toString());
@@ -32,6 +32,7 @@ export class AdminService {
         if (premiumActive !== null) params = params.set('premiumActive', premiumActive.toString());
         if (premiumUsageLimit !== null) params = params.set('premiumUsageLimit', premiumUsageLimit.toString());
         if (premiumUsageCount !== null) params = params.set('premiumUsageCount', premiumUsageCount.toString());
+        if (suspended !== null) params = params.set('suspended', suspended.toString());
 
         return this.http.put<any>(`${this.baseUrl}/users/${userId}/usage`, null, { params });
     }
@@ -49,5 +50,33 @@ export class AdminService {
     createUpgradeRequest(reason: string) {
         let params = new HttpParams().set('reason', reason);
         return this.http.post(`/api/auth/upgrade-requests`, null, { params });
+    }
+
+    deleteUser(userId: number) {
+        return this.http.delete<void>(`${this.baseUrl}/users/${userId}`);
+    }
+
+    requestUnsuspension() {
+        return this.http.post<void>(`/api/auth/request-unsuspension`, {});
+    }
+
+    backupDatabase() {
+        return this.http.post<string>(`${this.baseUrl}/db/backup`, null, { responseType: 'text' as 'json' });
+    }
+
+    restoreDatabase(filePath: string) {
+        let params = new HttpParams().set('backupFilePath', filePath);
+        return this.http.post<string>(`${this.baseUrl}/db/restore`, null, { 
+            params,
+            responseType: 'text' as 'json' 
+        });
+    }
+
+    uploadAndRestoreDatabase(file: File) {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.http.post<string>(`${this.baseUrl}/db/restore-upload`, formData, { 
+            responseType: 'text' as 'json' 
+        });
     }
 }

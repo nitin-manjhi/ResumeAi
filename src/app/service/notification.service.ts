@@ -58,6 +58,12 @@ export class NotificationService {
             this.stompClient?.subscribe(`/topic/notifications-${user.id}`, (message: IMessage) => {
                 this.handleNotification(message.body);
             });
+
+            if (user.role === 'ADMIN') {
+                this.stompClient?.subscribe(`/topic/admin-events`, (message: IMessage) => {
+                    this.handleAdminEvent(message.body);
+                });
+            }
         };
 
         this.stompClient.onStompError = (frame) => {
@@ -72,6 +78,26 @@ export class NotificationService {
         if (this.stompClient) {
             this.stompClient.deactivate();
             this.stompClient = null;
+        }
+    }
+
+    private handleAdminEvent(message: string) {
+        try {
+            const data = JSON.parse(message);
+            console.log('Received Admin Event:', data);
+
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Admin Action Needed',
+                detail: data.message,
+                life: 15000,
+                sticky: true
+            });
+
+            // If it's an unsuspension request, we might want to refresh users list if the admin is on the dashboard
+            // For now, the toast is enough notification.
+        } catch (e) {
+            console.error('Failed to parse admin event', e);
         }
     }
 

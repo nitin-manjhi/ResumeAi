@@ -15,6 +15,7 @@ export interface UserProfile {
     premiumActive: boolean;
     premiumUsageLimit: number;
     premiumUsageCount: number;
+    suspended: boolean;
 }
 
 interface AuthResponse {
