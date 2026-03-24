@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService, UpgradeRequest } from '../service/admin.service';
 import { AuthService, UserProfile } from '../service/auth.service';
@@ -6,7 +6,7 @@ import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
@@ -15,6 +15,11 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TagModule } from 'primeng/tag';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { FileUploadModule } from 'primeng/fileupload';
 
 @Component({
     selector: 'app-admin-dashboard',
@@ -32,15 +37,21 @@ import { SelectButtonModule } from 'primeng/selectbutton';
         TooltipModule,
         ToggleSwitchModule,
         SelectButtonModule,
-        TagModule
+        TagModule,
+        ConfirmDialogModule,
+        InputTextModule,
+        IconFieldModule,
+        InputIconModule,
+        FileUploadModule
     ],
-    providers: [MessageService],
+    providers: [MessageService, ConfirmationService],
     templateUrl: './admin-dashboard.component.html',
     styleUrl: './admin-dashboard.component.scss'
 })
 export class AdminDashboardComponent implements OnInit {
     private adminService = inject(AdminService);
     private messageService = inject(MessageService);
+    private confirmationService = inject(ConfirmationService);
     authService = inject(AuthService);
 
     users = signal<UserProfile[]>([]);
@@ -48,10 +59,26 @@ export class AdminDashboardComponent implements OnInit {
     loadingUsers = signal(false);
     loadingRequests = signal(false);
 
+    filterText = signal('');
+    filteredUsers = computed(() => {
+        const query = this.filterText().toLowerCase().trim();
+        if (!query) return this.users();
+        
+        return this.users().filter(u => 
+            u.username.toLowerCase().includes(query) || 
+            u.email.toLowerCase().includes(query) ||
+            u.name?.toLowerCase().includes(query)
+        );
+    });
+
     showApproveDialog = signal(false);
     selectedRequestId: number | null = null;
     currentRequestUsername = signal('');
     newUsageLimit = signal(50); // Default or proposed limit
+
+    // Edit Usage Dialog Signals
+    showEditUsageDialog = signal(false);
+    editingUser = signal<UserProfile | null>(null);
 
     isMobile = signal(window.innerWidth < 768);
 
@@ -61,11 +88,17 @@ export class AdminDashboardComponent implements OnInit {
         });
     }
 
-    activeView = signal('users'); // 'users' or 'requests'
+    activeView = signal('users'); // 'users', 'requests', or 'db'
     viewOptions = [
         { label: 'Manage Users', value: 'users', icon: 'pi pi-users' },
-        { label: 'Upgrade Requests', value: 'requests', icon: 'pi pi-envelope' }
+        { label: 'Upgrade Requests', value: 'requests', icon: 'pi pi-envelope' },
+        { label: 'Database Admin', value: 'db', icon: 'pi pi-database' }
     ];
+
+    dbBackupPath = signal('');
+    restorePath = signal('');
+    isBackingUp = signal(false);
+    isRestoring = signal(false);
 
     roles = [
         { label: 'User', value: 'USER' },
@@ -89,7 +122,8 @@ export class AdminDashboardComponent implements OnInit {
                     usageLimit: u.usageLimit ?? 0,
                     premiumUsageLimit: u.premiumUsageLimit ?? 0,
                     premiumUsageCount: u.premiumUsageCount ?? 0,
-                    premiumActive: !!u.premiumActive
+                    premiumActive: !!u.premiumActive,
+                    suspended: !!u.suspended
                 }));
                 this.users.set(sanitizedUsers);
                 this.loadingUsers.set(false);
@@ -116,18 +150,58 @@ export class AdminDashboardComponent implements OnInit {
         });
     }
 
+    openEditUsage(user: UserProfile) {
+        this.editingUser.set({ ...user }); // clone the user for editing
+        this.showEditUsageDialog.set(true);
+    }
+
+    saveEditUsage() {
+        const user = this.editingUser();
+        if (user) {
+            this.saveUsage(user);
+            this.showEditUsageDialog.set(false);
+        }
+    }
+
     saveUsage(user: UserProfile) {
         this.adminService.updateUserUsage(user.id, user.analysisCount, user.generationCount, user.usageLimit, user.role,
-            user.premiumActive, user.premiumUsageLimit, user.premiumUsageCount).subscribe({
+            user.premiumActive, user.premiumUsageLimit, user.premiumUsageCount, user.suspended).subscribe({
                 next: (updatedUser) => {
-                    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Updated usage for ${user.username}` });
+                    this.messageService.add({ severity: 'success', summary: 'Success', detail: `Updated configuration for ${user.username}` });
                     // Update local state by merging the updated fields
                     this.users.update(users => users.map(u => u.id === updatedUser.id ? { ...u, ...updatedUser } : u));
                 },
                 error: (err) => {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update usage' });
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to update user' });
                 }
             });
+    }
+
+    confirmDelete(user: UserProfile) {
+        this.confirmationService.confirm({
+            message: `Are you sure you want to delete user ${user.username}?`,
+            header: 'Delete Confirmation',
+            icon: 'pi pi-exclamation-triangle',
+            acceptButtonStyleClass: "p-button-danger p-button-text",
+            rejectButtonStyleClass: "p-button-text p-button-text",
+            acceptIcon: "none",
+            rejectIcon: "none",
+            accept: () => {
+                this.deleteUser(user.id);
+            }
+        });
+    }
+
+    deleteUser(userId: number) {
+        this.adminService.deleteUser(userId).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', summary: 'Success', detail: 'User deleted successfully' });
+                this.users.update(users => users.filter(u => u.id !== userId));
+            },
+            error: (err) => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to delete user' });
+            }
+        });
     }
 
     processRequest(requestId: number, status: 'APPROVED' | 'REJECTED') {
@@ -168,6 +242,77 @@ export class AdminDashboardComponent implements OnInit {
             },
             error: (err) => {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to process request' });
+            }
+        });
+    }
+
+    onBackup() {
+        this.isBackingUp.set(true);
+        this.adminService.backupDatabase().subscribe({
+            next: (path) => {
+                this.dbBackupPath.set(path);
+                this.messageService.add({ severity: 'success', summary: 'Backup Success', detail: 'Database backup created!' });
+                this.isBackingUp.set(false);
+            },
+            error: (err) => {
+                this.messageService.add({ severity: 'error', summary: 'Backup Failed', detail: err.error?.message || 'Check server logs for Docker permissions' });
+                this.isBackingUp.set(false);
+            }
+        });
+    }
+
+    onRestore() {
+        if (!this.restorePath()) {
+            this.messageService.add({ severity: 'warn', summary: 'Path Required', detail: 'Please enter the absolute path to the backup file.' });
+            return;
+        }
+
+        this.confirmationService.confirm({
+            message: 'Are you absolutely sure? This will OVERWRITE the current database data.',
+            header: 'Restore Confirmation',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Yes, Restore Now',
+            acceptButtonStyleClass: "p-button-danger",
+            accept: () => {
+                this.isRestoring.set(true);
+                this.adminService.restoreDatabase(this.restorePath()).subscribe({
+                    next: () => {
+                        this.messageService.add({ severity: 'success', summary: 'Restore Success', detail: 'Database has been restored.' });
+                        this.isRestoring.set(false);
+                        this.loadUsers(); // Reload users to see restored data
+                    },
+                    error: (err) => {
+                        this.messageService.add({ severity: 'error', summary: 'Restore Failed', detail: err.error?.message || 'Ensure the file exists and is accessible' });
+                        this.isRestoring.set(false);
+                    }
+                });
+            }
+        });
+    }
+
+    onUploadRestore(event: any) {
+        const file = event.files[0];
+        if (!file) return;
+
+        this.confirmationService.confirm({
+            message: `Restore database using uploaded file: ${file.name}? This will OVERWRITE existing data.`,
+            header: 'Critical Upload Restore',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Confirm & Restore',
+            acceptButtonStyleClass: "p-button-danger",
+            accept: () => {
+                this.isRestoring.set(true);
+                this.adminService.uploadAndRestoreDatabase(file).subscribe({
+                    next: () => {
+                        this.messageService.add({ severity: 'success', summary: 'Restore Success', detail: 'Database restored from upload.' });
+                        this.isRestoring.set(false);
+                        this.loadUsers();
+                    },
+                    error: (err) => {
+                        this.messageService.add({ severity: 'error', summary: 'Restore Failed', detail: err.error?.message || 'File upload or processing error' });
+                        this.isRestoring.set(false);
+                    }
+                });
             }
         });
     }
