@@ -57,9 +57,10 @@
                         </ng-template>
                         <ng-template pTemplate="header">
                             <tr>
-                                <th pSortableColumn="companyName">Company Name <p-sortIcon field="companyName" /></th>
+                                <th pSortableColumn="companyName">Company <p-sortIcon field="companyName" /></th>
+                                <th>Job Details</th>
                                 <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
-                                <th>HR Contact</th>
+                                <th>Contact & Portal</th>
                                 <th pSortableColumn="appliedDate">Applied On <p-sortIcon field="appliedDate" /></th>
                                 <th pSortableColumn="closingDate">Closing Date <p-sortIcon field="closingDate" /></th>
                                 <th>JD</th>
@@ -68,15 +69,27 @@
                         </ng-template>
                         <ng-template pTemplate="body" let-app>
                             <tr>
-                                <td class="font-bold">{{ app.companyName }}</td>
+                                <td class="font-bold text-primary">{{ app.companyName }}</td>
+                                <td>
+                                    <div class="flex flex-column gap-1">
+                                        <span class="font-semibold text-900">{{ app.jobTitle || 'N/A' }}</span>
+                                        <small class="text-600"><i class="pi pi-map-marker mr-1"></i>{{ app.location || 'N/A' }}</small>
+                                    </div>
+                                </td>
                                 <td>
                                     <p-tag [value]="app.status" [severity]="getStatusSeverity(app.status)"
                                         [rounded]="true" />
                                 </td>
                                 <td>
                                     <div class="flex flex-column gap-1">
-                                        <span class="font-medium text-900">{{ app.hrName || 'N/A' }}</span>
-                                        <small class="text-600">{{ app.hrEmail || 'N/A' }}</small>
+                                        <div class="flex align-items-center gap-2">
+                                            <i class="pi pi-user text-xs text-500"></i>
+                                            <span class="font-medium text-800">{{ app.hrName || 'N/A' }}</span>
+                                        </div>
+                                        <div class="flex align-items-center gap-2">
+                                            <i class="pi pi-globe text-xs text-500"></i>
+                                            <small class="text-primary font-medium">{{ app.jobPortal || 'Direct' }}</small>
+                                        </div>
                                     </div>
                                 </td>
                                 <td>{{ app.appliedDate | date:'mediumDate' }}</td>
@@ -105,7 +118,7 @@
                         </ng-template>
                         <ng-template pTemplate="emptymessage">
                             <tr>
-                                <td colspan="7" class="text-center p-8 text-500">
+                                <td colspan="8" class="text-center p-8 text-500">
                                     <div class="flex flex-column align-items-center gap-3">
                                         <i class="pi pi-folder-open text-5xl text-400"></i>
                                         <span class="text-xl font-medium">No job applications tracked yet.</span>

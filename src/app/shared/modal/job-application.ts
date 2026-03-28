@@ -25,6 +25,7 @@ export interface JobApplication {
     salary?: string;
     skills?: string;
     applyLink?: string;
+    jobPortal?: string;
     originalPostedDate?: string;
 }
 export interface PaginatedResponse<T> {

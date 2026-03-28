@@ -844,10 +844,10 @@ export class GenerateResumeComponent implements OnInit {
 
       // Density-based configuration
       const densityConfig = {
-        compact: { title: 20, section: 10, item: 9, line: 4, spacing: 3 },
-        normal: { title: 22, section: 11, item: 10, line: 4.5, spacing: 4.5 },
-        spacious: { title: 24, section: 12, item: 11, line: 5.5, spacing: 6 }
-      }[this.density] || { title: 22, section: 11, item: 10, line: 4.5, spacing: 4.5 };
+        compact: { title: 18, section: 10, item: 8.5, line: 3.5, spacing: 6 },
+        normal: { title: 22, section: 11, item: 10, line: 4.5, spacing: 8 },
+        spacious: { title: 24, section: 12, item: 11, line: 5.5, spacing: 10 }
+      }[this.density] || { title: 22, section: 11, item: 10, line: 4.5, spacing: 8 };
 
       let y = margin;
 

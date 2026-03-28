@@ -244,9 +244,12 @@ export class JobTrackerComponent implements OnInit {
     exportData() {
         this.appService.exportApplications().subscribe({
             next: (data) => {
-                const headers = ['Company Name', 'Status', 'HR Name', 'HR Email', 'Phone', 'Applied Date', 'Closing Date', 'Resume Path', 'Job Description'];
+                const headers = ['Company Name', 'Job Title', 'Location', 'Job Portal', 'Status', 'HR Name', 'HR Email', 'Phone', 'Applied Date', 'Closing Date', 'Resume Path', 'Job Description'];
                 const rows = data.map(app => [
                     this.escapeCSV(app.companyName),
+                    this.escapeCSV(app.jobTitle || ''),
+                    this.escapeCSV(app.location || ''),
+                    this.escapeCSV(app.jobPortal || ''),
                     this.escapeCSV(app.status),
                     this.escapeCSV(app.hrName || ''),
                     this.escapeCSV(app.hrEmail || ''),
@@ -292,14 +295,17 @@ export class JobTrackerComponent implements OnInit {
                         const values = this.parseCSVLine(line);
                         return {
                             companyName: values[0],
-                            status: values[1] as any,
-                            hrName: values[2],
-                            hrEmail: values[3],
-                            phone: values[4],
-                            appliedDate: values[5] ? values[5] : undefined,
-                            closingDate: values[6] ? values[6] : undefined,
-                            resumePath: values[7],
-                            jobDescription: (values[8] || '').replace(/\[\[NL\]\]/g, '\n')
+                            jobTitle: values[1],
+                            location: values[2],
+                            jobPortal: values[3],
+                            status: values[4] as any,
+                            hrName: values[5],
+                            hrEmail: values[6],
+                            phone: values[7],
+                            appliedDate: values[8] ? values[8] : undefined,
+                            closingDate: values[9] ? values[9] : undefined,
+                            resumePath: values[10],
+                            jobDescription: (values[11] || '').replace(/\[\[NL\]\]/g, '\n')
                         };
                     });
 
