@@ -77,6 +77,9 @@ export class JobApplicationFormComponent implements OnInit {
     private initForm() {
         this.applicationForm = this.fb.group({
             companyName: ['', [Validators.required]],
+            jobTitle: [''],
+            location: [''],
+            jobPortal: [''],
             jobDescription: ['', [Validators.maxLength(65535)]],
             status: [ApplicationStatus.INITIALIZED, [Validators.required]],
             hrName: [''],

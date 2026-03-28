@@ -149,6 +149,31 @@
     }
 
     .resume-section { padding: 0.5rem 0; }
+
+    &.density-compact {
+        padding: 10mm 15mm !important;
+        
+        h1 { font-size: 1.5rem !important; margin-bottom: 0.2rem !important; }
+        h2 { font-size: 0.9rem !important; margin-top: 0.5rem !important; margin-bottom: 0.3rem !important; }
+        .text-sm-resume { font-size: 0.75rem !important; line-height: 1.1 !important; }
+        .resume-item { margin-bottom: 0.4rem !important; }
+        .resume-section { padding: 0.3rem 0 !important; }
+        ul { margin-top: 0.1rem !important; padding-left: 1rem !important; }
+        li { margin-bottom: 0.1rem !important; font-size: 0.75rem !important; }
+        font-size: 0.8rem !important;
+    }
+
+    &.density-spacious {
+        padding: 20mm 25mm !important;
+        
+        h1 { font-size: 2.5rem !important; margin-bottom: 1rem !important; }
+        h2 { font-size: 1.3rem !important; margin-top: 1.5rem !important; margin-bottom: 1rem !important; }
+        .text-sm-resume { font-size: 1rem !important; line-height: 1.6 !important; }
+        .resume-item { margin-bottom: 1.5rem !important; }
+        .resume-section { padding: 1rem 0 !important; }
+        ul { margin-top: 0.5rem !important; }
+        li { margin-bottom: 0.5rem !important; }
+    }
 }
 
 .drag-item {
@@ -201,4 +226,4 @@
 
 #resumePreview a {
     color: #2563eb !important;
-}
+}
