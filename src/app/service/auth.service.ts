@@ -16,6 +16,8 @@ export interface UserProfile {
     premiumUsageLimit: number;
     premiumUsageCount: number;
     suspended: boolean;
+    pendingApprovalsCount?: number;
+    pendingPasswordResetsCount?: number;
 }
 
 interface AuthResponse {
@@ -73,7 +75,7 @@ export class AuthService {
     login(credentials: any) {
         return this.http.post<AuthResponse>(`${this.baseUrl}/login`, credentials).pipe(
             tap(response => {
-                if (response.token) {
+                if (response.token && response.token !== 'null') {
                     localStorage.setItem('auth_token', response.token);
                     localStorage.setItem('user_profile', JSON.stringify(response.user));
                     this._currentUser.set(response.user);
@@ -84,11 +86,20 @@ export class AuthService {
     }
 
     register(userData: any) {
-        return this.http.post<{ message: string }>(`${this.baseUrl}/signup`, userData);
+        return this.http.post<AuthResponse>(`${this.baseUrl}/signup`, userData).pipe(
+            tap(response => {
+                if (response.token && response.token !== 'null') {
+                    localStorage.setItem('auth_token', response.token);
+                    localStorage.setItem('user_profile', JSON.stringify(response.user));
+                    this._currentUser.set(response.user);
+                    this._isLoggedIn.set(true);
+                }
+            })
+        );
     }
 
-    forgotPassword(email: string) {
-        return this.http.post<{ message: string }>(`${this.baseUrl}/forgot-password`, { email });
+    forgotPassword(data: any) {
+        return this.http.post<{ message: string }>(`${this.baseUrl}/forgot-password`, data);
     }
 
     logout() {

@@ -7,6 +7,7 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
+import { PasswordModule } from 'primeng/password';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -18,6 +19,7 @@ import { CommonModule } from '@angular/common';
         RouterLink,
         CardModule,
         InputTextModule,
+        PasswordModule,
         ButtonModule,
         ToastModule
     ],
@@ -32,10 +34,18 @@ export class ForgotPasswordComponent {
     private readonly router = inject(Router);
 
     forgotPasswordForm: FormGroup = this.fb.group({
-        email: ['', [Validators.required, Validators.email]]
-    });
+        email: ['', [Validators.required, Validators.email]],
+        oldPassword: ['', [Validators.required]],
+        newPassword: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', [Validators.required]]
+    }, { validator: this.passwordMatchValidator });
 
     loading = signal(false);
+
+    passwordMatchValidator(g: FormGroup) {
+        return g.get('newPassword')?.value === g.get('confirmPassword')?.value
+            ? null : { 'mismatch': true };
+    }
 
     onSubmit() {
         if (this.forgotPasswordForm.invalid) {
@@ -44,20 +54,17 @@ export class ForgotPasswordComponent {
         }
 
         this.loading.set(true);
-        const email = this.forgotPasswordForm.value.email;
-
-        this.authService.forgotPassword(email).subscribe({
+        this.authService.forgotPassword(this.forgotPasswordForm.value).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: 'Password reset link has been sent to your email.'
+                    summary: 'Request Sent',
+                    detail: 'Your password reset request has been sent for admin approval. You can login once approved.'
                 });
                 this.loading.set(false);
-                // Navigate back to login after a delay
                 setTimeout(() => {
                     this.router.navigate(['/login']);
-                }, 3000);
+                }, 4000);
             },
             error: (err) => {
                 this.messageService.add({

@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
 import { ResumeAnalysisService } from './resume-analysis-service';
+import { Subject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -14,6 +15,8 @@ export class NotificationService {
     private messageService = inject(MessageService);
     private router = inject(Router);
     private resumeService = inject(ResumeAnalysisService);
+
+    readonly refreshAdminData$ = new Subject<void>();
 
     private stompClient: Client | null = null;
     private readonly _notifications = signal<string[]>([]);
@@ -88,14 +91,15 @@ export class NotificationService {
 
             this.messageService.add({
                 severity: 'warn',
-                summary: 'Admin Action Needed',
+                summary: data.type === 'NEW_REGISTRATION' ? 'New Registration' : 
+                         data.type === 'PASSWORD_RESET_REQUEST' ? 'Password Reset' : 'Admin Alert',
                 detail: data.message,
                 life: 15000,
                 sticky: true
             });
 
-            // If it's an unsuspension request, we might want to refresh users list if the admin is on the dashboard
-            // For now, the toast is enough notification.
+            // Trigger live refresh for dashboard if current user is viewing it
+            this.refreshAdminData$.next();
         } catch (e) {
             console.error('Failed to parse admin event', e);
         }
@@ -129,13 +133,25 @@ export class NotificationService {
                 return;
             }
 
-            if (data.type === 'QUOTA_UPDATE') {
+            if (data.type === 'QUOTA_UPDATE' || 
+                data.type === 'ACCOUNT_APPROVED' || 
+                data.type === 'PASSWORD_RESET_APPROVED') {
                 this.authService.getUserProfile().subscribe();
                 this.messageService.add({
-                    severity: 'info',
-                    summary: 'Account Updated',
-                    detail: data.message || 'Your account limits or premium status have been updated.',
-                    life: 5000
+                    severity: 'success',
+                    summary: data.type.replace(/_/g, ' '),
+                    detail: data.message,
+                    life: 10000
+                });
+                return;
+            }
+
+            if (data.type === 'ACCOUNT_REJECTED' || data.type === 'PASSWORD_RESET_REJECTED') {
+                this.messageService.add({
+                    severity: 'warn',
+                    summary: 'Request Rejected',
+                    detail: data.message,
+                    life: 15000
                 });
                 return;
             }

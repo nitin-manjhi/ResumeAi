@@ -12,6 +12,13 @@ export interface UpgradeRequest {
     createdAt: string;
 }
 
+export interface PasswordResetRequest {
+    id: number;
+    userId: number;
+    username: string;
+    requestedAt: string;
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -21,6 +28,30 @@ export class AdminService {
 
     getAllUsers() {
         return this.http.get<UserProfile[]>(`${this.baseUrl}/users`);
+    }
+
+    getPendingUsers() {
+        return this.http.get<UserProfile[]>(`${this.baseUrl}/users/pending`);
+    }
+
+    approveUser(userId: number) {
+        return this.http.post(`${this.baseUrl}/users/${userId}/approve`, null, { responseType: 'text' });
+    }
+
+    rejectUser(userId: number) {
+        return this.http.delete(`${this.baseUrl}/users/${userId}/reject`, { responseType: 'text' });
+    }
+
+    getPendingPasswordResets() {
+        return this.http.get<PasswordResetRequest[]>(`${this.baseUrl}/users/password-resets`);
+    }
+
+    approvePasswordReset(requestId: number) {
+        return this.http.post(`${this.baseUrl}/users/password-resets/${requestId}/approve`, null, { responseType: 'text' });
+    }
+
+    rejectPasswordReset(requestId: number) {
+        return this.http.delete(`${this.baseUrl}/users/password-resets/${requestId}/reject`, { responseType: 'text' });
     }
 
     updateUserUsage(userId: number, analysisCount: number, generationCount: number, usageLimit: number, role: string, premiumActive: boolean, premiumUsageLimit: number, premiumUsageCount: number, suspended: boolean) {
