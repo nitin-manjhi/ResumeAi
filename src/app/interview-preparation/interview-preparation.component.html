@@ -1,0 +1,263 @@
+<div class="max-w-7xl mx-auto py-5 px-4">
+    @if (isLoading()) {
+    <div class="fixed top-0 left-0 w-full h-full flex align-items-center justify-content-center bg-black-alpha-50"
+        style="z-index: 9991;">
+        <p-progressSpinner ariaLabel="loading" />
+    </div>
+    }
+
+    <!-- Header -->
+    <div class="fadein mb-5">
+        <h1 class="text-900 text-4xl font-extrabold mb-2">Interview Preparation</h1>
+        <p class="text-600 text-xl">AI-powered interview questions tailored to your target role and company.</p>
+    </div>
+
+    <!-- Tabs -->
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange({index: $event})">
+        <p-tablist>
+            <p-tab [value]="0">
+                <i class="pi pi-list mr-2"></i>Topic Wise Questions
+            </p-tab>
+            <p-tab [value]="1">
+                <i class="pi pi-sitemap mr-2"></i>Scenario Wise Questions
+            </p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+            <!-- Tab 1: Topic Wise -->
+            <p-tabpanel [value]="0">
+                <ng-container *ngTemplateOutlet="formTemplate; context: { $implicit: 'TOPIC_WISE', title: 'Topic Wise Question Generation', description: 'Generate 15 topic-based interview questions covering Java, Spring Boot, Angular, API Security, and SQL.' }"></ng-container>
+            </p-tabpanel>
+
+            <!-- Tab 2: Scenario Wise -->
+            <p-tabpanel [value]="1">
+                <ng-container *ngTemplateOutlet="formTemplate; context: { $implicit: 'SCENARIO_BASED', title: 'Scenario Wise Question Generation', description: 'Generate 15 complex scenario-based questions grounded in real-world production challenges.' }"></ng-container>
+            </p-tabpanel>
+        </p-tabpanels>
+    </p-tabs>
+
+    <!-- Shared Form Template -->
+    <ng-template #formTemplate let-type let-title="title" let-description="description">
+        @if (!hasResult()) {
+        <div class="grid align-items-start mt-4">
+            <!-- Left Side: Inputs -->
+            <div class="col-12 lg:col-8 flex flex-column gap-4">
+                <!-- Card: Context -->
+                <div class="premium-card">
+                    <h2 class="section-title">{{ title }}</h2>
+                    <p class="section-subtitle">{{ description }}</p>
+
+                    <div class="grid p-fluid gap-3">
+                        <!-- Company Name -->
+                        <div class="col-12 md:col-6 field flex flex-column gap-2">
+                            <label class="font-bold text-900 ml-1">Company Name <span class="text-red-500">*</span></label>
+                            <input id="companyName" pInputText [ngModel]="companyName()" (ngModelChange)="companyName.set($event)"
+                                placeholder="e.g. Google, Microsoft, Startup Inc." />
+                            <small class="text-500 ml-1">We will tailor questions to this company interview style.</small>
+                        </div>
+
+                        <!-- Role -->
+                        <div class="col-12 md:col-6 field flex flex-column gap-2">
+                            <label class="font-bold text-900 ml-1">Target Role <span class="text-red-500">*</span></label>
+                            <input id="role" pInputText [ngModel]="role()" (ngModelChange)="role.set($event)"
+                                placeholder="e.g. Senior Java Developer, Full Stack Engineer" />
+                        </div>
+
+                        <!-- Experience -->
+                        <div class="col-12 md:col-6 field flex flex-column gap-2">
+                            <label class="font-bold text-900 ml-1">Experience <span class="text-red-500">*</span></label>
+                            <input id="experience" pInputText [ngModel]="experience()" (ngModelChange)="experience.set($event)"
+                                placeholder="e.g. 5 years, 8+ years" />
+                        </div>
+
+                        <!-- Domain -->
+                        <div class="col-12 md:col-6 field flex flex-column gap-2">
+                            <label class="font-bold text-900 ml-1">Domain <span class="text-blue-300">(Optional)</span></label>
+                            <input id="domain" pInputText [ngModel]="domain()" (ngModelChange)="domain.set($event)"
+                                placeholder="e.g. FinTech, HealthTech, E-commerce" />
+                            <small class="text-500 ml-1">Questions will prioritize relevance to this domain.</small>
+                        </div>
+
+                        <!-- Job Description -->
+                        <div class="col-12 field flex flex-column gap-2">
+                            <label class="font-bold text-900 ml-1">Job Description <span class="text-red-500">*</span></label>
+                            <textarea id="jdText" rows="8" pInputTextarea [ngModel]="jobDescription()"
+                                (ngModelChange)="jobDescription.set($event)" style="height: 200px"
+                                placeholder="Paste the full job requirements, responsibilities, and qualifications here..."></textarea>
+                            <div class="flex justify-content-end text-xs text-500">
+                                {{ jobDescription().length }} / 5000 characters
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Action Panel -->
+            <div class="col-12 lg:col-4 sticky top-0 py-1 flex flex-column gap-4">
+                <!-- Model Selection -->
+                <div class="premium-card border-1 border-primary-100">
+                    <div class="flex justify-content-between align-items-center mb-3">
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-bolt text-primary"></i>
+                            <h2 class="section-title m-0" style="font-size: 1.15rem;">AI Engine</h2>
+                        </div>
+                    </div>
+                    <p-select id="modelSelect" [options]="modelOptions" [ngModel]="selectedModel()" (ngModelChange)="selectedModel.set($event)"
+                        optionLabel="label" optionValue="value" placeholder="Select AI Model"
+                        styleClass="w-full">
+                        <ng-template let-item pTemplate="selectedItem">
+                            <div class="flex align-items-center gap-2">
+                                <i [class]="item.icon"></i>
+                                <span class="font-bold">{{ item.label }}</span>
+                            </div>
+                        </ng-template>
+                    </p-select>
+                </div>
+
+                <!-- Upload & Generate -->
+                <div class="premium-card border-primary-200 border-2">
+                    <div class="flex flex-column gap-4">
+                        <div class="p-4 bg-primary-50 border-round-xl border-dashed border-2 border-primary-200 text-center">
+                            <i class="pi pi-file-pdf text-4xl text-primary mb-3"></i>
+                            <div class="font-bold text-primary-900 mb-2">Upload Resume</div>
+                            <p-fileupload #fu mode="basic" chooseLabel="Browse Files" chooseIcon="pi pi-plus"
+                                name="resume" accept=".pdf,.doc,.docx" maxFileSize="1000000"
+                                styleClass="w-full text-sm" />
+                        </div>
+
+                        <p-button id="generateBtn" label="Generate Questions" icon="pi pi-sparkles"
+                            (onClick)="onGenerate(fu)" [raised]="true" severity="primary"
+                            styleClass="h-4rem w-full font-bold shadow-4 text-xl"
+                            [disabled]="!isFormValid() || !fu.files.length || isStreaming()" />
+                    </div>
+                </div>
+
+                <!-- History Section -->
+                @if (filteredHistory().length > 0) {
+                <div class="premium-card bg-primary-900 text-white border-none shadow-8 max-h-30rem overflow-y-auto">
+                    <div class="flex justify-content-between align-items-center mb-3">
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-history"></i>
+                            <h2 class="section-title m-0 text-white" style="font-size: 1.15rem;">Previous Results</h2>
+                        </div>
+                    </div>
+                    <div class="flex flex-column gap-2">
+                        @for (item of filteredHistory(); track item.id; let i = $index) {
+                            <div class="history-item p-3 border-round-lg hover:bg-white-alpha-10 cursor-pointer border-1 border-white-alpha-10 mb-2 group" (click)="viewHistoryItem(item)">
+                                <div class="flex justify-content-between align-items-center">
+                                    <div class="flex flex-column gap-1 flex-1 overflow-hidden">
+                                        <span class="font-bold text-sm truncate">{{ item.companyName }}</span>
+                                        <span class="text-white-alpha-70 text-xs truncate">{{ item.role }}</span>
+                                        <span class="text-white-alpha-40 text-xs">{{ getTimeAgo(item.createdAt) }}</span>
+                                    </div>
+                                    <div class="flex gap-1 ml-2">
+                                        <p-button icon="pi pi-trash" [text]="true" severity="danger" 
+                                            (onClick)="onDeleteHistoryItem($event, item)" 
+                                            styleClass="text-white-alpha-50 hover:text-red-400 p-0 w-2rem h-2rem" 
+                                            pTooltip="Delete" tooltipPosition="left" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+        } @else {
+        <!-- Result View -->
+        <div class="mt-4 fadein">
+            <div class="premium-card mb-4 bg-primary-900 text-white border-none shadow-6">
+                <div class="flex justify-content-between align-items-center flex-wrap gap-3 p-2">
+                    <div class="flex align-items-center gap-4">
+                        @if (isStreaming()) {
+                            <div class="streaming-indicator">
+                                <div class="pulse-dot"></div>
+                            </div>
+                            <div class="flex flex-column">
+                                <span class="font-bold text-xl">Generating Interview Intelligence...</span>
+                                <span class="text-white-alpha-60 text-sm">LLM is crafting tailored questions...</span>
+                            </div>
+                        } @else if (isComplete()) {
+                            <div class="w-3rem h-3rem bg-green-500 text-white border-round-circle flex align-items-center justify-content-center shadow-4">
+                                <i class="pi pi-check text-xl font-bold"></i>
+                            </div>
+                            <div class="flex flex-column">
+                                <span class="font-bold text-xl">{{ questions().length }} Personalized Questions</span>
+                                <span class="text-white-alpha-60 text-sm">Successfully generated for {{ companyName() }}</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="flex align-items-center gap-2">
+                         @if (isComplete()) {
+                            <p-button icon="pi pi-angle-double-down" label="Expand All" [text]="true"
+                                (onClick)="expandAll()" styleClass="text-white font-bold" />
+                            <p-button icon="pi pi-copy" [text]="true" severity="secondary"
+                                (onClick)="copyToClipboard()" pTooltip="Copy as JSON" styleClass="text-white" />
+                         }
+                        <p-button icon="pi pi-refresh" label="Back to Form" (onClick)="onReset()" [text]="true" styleClass="text-white border-white-alpha-20 border-1 font-bold" />
+                    </div>
+                </div>
+            </div>
+
+            @if (streamError()) {
+                <div class="premium-card bg-red-500 text-white border-none mb-4">
+                    <p class="m-0 font-bold"><i class="pi pi-exclamation-triangle mr-2"></i>{{ streamError() }}</p>
+                </div>
+            }
+
+            @if (questions().length > 0) {
+                <div class="flex flex-column gap-4">
+                    @for (q of questions(); track $index; let i = $index) {
+                        <div class="question-card shadow-2" [class.expanded]="isExpanded(i)">
+                            <div class="question-header p-4" (click)="toggleQuestion(i)">
+                                <div class="flex align-items-center gap-4">
+                                    <div class="question-number">{{ i + 1 }}</div>
+                                    <div class="flex flex-column gap-1 flex-1">
+                                        <div class="question-topic text-primary uppercase font-bold text-xs tracking-wider">
+                                            <i class="pi pi-tag mr-1"></i>{{ q.topic }}
+                                        </div>
+                                        <div class="question-text text-900 font-bold text-lg">{{ q.question }}</div>
+                                    </div>
+                                    <i [class]="isExpanded(i) ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="text-400"></i>
+                                </div>
+                            </div>
+                            @if (isExpanded(i)) {
+                                <div class="question-body p-4 border-top-1 border-100 bg-gray-50/30">
+                                    <div class="answer-section mb-4">
+                                        <div class="answer-label text-orange-600 font-bold text-xs mb-2">
+                                            <i class="pi pi-check-circle mr-1"></i>TECHNICAL EXPECTATION
+                                        </div>
+                                        <div class="answer-content expectation p-3 border-round-lg bg-orange-50 text-900 line-height-3">
+                                            {{ q.technicalExpectation }}
+                                        </div>
+                                    </div>
+                                    <div class="answer-section">
+                                        <div class="answer-label text-blue-600 font-bold text-xs mb-2">
+                                            <i class="pi pi-star-fill mr-1"></i>GOLDEN ANSWER
+                                        </div>
+                                        <div class="answer-content golden p-4 border-round-xl bg-blue-50 text-900 line-height-4 shadow-1 border-left-3 border-blue-500">
+                                            {{ q.goldenAnswer }}
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            } @else if (isStreaming()) {
+                <div class="premium-card p-6 text-center shadow-4 border-primary-100 flex flex-column align-items-center gap-4">
+                    <div class="w-4rem h-4rem bg-primary-50 text-primary border-round-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-spin pi-sparkles text-2xl"></i>
+                    </div>
+                    <div class="flex flex-column gap-2">
+                        <h3 class="text-900 font-bold m-0">Generating Questions...</h3>
+                        <p class="text-600 m-0">AI is analyzing your profile and the technical bar for {{ companyName() }}.</p>
+                    </div>
+                    <!-- Skeleton Card placeholders could go here if desired -->
+                </div>
+            }
+        </div>
+        }
+    </ng-template>
+</div>

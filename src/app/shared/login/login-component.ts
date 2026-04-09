@@ -63,11 +63,28 @@ export class LoginComponent {
             },
             error: (err) => {
                 this.loading.set(false);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Unauthorized',
-                    detail: 'Invalid username or password. Please try again.'
-                });
+                const errorMsg = err.error?.message || '';
+                const isUnapproved = err.status === 403 && errorMsg.includes('approval');
+                const isNotFound = errorMsg.includes('does not exist');
+
+                if (isNotFound) {
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: 'Account Not Found',
+                        detail: 'Account does not exist. Redirecting to signup...'
+                    });
+                    setTimeout(() => {
+                        this.router.navigate(['/signup']);
+                    }, 2000);
+                } else {
+                    this.messageService.add({
+                        severity: isUnapproved ? 'warn' : 'error',
+                        summary: isUnapproved ? 'Pending Approval' : 'Login Failed',
+                        detail: isUnapproved 
+                            ? 'Your account is currently awaiting administrator approval.' 
+                            : (errorMsg || 'Invalid username or password. Please try again.')
+                    });
+                }
             },
             complete: () => {
                 this.loading.set(false);

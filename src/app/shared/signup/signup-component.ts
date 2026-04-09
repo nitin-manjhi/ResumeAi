@@ -63,8 +63,8 @@ export class SignupComponent {
             next: () => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: 'Registration successful! Please login.'
+                    summary: 'Registration Successful',
+                    detail: 'Your account has been created and is awaiting administrator approval. You will be able to login once approved.'
                 });
                 setTimeout(() => {
                     this.router.navigate(['/login']);
@@ -72,11 +72,24 @@ export class SignupComponent {
             },
             error: (err) => {
                 this.loading.set(false);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: err.error?.message || 'Registration failed. Please try again.'
-                });
+                const isUnapproved = err.status === 403 && err.error?.message?.includes('approval');
+                
+                if (isUnapproved) {
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Registration Successful',
+                        detail: 'Your account has been created and is awaiting administrator approval. You will be able to login once approved.'
+                    });
+                    setTimeout(() => {
+                        this.router.navigate(['/login']);
+                    }, 4000);
+                } else {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: err.error?.message || 'Registration failed. Please try again.'
+                    });
+                }
             },
             complete: () => {
                 this.loading.set(false);

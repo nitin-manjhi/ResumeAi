@@ -174,6 +174,110 @@
                 </p-card>
             </div>
         </div>
+        } @else if (activeView() === 'password-resets') {
+        <!-- View 4: Password Reset Requests -->
+        <p-card styleClass="shadow-3 border-round-xl overflow-hidden fadein border-none">
+            <p-table [value]="passwordResets()" [loading]="loadingResets()" [paginator]="true" [rows]="10"
+                styleClass="p-datatable-sm p-datatable-striped" responsiveLayout="stack" breakpoint="960px">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="pl-4">Request Date</th>
+                        <th>User Profile</th>
+                        <th style="width: 15rem" class="text-center">Reset Actions</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-req>
+                    <tr>
+                        <td class="pl-4">
+                            <span class="p-column-title font-bold">Requested</span>
+                            <div class="flex flex-column gap-1">
+                                <span class="font-bold text-color">{{req.requestedAt | date:'medium'}}</span>
+                                <span class="text-xs text-muted-color italic">{{req.requestedAt | date:'shortTime'}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="p-column-title font-bold">User</span>
+                            <div class="flex align-items-center gap-2">
+                                <div class="p-2 bg-orange-50 border-round-lg flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="pi pi-key text-orange-500 text-xs"></i>
+                                </div>
+                                <span class="font-bold text-color">{{req.username}}</span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="p-column-title font-bold">Actions</span>
+                            <div class="flex justify-content-center gap-3 py-2">
+                                <p-button label="Approve Reset" icon="pi pi-check" (onClick)="approvePasswordResetValue(req)"
+                                    severity="success" [raised]="true" size="small" />
+                                <p-button label="Reject" icon="pi pi-times" (onClick)="rejectPasswordResetValue(req)"
+                                    severity="danger" [text]="true" [raised]="true" size="small" />
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="3" class="text-center p-5 surface-50 text-muted-color font-medium">
+                            <i class="pi pi-lock text-4xl mb-3 block text-primary overflow-hidden"></i>
+                            No pending password reset requests.
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+        } @else if (activeView() === 'pending') {
+        <!-- View 4: Pending User Approvals -->
+        <p-card styleClass="shadow-3 border-round-xl overflow-hidden fadein border-none">
+            <p-table [value]="pendingUsers()" [loading]="loadingPending()" [paginator]="true" [rows]="10"
+                styleClass="p-datatable-sm p-datatable-striped" responsiveLayout="stack" breakpoint="960px">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="pl-4">Registration Date</th>
+                        <th>User Profile</th>
+                        <th>Email Address</th>
+                        <th style="width: 12rem" class="text-center">Approval Actions</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-user>
+                    <tr>
+                        <td class="pl-4">
+                            <span class="p-column-title font-bold">Joined</span>
+                            {{user.createdAt | date:'medium'}}
+                        </td>
+                        <td>
+                            <span class="p-column-title font-bold">Username</span>
+                            <div class="flex align-items-center gap-2">
+                                <div class="p-2 surface-200 border-circle flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <i class="pi pi-user-plus text-primary text-xs"></i>
+                                </div>
+                                <span class="font-bold text-color">{{user.username}}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="p-column-title font-bold">Email</span>
+                            <span class="text-sm text-muted-color">{{user.email}}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="p-column-title font-bold">Actions</span>
+                            <div class="flex justify-content-center gap-2 py-2">
+                                <p-button icon="pi pi-check" (onClick)="approveUserRequest(user)"
+                                    severity="success" rounded="true" raised="true" pTooltip="Approve User" />
+                                <p-button icon="pi pi-times" (onClick)="rejectUserRequest(user)"
+                                    severity="danger" rounded="true" raised="true" pTooltip="Reject & Delete" />
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="4" class="text-center p-5 surface-50 text-muted-color font-medium">
+                            <i class="pi pi-check-circle text-4xl mb-3 block text-green-500"></i>
+                            Great! No pending registrations to review.
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
         } @else {
         <!-- View 2: User Access Management -->
         <p-card styleClass="shadow-3 border-round-xl overflow-hidden fadein border-none">

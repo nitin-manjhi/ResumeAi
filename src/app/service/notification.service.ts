@@ -1,10 +1,12 @@
-import { inject, Injectable, signal, effect } from '@angular/core';
+import { inject, Injectable, signal, effect, NgZone } from '@angular/core';
 import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { AuthService } from './auth.service';
 import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
 import { ResumeAnalysisService } from './resume-analysis-service';
+import { InterviewPrepService } from './interview-prep.service';
+import { Subject } from 'rxjs';
 
 @Injectable({
     providedIn: 'root',
@@ -14,6 +16,10 @@ export class NotificationService {
     private messageService = inject(MessageService);
     private router = inject(Router);
     private resumeService = inject(ResumeAnalysisService);
+    private interviewPrepService = inject(InterviewPrepService);
+    private ngZone = inject(NgZone);
+
+    readonly refreshAdminData$ = new Subject<void>();
 
     private stompClient: Client | null = null;
     private readonly _notifications = signal<string[]>([]);
@@ -59,6 +65,13 @@ export class NotificationService {
                 this.handleNotification(message.body);
             });
 
+            // Interview Prep streaming subscription
+            const interviewTopic = `/topic/interview-stream-${user.id}`;
+            console.log('Subscribing to interview stream:', interviewTopic);
+            this.stompClient?.subscribe(interviewTopic, (message: IMessage) => {
+                this.handleInterviewStream(message.body);
+            });
+
             if (user.role === 'ADMIN') {
                 this.stompClient?.subscribe(`/topic/admin-events`, (message: IMessage) => {
                     this.handleAdminEvent(message.body);
@@ -88,14 +101,15 @@ export class NotificationService {
 
             this.messageService.add({
                 severity: 'warn',
-                summary: 'Admin Action Needed',
+                summary: data.type === 'NEW_REGISTRATION' ? 'New Registration' : 
+                         data.type === 'PASSWORD_RESET_REQUEST' ? 'Password Reset' : 'Admin Alert',
                 detail: data.message,
                 life: 15000,
                 sticky: true
             });
 
-            // If it's an unsuspension request, we might want to refresh users list if the admin is on the dashboard
-            // For now, the toast is enough notification.
+            // Trigger live refresh for dashboard if current user is viewing it
+            this.refreshAdminData$.next();
         } catch (e) {
             console.error('Failed to parse admin event', e);
         }
@@ -129,13 +143,25 @@ export class NotificationService {
                 return;
             }
 
-            if (data.type === 'QUOTA_UPDATE') {
+            if (data.type === 'QUOTA_UPDATE' || 
+                data.type === 'ACCOUNT_APPROVED' || 
+                data.type === 'PASSWORD_RESET_APPROVED') {
                 this.authService.getUserProfile().subscribe();
                 this.messageService.add({
-                    severity: 'info',
-                    summary: 'Account Updated',
-                    detail: data.message || 'Your account limits or premium status have been updated.',
-                    life: 5000
+                    severity: 'success',
+                    summary: data.type.replace(/_/g, ' '),
+                    detail: data.message,
+                    life: 10000
+                });
+                return;
+            }
+
+            if (data.type === 'ACCOUNT_REJECTED' || data.type === 'PASSWORD_RESET_REJECTED') {
+                this.messageService.add({
+                    severity: 'warn',
+                    summary: 'Request Rejected',
+                    detail: data.message,
+                    life: 15000
                 });
                 return;
             }
@@ -213,5 +239,37 @@ export class NotificationService {
 
     clearLatestResultId() {
         this._latestResultId.set(null);
+    }
+
+    private handleInterviewStream(message: any) {
+        this.ngZone.run(() => {
+            try {
+                const data = typeof message === 'string' ? JSON.parse(message) : message;
+                console.log('Interview Stream Message:', data.type);
+                
+                switch (data.type) {
+                    case 'QUESTION_OBJECT':
+                        console.log('Received Question Object:', data.question.topic);
+                        this.interviewPrepService.addQuestion(data.question);
+                        break;
+                    case 'COMPLETE':
+                        console.log('Stream Complete');
+                        this.interviewPrepService.completeStream(data.questions);
+                        break;
+                    case 'ERROR':
+                        console.error('Stream Error:', data.message);
+                        this.interviewPrepService.handleError(data.message || 'Unknown error');
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Generation Failed',
+                            detail: data.message || 'Failed to generate interview questions',
+                            life: 10000,
+                        });
+                        break;
+                }
+            } catch (e) {
+                console.error('Failed to parse interview stream message', e, message);
+            }
+        });
     }
 }

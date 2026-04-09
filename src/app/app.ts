@@ -92,6 +92,11 @@ export class AppComponent {
         icon: 'pi pi-search',
         routerLink: '/job-search',
       },
+      {
+        label: 'Interview Prep',
+        icon: 'pi pi-question-circle',
+        routerLink: '/interview-preparation',
+      },
     ];
 
     if (this.currentUser()?.role === 'ADMIN') {
