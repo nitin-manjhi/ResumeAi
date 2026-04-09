@@ -17,6 +17,13 @@
 - **Density Control**: Three layout modes (**Compact**, **Normal**, **Spacious**) to fit content perfectly on one page.
 - **Professional Templates**: ATS-readable designs that prioritize clean typography and structure.
 
+### 🎯 Interview Preparation Module
+- **AI-Powered Generations**: Real-time generation of **Topic-wise** and **Scenario-based** interview questions.
+- **Structured Learning**: Dynamic accordion-style UI for focused preparation.
+- **History Tracking**: Permanent storage of past generation results for consistent practice.
+- **Context-Aware**: AI models tailored to generate industry-standard technical and behavioral questions.
+
+
 ### 📊 Strategic Analytics Dashboard
 - **Executive KPI Cards**: Premium cards for total applications, 7-day velocity, and analysis counts.
 - **Visual Status Grid**: Color-coded distribution cards showing your standing in the hiring pipeline.
@@ -31,14 +38,16 @@
 
 ## 🛠️ Technology Stack
 
-- **Framework**: Angular 19+
+- **Framework**: Angular 21+
 - **Styling**: PrimeNG 19 (Component Library) + Vanilla CSS/SCSS
 - **State Management**: Angular Signals (For high-performance reactive UI)
+- **Testing**: Jest (Modern, fast unit testing framework)
 - **Document Generation**: 
   - **jsPDF**: Clean text-based PDF generation.
   - **html2canvas**: High-fidelity visual previews.
 - **Interactions**: Angular CDK Drag & Drop.
 - **Icons**: PrimeIcons
+
 
 ---
 
@@ -57,6 +66,8 @@
 - `GenerateResumeComponent`: Comprehensive multi-step form with live preview and layout settings.
 - `JobTrackerComponent`: Advanced lifecycle tracking and the Strategic Stats Dashboard.
 - `AtsResultComponent`: Displays the detailed AI-driven alignment report.
+- `InterviewPreparationComponent`: Interactive hub for AI-driven interview question generation.
+
 
 ---
 
