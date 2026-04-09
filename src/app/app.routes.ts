@@ -26,5 +26,6 @@ export const routes: Routes = [
   { path: 'job-tracker/add', loadComponent: () => import('./job-tracker/job-application-form.component').then(m => m.JobApplicationFormComponent), canActivate: [authGuard] },
   { path: 'job-tracker/edit/:id', loadComponent: () => import('./job-tracker/job-application-form.component').then(m => m.JobApplicationFormComponent), canActivate: [authGuard] },
   { path: 'job-search', loadComponent: () => import('./job-search/job-search.component').then(m => m.JobSearchComponent), canActivate: [authGuard] },
+  { path: 'interview-preparation', loadComponent: () => import('./interview-preparation/interview-preparation.component').then(m => m.InterviewPreparationComponent), canActivate: [authGuard] },
   { path: '**', redirectTo: '' }
 ];

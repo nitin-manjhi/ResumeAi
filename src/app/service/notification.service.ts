@@ -1,10 +1,11 @@
-import { inject, Injectable, signal, effect } from '@angular/core';
+import { inject, Injectable, signal, effect, NgZone } from '@angular/core';
 import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { AuthService } from './auth.service';
 import { MessageService } from 'primeng/api';
 import { Router } from '@angular/router';
 import { ResumeAnalysisService } from './resume-analysis-service';
+import { InterviewPrepService } from './interview-prep.service';
 import { Subject } from 'rxjs';
 
 @Injectable({
@@ -15,6 +16,8 @@ export class NotificationService {
     private messageService = inject(MessageService);
     private router = inject(Router);
     private resumeService = inject(ResumeAnalysisService);
+    private interviewPrepService = inject(InterviewPrepService);
+    private ngZone = inject(NgZone);
 
     readonly refreshAdminData$ = new Subject<void>();
 
@@ -60,6 +63,13 @@ export class NotificationService {
             console.log('Connected: ' + frame);
             this.stompClient?.subscribe(`/topic/notifications-${user.id}`, (message: IMessage) => {
                 this.handleNotification(message.body);
+            });
+
+            // Interview Prep streaming subscription
+            const interviewTopic = `/topic/interview-stream-${user.id}`;
+            console.log('Subscribing to interview stream:', interviewTopic);
+            this.stompClient?.subscribe(interviewTopic, (message: IMessage) => {
+                this.handleInterviewStream(message.body);
             });
 
             if (user.role === 'ADMIN') {
@@ -229,5 +239,37 @@ export class NotificationService {
 
     clearLatestResultId() {
         this._latestResultId.set(null);
+    }
+
+    private handleInterviewStream(message: any) {
+        this.ngZone.run(() => {
+            try {
+                const data = typeof message === 'string' ? JSON.parse(message) : message;
+                console.log('Interview Stream Message:', data.type);
+                
+                switch (data.type) {
+                    case 'QUESTION_OBJECT':
+                        console.log('Received Question Object:', data.question.topic);
+                        this.interviewPrepService.addQuestion(data.question);
+                        break;
+                    case 'COMPLETE':
+                        console.log('Stream Complete');
+                        this.interviewPrepService.completeStream(data.questions);
+                        break;
+                    case 'ERROR':
+                        console.error('Stream Error:', data.message);
+                        this.interviewPrepService.handleError(data.message || 'Unknown error');
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Generation Failed',
+                            detail: data.message || 'Failed to generate interview questions',
+                            life: 10000,
+                        });
+                        break;
+                }
+            } catch (e) {
+                console.error('Failed to parse interview stream message', e, message);
+            }
+        });
     }
 }
