@@ -73,29 +73,41 @@ export class AppComponent {
         routerLink: '/',
       },
       {
-        label: 'Generate Resume',
-        icon: 'pi pi-file-edit',
-        routerLink: '/generate-resume',
+        label: 'Resume',
+        icon: 'pi pi-file',
+        items: [
+          {
+            label: 'Generate Resume',
+            icon: 'pi pi-file-edit',
+            routerLink: '/generate-resume',
+          },
+          {
+            label: 'Analyse Resume',
+            icon: 'pi pi-bolt',
+            routerLink: '/analyse-resume',
+          },
+        ]
       },
       {
-        label: 'Analyse Resume',
-        icon: 'pi pi-bolt',
-        routerLink: '/analyse-resume',
-      },
-      {
-        label: 'Job Tracker',
-        icon: 'pi pi-list',
-        routerLink: '/job-tracker',
-      },
-      {
-        label: 'Job Search',
-        icon: 'pi pi-search',
-        routerLink: '/job-search',
-      },
-      {
-        label: 'Interview Prep',
-        icon: 'pi pi-question-circle',
-        routerLink: '/interview-preparation',
+        label: 'Career',
+        icon: 'pi pi-briefcase',
+        items: [
+          {
+            label: 'Job Tracker',
+            icon: 'pi pi-list',
+            routerLink: '/job-tracker',
+          },
+          {
+            label: 'Job Search',
+            icon: 'pi pi-search',
+            routerLink: '/job-search',
+          },
+          {
+            label: 'Interview Prep',
+            icon: 'pi pi-question-circle',
+            routerLink: '/interview-preparation',
+          },
+        ]
       },
     ];
 
