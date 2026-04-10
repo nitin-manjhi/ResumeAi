@@ -73,7 +73,11 @@ export class AuthService {
     }
 
     login(credentials: any) {
-        return this.http.post<AuthResponse>(`${this.baseUrl}/login`, credentials).pipe(
+        const secureCredentials = {
+            ...credentials,
+            password: btoa(credentials.password)
+        };
+        return this.http.post<AuthResponse>(`${this.baseUrl}/login`, secureCredentials).pipe(
             tap(response => {
                 if (response.token && response.token !== 'null') {
                     localStorage.setItem('auth_token', response.token);
@@ -86,7 +90,11 @@ export class AuthService {
     }
 
     register(userData: any) {
-        return this.http.post<AuthResponse>(`${this.baseUrl}/signup`, userData).pipe(
+        const secureUserData = {
+            ...userData,
+            password: btoa(userData.password)
+        };
+        return this.http.post<AuthResponse>(`${this.baseUrl}/signup`, secureUserData).pipe(
             tap(response => {
                 if (response.token && response.token !== 'null') {
                     localStorage.setItem('auth_token', response.token);
@@ -99,7 +107,12 @@ export class AuthService {
     }
 
     forgotPassword(data: any) {
-        return this.http.post<{ message: string }>(`${this.baseUrl}/forgot-password`, data);
+        const secureData = {
+            ...data,
+            oldPassword: btoa(data.oldPassword),
+            newPassword: btoa(data.newPassword)
+        };
+        return this.http.post<{ message: string }>(`${this.baseUrl}/forgot-password`, secureData);
     }
 
     logout() {
